@@ -76,8 +76,11 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
     }
 
     if (isCollapsed) {
-      // Rule: if 2 or fewer items, inline them
-      if (data.length <= 2) {
+      const hasNested = data.some(
+        (item) => typeof item === "object" && item !== null
+      );
+
+      if (data.length <= 2 && !hasNested) {
         return (
           <span
             onClick={() => setIsCollapsed(false)}
@@ -100,13 +103,12 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
               [{data.map((item) => JSON.stringify(item)).join(", ")}]
             </span>
             <span style={{ color: "#71717a", fontSize: "0.75rem" }}>
-              [{tokenCount} tkn]
+              [~{tokenCount} tokens]
             </span>
           </span>
         );
       }
 
-      // Default collapsed array view
       return (
         <span
           onClick={() => setIsCollapsed(false)}
@@ -125,9 +127,9 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
           title="Click to expand"
         >
           <span style={{ color: "#38bdf8" }}>▶</span>
-          <span style={{ color: "#e4e4e7" }}>Array({data.length})</span>
+          <span style={{ color: "#e4e4e7" }}>[ ... ]</span>
           <span style={{ color: "#71717a", fontSize: "0.75rem" }}>
-            [{tokenCount} tkn]
+            [~{tokenCount} tokens]
           </span>
         </span>
       );
@@ -172,11 +174,10 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
   }
 
   if (isCollapsed) {
-    // Specification: "When collapsed, if the field inside has a name field, then render the name followed by ellipses"
-    // Also support cityName as a fallback for name
     const nameField = data.name !== undefined ? data.name : data.cityName;
 
     if (nameField !== undefined) {
+      const nameKey = data.name !== undefined ? "name" : "cityName";
       return (
         <span
           onClick={() => setIsCollapsed(false)}
@@ -194,18 +195,21 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
           title="Click to expand"
         >
           <span style={{ color: "#38bdf8" }}>▶</span>
-          <span style={{ color: "#f43f5e", fontWeight: "500" }}>
-            {nameField}...
+          <span style={{ color: "#e4e4e7" }}>
+            {"{"} {nameKey}: "{nameField}", ... {"}"}
           </span>
           <span style={{ color: "#71717a", fontSize: "0.75rem" }}>
-            [{tokenCount} tkn]
+            [~{tokenCount} tokens]
           </span>
         </span>
       );
     }
 
-    // Specification: "If the inside object has 2 or fewer fields, then just render both in collapsed mode"
-    if (keys.length <= 2) {
+    const hasNested = keys.some(
+      (k) => typeof data[k] === "object" && data[k] !== null
+    );
+
+    if (keys.length <= 2 && !hasNested) {
       const inlineObj = keys
         .map((k) => `${k}: ${JSON.stringify(data[k])}`)
         .join(", ");
@@ -228,13 +232,13 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
           <span style={{ color: "#38bdf8" }}>▶</span>
           <span style={{ color: "#e4e4e7" }}>{"{"} {inlineObj} {"}"}</span>
           <span style={{ color: "#71717a", fontSize: "0.75rem" }}>
-            [{tokenCount} tkn]
+            [~{tokenCount} tokens]
           </span>
         </span>
       );
     }
 
-    // Default collapsed object view
+    // Default collapsed object view showing "..."
     return (
       <span
         onClick={() => setIsCollapsed(false)}
@@ -252,9 +256,9 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
         title="Click to expand"
       >
         <span style={{ color: "#38bdf8" }}>▶</span>
-        <span style={{ color: "#a1a1aa" }}>Object({keys.length} keys)</span>
+        <span style={{ color: "#e4e4e7" }}>{"{ ... }"}</span>
         <span style={{ color: "#71717a", fontSize: "0.75rem" }}>
-          [{tokenCount} tkn]
+          [~{tokenCount} tokens]
         </span>
       </span>
     );
