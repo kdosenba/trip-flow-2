@@ -54,9 +54,9 @@ export default function DebugPage() {
     // Add user message to local chat history
     setChatHistory((prev) => [...prev, { role: "user", text: currentPrompt }]);
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
+    const apiKey = process.env.GEMINI_API_KEY || "";
     if (!apiKey) {
-      setValidationError("Gemini API key is missing. Please add NEXT_PUBLIC_GEMINI_API_KEY or GEMINI_API_KEY in your .env file.");
+      setValidationError("Gemini API key is missing. Please add GEMINI_API_KEY in your .env file.");
       setIsQuerying(false);
       return;
     }
