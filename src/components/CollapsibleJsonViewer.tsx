@@ -176,7 +176,7 @@ export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({
   if (isCollapsed) {
     const nameField = data.name !== undefined ? data.name : data.cityName;
 
-    if (nameField !== undefined) {
+    if (nameField !== undefined && (typeof nameField === "string" || typeof nameField === "number")) {
       const nameKey = data.name !== undefined ? "name" : "cityName";
       return (
         <span

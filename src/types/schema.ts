@@ -169,7 +169,6 @@ export const TransportationTypeSchema = z.enum([
   'BUS',
   'CAR',
   'BOAT',
-  'OTHER',
 ]);
 export type TransportationType = z.infer<typeof TransportationTypeSchema>;
 

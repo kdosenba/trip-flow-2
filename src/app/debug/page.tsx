@@ -54,109 +54,47 @@ export default function DebugPage() {
     // Add user message to local chat history
     setChatHistory((prev) => [...prev, { role: "user", text: currentPrompt }]);
 
-    const apiKey = process.env.GEMINI_API_KEY || "";
-    if (!apiKey) {
-      setValidationError("Gemini API key is missing. Please add GEMINI_API_KEY in your .env file.");
-      setIsQuerying(false);
-      return;
-    }
-
-    // System instructions telling the model how to act, what the schema is, and its strict JSON output constraint
-    const systemInstruction = `You are the core AI planner for Trip Flow, a dynamic itinerary graph builder.
-Your task is to take the user's conversational request, apply it logically to the current TripFlowGraph state, and return BOTH a brief explanation and the fully updated, valid graph structure.
-
-You MUST respond with a single, raw, valid JSON object containing EXACTLY two keys:
-1. "explanation" (string): A short, professional, conversational explanation of the modifications you made.
-2. "graph" (object): The fully updated TripFlowGraph state matching the schema.
-
-Important Rules:
-- Do not wrap your response in markdown code blocks (\`\`\`json). Return the pure JSON text only.
-- Preserve all existing locations, hubs, segments, and IDs unless explicitly asked to modify or delete them.
-- If the user adds a new stop or transit, generate a unique random UUID for the new location/city hub/transit IDs.
-- Ensure cost values are positive numbers.
-- Ensure that for any CityHub of type "HUB", its arrivalNodeId and departureNodeId match valid LocationId values in the Locations record.
-- Follow all schedule constraints: end dates must be on or after start dates.`;
-
-    // Construct the payload according to standard Gemini content APIs
-    const contents = [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `Current TripFlowGraph State:\n${JSON.stringify(graph, null, 2)}\n\nUser Request: ${currentPrompt}`
-          }
-        ]
-      }
-    ];
-
-    const payload = {
-      contents,
-      systemInstruction: {
-        parts: [
-          {
-            text: systemInstruction
-          }
-        ]
-      },
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
-    };
-
-    setSentPayload(payload);
-    // Simple heuristic estimate for sent tokens if API doesn't return metadata
-    const estimatedSent = Math.ceil(JSON.stringify(payload).length / 4);
-    setSentTokenCount(estimatedSent);
-
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        "/api/chat",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            prompt: currentPrompt,
+            graph
+          })
         }
       );
 
       if (!response.ok) {
-        throw new Error(`API HTTP Error: ${response.status} ${response.statusText}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `API HTTP Error: ${response.status} ${response.statusText}`);
       }
 
       const resData = await response.json();
-      setReceivedPayload(resData);
+      
+      setSentPayload(resData.rawSent);
+      setReceivedPayload(resData.rawReceived);
 
       // Read real tokens count from usageMetadata if available
-      if (resData.usageMetadata) {
-        setSentTokenCount(resData.usageMetadata.promptTokenCount);
-        setReceivedTokenCount(resData.usageMetadata.candidatesTokenCount);
+      if (resData.rawReceived.usageMetadata) {
+        setSentTokenCount(resData.rawReceived.usageMetadata.promptTokenCount);
+        setReceivedTokenCount(resData.rawReceived.usageMetadata.candidatesTokenCount);
       } else {
-        setReceivedTokenCount(Math.ceil(JSON.stringify(resData).length / 4));
+        setSentTokenCount(Math.ceil(JSON.stringify(resData.rawSent).length / 4));
+        setReceivedTokenCount(Math.ceil(JSON.stringify(resData.rawReceived).length / 4));
       }
-
-      const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) {
-        throw new Error("Empty response received from Gemini API");
-      }
-
-      // Parse the response
-      const parsedResponse = JSON.parse(rawText.trim());
-
-      if (!parsedResponse.explanation || !parsedResponse.graph) {
-        throw new Error("Response JSON does not contain 'explanation' or 'graph' keys.");
-      }
-
-      // Validate the graph against our schema
-      const validatedGraph = TripFlowGraphSchema.parse(parsedResponse.graph);
 
       // Overwrite local Zustand store with valid graph
-      setGraph(validatedGraph);
+      setGraph(resData.graph);
 
       // Add response to chat history
       setChatHistory((prev) => [
         ...prev,
-        { role: "model", text: parsedResponse.explanation }
+        { role: "model", text: resData.explanation }
       ]);
     } catch (err: any) {
       console.error(err);

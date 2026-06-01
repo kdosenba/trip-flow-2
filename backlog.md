@@ -46,6 +46,7 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 #### 🖱️ Overall Interactions
 - [ ] **[TF-17]** Build drag-and-drop node editing/reordering mechanics
 - [ ] **[TF-18]** Implement premium micro-animations (hover transitions, active states, loading indicators)
+- [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together. 
 
 ---
 
