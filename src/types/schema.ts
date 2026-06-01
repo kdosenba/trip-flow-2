@@ -23,6 +23,86 @@ export const CoordinatesSchema = z.object({
 });
 export type Coordinates = z.infer<typeof CoordinatesSchema>;
 
+export const DateOrDateTimeSchema = z.string().refine(
+  (val) => !isNaN(Date.parse(val)),
+  { message: 'Must be a valid Date or ISO 8601 Datetime string' }
+);
+export type DateOrDateTime = z.infer<typeof DateOrDateTimeSchema>;
+
+// --- NEW DATA OBJECTS: COST, BUDGET, TARGET DATE RANGE, CLIENT CONTEXT ---
+
+export const CostSchema = z.object({
+  actualCost: z.number().nonnegative('Cost cannot be negative').optional(),
+  typicalCost: z.number().nonnegative('Cost cannot be negative').optional(),
+});
+export type Cost = z.infer<typeof CostSchema>;
+
+export const BudgetDetailSchema = z.object({
+  min: z.number().nonnegative('Budget cannot be negative').optional(),
+  max: z.number().nonnegative('Budget cannot be negative').optional(),
+});
+
+export const EstimateDetailSchema = z.object({
+  low: z.number().nonnegative('Estimate cannot be negative').optional(),
+  high: z.number().nonnegative('Estimate cannot be negative').optional(),
+});
+
+export const BudgetSchema = z.object({
+  budget: BudgetDetailSchema,
+  estimate: EstimateDetailSchema,
+});
+export type Budget = z.infer<typeof BudgetSchema>;
+
+export const DateOrDateRangeSchema = z.union([
+  z.object({
+    range: z.object({
+      start: DateOrDateTimeSchema,
+      end: DateOrDateTimeSchema,
+    }).refine((data) => Date.parse(data.end) >= Date.parse(data.start), {
+      message: 'Target range end time must be on or after start time',
+      path: ['end'],
+    }),
+  }),
+  z.object({
+    date: DateOrDateTimeSchema,
+  }),
+]);
+
+export const TargetDateRangeSchema = z.object({
+  target: DateOrDateRangeSchema,
+  context: z.string().optional(),
+  actual: z.object({
+    start: DateOrDateTimeSchema.optional(),
+    end: DateOrDateTimeSchema.optional(),
+  }).refine((data) => {
+    if (data.start && data.end) {
+      return Date.parse(data.end) >= Date.parse(data.start);
+    }
+    return true;
+  }, {
+    message: 'Actual end time must be on or after start time',
+    path: ['end'],
+  }).optional(),
+});
+export type TargetDateRange = z.infer<typeof TargetDateRangeSchema>;
+
+// --- INTERNAL GEOLOCATION CONTRACT ---
+export const WhereAmILocationSchema = z.object({
+  iata: z.string().optional(),
+  name: z.string(),
+  country_name: z.string(),
+  country_code: z.string(),
+  coordinates: CoordinatesSchema,
+});
+export type WhereAmILocation = z.infer<typeof WhereAmILocationSchema>;
+
+export const ClientContextSchema = z.object({
+  location: WhereAmILocationSchema,
+  language: z.string(),
+  currency: z.string(),
+});
+export type ClientContext = z.infer<typeof ClientContextSchema>;
+
 // --- LOCATION NODES ---
 
 export const LocationCategorySchema = z.enum([
@@ -39,16 +119,11 @@ export const LocationSchema = z.object({
   address: z.string().min(1, 'Address is required'),
   coordinates: CoordinatesSchema,
   category: LocationCategorySchema,
+  price: CostSchema.optional(),
 });
 export type Location = z.infer<typeof LocationSchema>;
 
 // --- ITINERARY ITEMS (TEMPORAL HUB DETAILS) ---
-
-export const DateOrDateTimeSchema = z.string().refine(
-  (val) => !isNaN(Date.parse(val)),
-  { message: 'Must be a valid Date or ISO 8601 Datetime string' }
-);
-export type DateOrDateTime = z.infer<typeof DateOrDateTimeSchema>;
 
 export const ItineraryItemSchema = z.object({
   LocationId: LocationIdSchema,
@@ -116,6 +191,7 @@ export const TransitSchema = z.object({
   fromCityId: CityHubIdSchema,
   toCityId: CityHubIdSchema,
   segments: z.array(TransitSegmentSchema).min(1, 'Transit edge must contain at least 1 segment'),
+  price: CostSchema.optional(),
 });
 export type Transit = z.infer<typeof TransitSchema>;
 
@@ -133,6 +209,7 @@ export const SuggestionSchema = z.object({
   targetEdgeId: TransitIdSchema.optional(),
   suggestedLocation: LocationSchema.optional(),
   suggestedSegments: z.array(TransitSegmentSchema).optional(),
+  price: CostSchema.optional(),
 });
 export type Suggestion = z.infer<typeof SuggestionSchema>;
 
@@ -143,5 +220,8 @@ export const TripFlowGraphSchema = z.object({
   CityHubs: z.record(z.string(), CityHubSchema),
   Transits: z.record(z.string(), TransitSchema),
   suggestions: z.record(z.string(), SuggestionSchema),
+  budget: BudgetSchema.optional(),
+  targetDateRange: TargetDateRangeSchema.optional(),
+  clientContext: ClientContextSchema,
 });
 export type TripFlowGraph = z.infer<typeof TripFlowGraphSchema>;

@@ -11,12 +11,15 @@ import {
   Suggestion,
   SuggestionId
 } from '../types/schema';
+import { initializeClientContext } from '../lib/utils/clientContext';
 
 interface TripFlowState {
-  graph: TripFlowGraph;
+  graph: TripFlowGraph | null;
   activeCityId: CityHubId | null;
   activeEdgeId: TransitId | null;
   activeSuggestionId: SuggestionId | null;
+  isLoadingContext: boolean;
+  contextError: string | null;
 }
 
 interface TripFlowActions {
@@ -28,23 +31,19 @@ interface TripFlowActions {
   selectCity: (id: CityHubId | null) => void;
   selectEdge: (id: TransitId | null) => void;
   selectSuggestion: (id: SuggestionId | null) => void;
+  initializeClientContext: () => Promise<void>;
 }
 
 export type TripFlowStore = TripFlowState & TripFlowActions;
 
-const initialGraph: TripFlowGraph = {
-  Locations: {},
-  CityHubs: {},
-  Transits: {},
-  suggestions: {},
-};
-
 export const useTripFlowStore = create<TripFlowStore>()(
   immer((set) => ({
-    graph: initialGraph,
+    graph: null,
     activeCityId: null,
     activeEdgeId: null,
     activeSuggestionId: null,
+    isLoadingContext: true,
+    contextError: null,
 
     setGraph: (graph) => {
       set((state) => {
@@ -54,25 +53,33 @@ export const useTripFlowStore = create<TripFlowStore>()(
 
     addLocation: (location) => {
       set((state) => {
-        state.graph.Locations[location.id] = location;
+        if (state.graph) {
+          state.graph.Locations[location.id] = location;
+        }
       });
     },
 
     addCityHub: (hub) => {
       set((state) => {
-        state.graph.CityHubs[hub.id] = hub;
+        if (state.graph) {
+          state.graph.CityHubs[hub.id] = hub;
+        }
       });
     },
 
     addTransit: (transit) => {
       set((state) => {
-        state.graph.Transits[transit.id] = transit;
+        if (state.graph) {
+          state.graph.Transits[transit.id] = transit;
+        }
       });
     },
 
     addSuggestion: (suggestion) => {
       set((state) => {
-        state.graph.suggestions[suggestion.id] = suggestion;
+        if (state.graph) {
+          state.graph.suggestions[suggestion.id] = suggestion;
+        }
       });
     },
 
@@ -92,6 +99,32 @@ export const useTripFlowStore = create<TripFlowStore>()(
       set((state) => {
         state.activeSuggestionId = id;
       });
+    },
+
+    initializeClientContext: async () => {
+      set((state) => {
+        state.isLoadingContext = true;
+        state.contextError = null;
+      });
+
+      try {
+        const clientContext = await initializeClientContext();
+        set((state) => {
+          state.graph = {
+            Locations: {},
+            CityHubs: {},
+            Transits: {},
+            suggestions: {},
+            clientContext,
+          };
+          state.isLoadingContext = false;
+        });
+      } catch (err) {
+        set((state) => {
+          state.contextError = (err as Error).message;
+          state.isLoadingContext = false;
+        });
+      }
     },
   }))
 );

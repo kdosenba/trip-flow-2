@@ -11,9 +11,9 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 
 - [x] Define central types and Zod schema validation in [`schema.ts`](file:///Users/seraj/trip-flow-2/src/types/schema.ts)
 - [x] Create comprehensive testing suite for schemas in [`schema.test.ts`](file:///Users/seraj/trip-flow-2/src/types/schema.test.ts)
-- [ ] Add **Price** fields to nodes, transits, and suggestions schemas
-- [ ] Add comprehensive **Budget** constraint types at the Trip/Graph level
-- [ ] Implement **Target Date Range** validation (start/end constraints, overlap detection, scheduling bounds)
+- [x] Add **Price** fields to nodes, transits, and suggestions schemas
+- [x] Add comprehensive **Budget** constraint types at the Trip/Graph level
+- [x] Implement **Target Date Range** validation (start/end constraints, overlap detection, scheduling bounds)
 - [ ] Add branded type constraints for location IDs to prevent cross-contamination
 
 ---

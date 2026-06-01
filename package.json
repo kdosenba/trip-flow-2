@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "country-to-currency": "^2.0.3",
     "immer": "^11.1.8",
     "next": "16.2.6",
     "react": "19.2.4",
