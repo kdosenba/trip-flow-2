@@ -17,6 +17,7 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 - [ ] **[TF-6]** Add branded type constraints for location IDs to prevent cross-contamination
 - [x] **[TF-26]** Initialize the trip graph with the origin based on the client context
 - [x] **[TF-28]** Refactor the UUID generation to use much shorter IDs, otherwise we risk the LLM making errors when referencing an ID. use IDs that have logic to them so that the LLM can follow along
+- [x] **[TF-29]** Implement self-contained Geocoding Service (Nominatim-backed) with tiered fallback retries, multi-language context extraction, and IATA code parsing for transit nodes.
 
 ---
 
@@ -24,9 +25,10 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 *Focuses on enabling Gemini models to dynamically interact with, generate, and validate our Trip Flow model.*
 
 - [x] **[TF-7]** Design JSON schemas / Function Calling declarations for Gemini to inspect and manipulate the trip graph
-- [ ] **[TF-8]** Implement robust system prompt instructions detailing graph syntax and constraints for Gemini
+- [x] **[TF-8]** Implement robust system prompt instructions detailing graph syntax and constraints for Gemini
 - [ ] **[TF-9]** Build parser/middleware to validate Gemini generated JSON outputs against the `TripFlowGraphSchema`
 - [ ] **[TF-10]** Enable stateful agent chat flow where the user can issue natural language commands to update the trip flow
+- [ ] **[TF-30]** Implement the sanitization process to save tokens when sending to Gemini
 
 ---
 
