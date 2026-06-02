@@ -120,6 +120,7 @@ export const LocationSchema = z.object({
   coordinates: CoordinatesSchema,
   category: LocationCategorySchema,
   price: CostSchema.optional(),
+  iata: z.string().optional(),
 });
 export type Location = z.infer<typeof LocationSchema>;
 

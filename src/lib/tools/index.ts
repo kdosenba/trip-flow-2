@@ -9,6 +9,7 @@ import {
   generateLocationId,
   generateTransitId
 } from "../utils/id";
+import { getGeocodingService } from "../services/geocoding";
 
 /**
  * Custom Zod-to-Standard JSON Schema Compiler
@@ -169,16 +170,19 @@ export const executeTool = async (
 ): Promise<TripFlowGraph> => {
   // Deep clone to prevent side effects during dispatching loops
   const updatedGraph = JSON.parse(JSON.stringify(graph)) as TripFlowGraph;
+  const language = graph.clientContext?.language;
 
   switch (name) {
     case "addOriginCity": {
       const hubId = args.cityId ? CityHubIdSchema.parse(args.cityId) : generateCityHubId(args.cityName);
+      const query = args.region ? `${args.cityName}, ${args.region}, ${args.country}` : `${args.cityName}, ${args.country}`;
+      const geo = await getGeocodingService().geocode(query, language);
       updatedGraph.CityHubs[hubId] = {
         id: hubId,
         cityName: args.cityName,
-        region: args.region,
-        country: args.country,
-        coordinates: { lat: 0, lng: 0 }, // Resolved later
+        region: geo?.region || args.region || undefined,
+        country: geo?.country || args.country,
+        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
         type: "ORIGIN",
         itinerary: [],
         travelerCount: args.travelerCount
@@ -188,12 +192,14 @@ export const executeTool = async (
 
     case "addTripCity": {
       const hubId = args.cityId ? CityHubIdSchema.parse(args.cityId) : generateCityHubId(args.cityName);
+      const query = args.region ? `${args.cityName}, ${args.region}, ${args.country}` : `${args.cityName}, ${args.country}`;
+      const geo = await getGeocodingService().geocode(query, language);
       updatedGraph.CityHubs[hubId] = {
         id: hubId,
         cityName: args.cityName,
-        region: args.region,
-        country: args.country,
-        coordinates: { lat: 0, lng: 0 }, // Resolved later
+        region: geo?.region || args.region || undefined,
+        country: geo?.country || args.country,
+        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
         type: "HUB",
         itinerary: [],
         travelerCount: 1
@@ -203,21 +209,40 @@ export const executeTool = async (
 
     case "addTransitPoint": {
       const locId = args.locationId ? LocationIdSchema.parse(args.locationId) : generateLocationId(args.name);
+      const query = args.region ? `${args.name}, ${args.cityName}, ${args.region}, ${args.country}` : `${args.name}, ${args.cityName}, ${args.country}`;
+      const geo = await getGeocodingService().geocode(query, language);
+      const resolvedAddress = geo?.address || `${args.name}, ${args.cityName}, ${args.country}`;
+
       updatedGraph.Locations[locId] = {
         id: locId,
-        name: args.name,
-        address: args.address,
-        coordinates: { lat: 0, lng: 0 }, // Resolved later
-        category: "TRANSIT_POINT"
+        name: geo?.name || args.name,
+        address: resolvedAddress,
+        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
+        category: "TRANSIT_POINT",
+        iata: geo?.iata
       };
 
-      // Automatically link this transit point to the corresponding CityHub if found
-      const targetHub = Object.values(updatedGraph.CityHubs).find(
-        (hub) => hub.cityName.toLowerCase() === args.cityName.toLowerCase()
-      );
-      if (targetHub) {
-        if (!targetHub.arrivalNodeId) targetHub.arrivalNodeId = locId;
-        if (!targetHub.departureNodeId) targetHub.departureNodeId = locId;
+      // 1. If explicit cityId is passed, link it directly
+      if (args.cityId) {
+        const cityId = CityHubIdSchema.parse(args.cityId);
+        const targetHub = updatedGraph.CityHubs[cityId];
+        if (targetHub) {
+          if (args.arrivalOrDeparture === "ARRIVAL" || args.arrivalOrDeparture === "BOTH") {
+            targetHub.arrivalNodeId = locId;
+          }
+          if (args.arrivalOrDeparture === "DEPARTURE" || args.arrivalOrDeparture === "BOTH") {
+            targetHub.departureNodeId = locId;
+          }
+        }
+      } else {
+        // 2. Fallback: Automatically link this transit point to the corresponding CityHub if found
+        const targetHub = Object.values(updatedGraph.CityHubs).find(
+          (hub) => hub.cityName.toLowerCase() === args.cityName.toLowerCase()
+        );
+        if (targetHub) {
+          if (!targetHub.arrivalNodeId) targetHub.arrivalNodeId = locId;
+          if (!targetHub.departureNodeId) targetHub.departureNodeId = locId;
+        }
       }
       break;
     }
@@ -230,16 +255,21 @@ export const executeTool = async (
       }
 
       const locId = args.itemId ? LocationIdSchema.parse(args.itemId) : generateLocationId(args.name);
+      const query = `${args.name}, ${targetHub.cityName}, ${targetHub.country}`;
+      const geo = await getGeocodingService().geocode(query, language);
+      const resolvedAddress = geo?.address || `${args.name}, ${targetHub.cityName}`;
+
       updatedGraph.Locations[locId] = {
         id: locId,
-        name: args.name,
-        address: args.address, // Resolve later
-        coordinates: { lat: 0, lng: 0 }, // Resolved later
+        name: geo?.name || args.name,
+        address: resolvedAddress,
+        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
         category: args.category,
         price: args.cost !== undefined ? {
           actualCost: args.cost,
           typicalCost: args.cost
-        } : undefined
+        } : undefined,
+        iata: geo?.iata
       };
 
       const startTime = args.startDate + (args.startTime ? `T${args.startTime}` : 'T00:00:00Z');
