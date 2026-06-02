@@ -3,7 +3,6 @@ import { immer } from 'zustand/middleware/immer';
 import {
   TripFlowGraph,
   Location,
-  LocationId,
   CityHub,
   CityHubId,
   Transit,
@@ -12,6 +11,7 @@ import {
   SuggestionId
 } from '../types/schema';
 import { initializeClientContext } from '../lib/utils/clientContext';
+import { generateCityHubId } from '../lib/utils/id';
 
 interface TripFlowState {
   graph: TripFlowGraph | null;
@@ -109,10 +109,23 @@ export const useTripFlowStore = create<TripFlowStore>()(
 
       try {
         const clientContext = await initializeClientContext();
+        const originHubId = generateCityHubId(clientContext.location.name);
+        const originHub: CityHub = {
+          id: originHubId,
+          cityName: clientContext.location.name,
+          country: clientContext.location.country_name,
+          coordinates: clientContext.location.coordinates,
+          type: 'ORIGIN',
+          itinerary: [],
+          travelerCount: 1,
+        };
+
         set((state) => {
           state.graph = {
             Locations: {},
-            CityHubs: {},
+            CityHubs: {
+              [originHubId]: originHub,
+            },
             Transits: {},
             suggestions: {},
             clientContext,

@@ -1,9 +1,5 @@
 import {
   TripFlowGraphSchema,
-  LocationIdSchema,
-  CityHubIdSchema,
-  TransitIdSchema,
-  SuggestionIdSchema,
   TripFlowGraph,
   Location,
   CityHub,
@@ -15,24 +11,30 @@ import {
   ClientContextSchema,
   WhereAmILocationSchema
 } from './schema';
+import {
+  generateCityHubId,
+  generateLocationId,
+  generateTransitId,
+  generateSuggestionId
+} from '../lib/utils/id';
 import { getCurrencyForCountry } from '../lib/utils/clientContext';
 import { fetchWhereAmI } from '../lib/adapters/travelpayouts';
 
-const createLocationId = () => LocationIdSchema.parse(crypto.randomUUID());
-const createCityHubId = () => CityHubIdSchema.parse(crypto.randomUUID());
-const createTransitId = () => TransitIdSchema.parse(crypto.randomUUID());
-const createSuggestionId = () => SuggestionIdSchema.parse(crypto.randomUUID());
+const createLocationId = (name = 'mock_loc') => generateLocationId(name);
+const createCityHubId = (cityName = 'mock_city') => generateCityHubId(cityName);
+const createTransitId = (from = 'nyc', to = 'paris') => generateTransitId(`hub_${from}`, `hub_${to}`);
+const createSuggestionId = (title = 'mock_suggest') => generateSuggestionId(title);
 
 export const testMockGraph = (): TripFlowGraph => {
-  const jfkId = createLocationId();
-  const cdgId = createLocationId();
-  const eiffelId = createLocationId();
+  const jfkId = createLocationId('jfk');
+  const cdgId = createLocationId('cdg');
+  const eiffelId = createLocationId('eiffel');
 
-  const nycId = createCityHubId();
-  const parisId = createCityHubId();
+  const nycId = createCityHubId('nyc');
+  const parisId = createCityHubId('paris');
 
-  const flightTransitId = createTransitId();
-  const hotelSuggestionId = createSuggestionId();
+  const flightTransitId = createTransitId('nyc', 'paris');
+  const hotelSuggestionId = createSuggestionId('hotel');
 
   const locations: Record<string, Location> = {
     [jfkId]: {

@@ -15,6 +15,8 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 - [x] **[TF-4]** Add comprehensive **Budget** constraint types at the Trip/Graph level
 - [x] **[TF-5]** Implement **Target Date Range** validation (start/end constraints, overlap detection, scheduling bounds)
 - [ ] **[TF-6]** Add branded type constraints for location IDs to prevent cross-contamination
+- [x] **[TF-26]** Initialize the trip graph with the origin based on the client context
+- [x] **[TF-28]** Refactor the UUID generation to use much shorter IDs, otherwise we risk the LLM making errors when referencing an ID. use IDs that have logic to them so that the LLM can follow along
 
 ---
 
@@ -38,6 +40,7 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 #### 🔀 Nodes & Edges
 - [ ] **[TF-13]** Implement visual rendering of location **nodes** placed on the globe/canvas
 - [ ] **[TF-14]** Implement visual rendering of transit **edges** representing connections between nodes (with smooth arc animation paths)
+- [ ] **[TF-27]** For Origins add a button so that you can increase the traveller count
 
 #### ⚠️ Constraints Visualization
 - [ ] **[TF-15]** Add visual indicators for **budget constraints** (e.g., color-coded cost indicators, warnings when exceeding limits)

@@ -3,16 +3,16 @@ import { z } from 'zod';
 /**
  * Branded identifier helpers to guarantee zero cross-type contamination.
  */
-export const LocationIdSchema = z.string().uuid().brand<'LocationId'>();
+export const LocationIdSchema = z.string().min(1).brand<'LocationId'>();
 export type LocationId = z.infer<typeof LocationIdSchema>;
 
-export const CityHubIdSchema = z.string().uuid().brand<'CityHubId'>();
+export const CityHubIdSchema = z.string().min(1).brand<'CityHubId'>();
 export type CityHubId = z.infer<typeof CityHubIdSchema>;
 
-export const TransitIdSchema = z.string().uuid().brand<'TransitId'>();
+export const TransitIdSchema = z.string().min(1).brand<'TransitId'>();
 export type TransitId = z.infer<typeof TransitIdSchema>;
 
-export const SuggestionIdSchema = z.string().uuid().brand<'SuggestionId'>();
+export const SuggestionIdSchema = z.string().min(1).brand<'SuggestionId'>();
 export type SuggestionId = z.infer<typeof SuggestionIdSchema>;
 
 // --- GEOSPATIAL & BASICS ---

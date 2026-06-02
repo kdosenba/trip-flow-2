@@ -1,6 +1,14 @@
-import crypto from "crypto";
 import { z } from "zod";
-import { TripFlowGraph, CityHubIdSchema, TransitIdSchema, LocationIdSchema } from "../../types/schema";
+import {
+  TripFlowGraph,
+  CityHubIdSchema,
+  LocationIdSchema
+} from "../../types/schema";
+import {
+  generateCityHubId,
+  generateLocationId,
+  generateTransitId
+} from "../utils/id";
 
 /**
  * Custom Zod-to-Standard JSON Schema Compiler
@@ -162,7 +170,7 @@ export const executeTool = async (
 
   switch (name) {
     case "addOriginCity": {
-      const hubId = CityHubIdSchema.parse(crypto.randomUUID());
+      const hubId = args.cityId ? CityHubIdSchema.parse(args.cityId) : generateCityHubId(args.cityName);
       updatedGraph.CityHubs[hubId] = {
         id: hubId,
         cityName: args.cityName,
@@ -177,7 +185,7 @@ export const executeTool = async (
     }
 
     case "addTripCity": {
-      const hubId = CityHubIdSchema.parse(crypto.randomUUID());
+      const hubId = args.cityId ? CityHubIdSchema.parse(args.cityId) : generateCityHubId(args.cityName);
       updatedGraph.CityHubs[hubId] = {
         id: hubId,
         cityName: args.cityName,
@@ -192,7 +200,7 @@ export const executeTool = async (
     }
 
     case "addTransitPoint": {
-      const locId = LocationIdSchema.parse(crypto.randomUUID());
+      const locId = args.locationId ? LocationIdSchema.parse(args.locationId) : generateLocationId(args.name);
       updatedGraph.Locations[locId] = {
         id: locId,
         name: args.name,
@@ -214,7 +222,7 @@ export const executeTool = async (
         throw new Error(`Activity creation failed: Target stop UUID "${args.cityId}" does not exist.`);
       }
 
-      const locId = LocationIdSchema.parse(crypto.randomUUID());
+      const locId = args.itemId ? LocationIdSchema.parse(args.itemId) : generateLocationId(args.title || args.name || "activity");
       updatedGraph.Locations[locId] = {
         id: locId,
         name: args.title,
@@ -247,7 +255,7 @@ export const executeTool = async (
         throw new Error(`Transit connection failed: Referenced CityHub stops must be valid active nodes.`);
       }
 
-      const transitId = TransitIdSchema.parse(crypto.randomUUID());
+      const transitId = generateTransitId(fromCityId, toCityId);
       updatedGraph.Transits[transitId] = {
         id: transitId,
         fromCityId,
