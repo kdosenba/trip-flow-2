@@ -109,12 +109,12 @@ export const AddItineraryItemSchema = z.object({
   endDate: z.string().optional().describe("ISO date"),
   endTime: z.string().optional().describe("ISO time"),
   cost: z.number().optional().describe("Cost of the item"),
-  cityId: z.string().describe("The unique UUID of the parent CityHub destination"),
+  cityId: z.string().describe("The id of the parent CityHub. CityHub must be of type HUB."),
 });
 
 export const ConnectTransitPointsSchema = z.object({
-  fromLocationId: z.string().describe("The LocationId UUID of the origin transit point location"),
-  toLocationId: z.string().describe("The LocationId UUID of the destination transit point location"),
+  fromLocationId: z.string().describe("The LocationId of the origin transit point location"),
+  toLocationId: z.string().describe("The LocationId of the destination transit point location"),
   transportMode: z.enum(["FLIGHT", "TRAIN", "BUS", "CAR", "WALK", "OTHER"]),
   departureDate: z.string().describe("ISO date"),
   departureTime: z.string().optional().describe("ISO time"),
@@ -130,27 +130,27 @@ export const GEMINI_TOOLS = [
     functionDeclarations: [
       {
         name: "addOriginCity",
-        description: "Adds the initial starting origin stop (CityHub) destination to the itinerary. Requires traveler count.",
+        description: "Adds an origin (CityHub) to the Trip from which transit to other Cities can occur. It must contain a travelerCount.",
         parametersJsonSchema: zodToStandardJsonSchema(AddOriginCitySchema),
       },
       {
         name: "addTripCity",
-        description: "Adds a standard intermediate travel stop (CityHub) destination to the itinerary without any itinerary items.",
+        description: "Adds a city (CityHub) stop to the Trip. This is you will help plan an itinerary for this stop",
         parametersJsonSchema: zodToStandardJsonSchema(AddTripCitySchema),
       },
       {
         name: "addTransitPoint",
-        description: "Defines a transit point location node (such as an airport or train station) without coordinates to support start, end, or intermediate locations.",
+        description: "Defines a transit point used to connect two cities.",
         parametersJsonSchema: zodToStandardJsonSchema(AddTransitPointSchema),
       },
       {
         name: "addItineraryItem",
-        description: "Defines an itinerary item and its associated location details (without coordinates) for a specific city hub.",
+        description: "Defines an itinerary item for a specific city hub.",
         parametersJsonSchema: zodToStandardJsonSchema(AddItineraryItemSchema),
       },
       {
         name: "connectTransitPoints",
-        description: "Defines a transit connection (Transit edge) between two existing city hubs by referencing previously created transit point location IDs.",
+        description: "Defines a transit connection between two cities using their defined transit points.",
         parametersJsonSchema: zodToStandardJsonSchema(ConnectTransitPointsSchema),
       }
     ]

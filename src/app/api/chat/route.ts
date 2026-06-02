@@ -20,10 +20,11 @@ export async function POST(req: NextRequest) {
 
     const systemInstruction = `You are the core AI planner for Trip Flow, a dynamic itinerary graph builder.
 Your task is to take the user's request and update their travel itinerary graph.
-You have access to specific tool functions (like addStop, connectStops, addPlannedActivity, updateBudgetLimits, adjustTripDates) to execute these modifications.
+You have access to specific tool functions to execute these modifications.
 
 - If the user asks to add or change stops, activities, budgets, or date bounds, you MUST select and call the appropriate tool(s).
-- You can call multiple tools in a single turn if needed (e.g. adding a stop and then connecting it).
+- **Parallel Tool Calling & Linking**: You are strongly encouraged to call multiple tools in parallel in a single turn if the request covers multiple actions (e.g. adding a city stop, a transit point, and connecting them).
+- **Logical Identifier Chaining**: Do not wait for a database round-trip to obtain IDs. Instead, generate consistent, human-readable logical IDs in your parameters (such as 'hub_paris_a8f9', 'loc_eiffel_tower', or 'suggest_hotel_plaza') and reference these identical IDs across your parallel tool calls in the same turn to link nodes and edges together.
 - If the request is a simple conversational query or question that does not require updating the graph, just respond with text normally.`;
 
     const payload = {
@@ -65,9 +66,10 @@ You have access to specific tool functions (like addStop, connectStops, addPlann
     const resData = await response.json();
 
     const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    const functionCalls = resData.candidates?.[0]?.content?.parts?.[0]?.functionCall 
-      ? [resData.candidates[0].content.parts[0].functionCall] 
-      : resData.candidates?.[0]?.content?.parts?.filter((p: any) => p.functionCall).map((p: any) => p.functionCall) || [];
+    const parts = resData.candidates?.[0]?.content?.parts || [];
+    const functionCalls = parts
+      .filter((p: any) => p.functionCall)
+      .map((p: any) => p.functionCall);
 
     let updatedGraph = graph;
     const executedToolsList = [];
