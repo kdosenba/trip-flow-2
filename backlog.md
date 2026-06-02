@@ -23,7 +23,7 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ### 🧠 2. LLM / Gemini Integration
 *Focuses on enabling Gemini models to dynamically interact with, generate, and validate our Trip Flow model.*
 
-- [ ] **[TF-7]** Design JSON schemas / Function Calling declarations for Gemini to inspect and manipulate the trip graph
+- [x] **[TF-7]** Design JSON schemas / Function Calling declarations for Gemini to inspect and manipulate the trip graph
 - [ ] **[TF-8]** Implement robust system prompt instructions detailing graph syntax and constraints for Gemini
 - [ ] **[TF-9]** Build parser/middleware to validate Gemini generated JSON outputs against the `TripFlowGraphSchema`
 - [ ] **[TF-10]** Enable stateful agent chat flow where the user can issue natural language commands to update the trip flow
