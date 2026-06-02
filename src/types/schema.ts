@@ -160,23 +160,19 @@ export type CityHub = z.infer<typeof CityHubSchema>;
 
 // --- TRANSIT EDGES & SEGMENTS ---
 
-export const TransitSegmentPathTypeSchema = z.enum(['DIRECT', 'ROUTE', 'ARC']);
-export type TransitSegmentPathType = z.infer<typeof TransitSegmentPathTypeSchema>;
-
-export const TransportationTypeSchema = z.enum([
+export const TransportationModeSchema = z.enum([
   'FLIGHT',
   'TRAIN',
   'BUS',
   'CAR',
   'BOAT',
 ]);
-export type TransportationType = z.infer<typeof TransportationTypeSchema>;
+export type TransportationMode = z.infer<typeof TransportationModeSchema>;
 
 export const TransitSegmentSchema = z.object({
   fromLocationId: LocationIdSchema,
   toLocationId: LocationIdSchema,
-  pathType: TransitSegmentPathTypeSchema,
-  transportType: TransportationTypeSchema,
+  transportMode: TransportationModeSchema,
   startTime: DateOrDateTimeSchema,
   endTime: DateOrDateTimeSchema,
 }).refine((data) => Date.parse(data.endTime) >= Date.parse(data.startTime), {

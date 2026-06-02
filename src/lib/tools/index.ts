@@ -98,6 +98,8 @@ export const AddTransitPointSchema = z.object({
   name: z.string().describe("Name of the transit point, e.g. JFK Airport"),
   cityName: z.string(),
   country: z.string(),
+  cityId: z.string().optional().describe("City in which transit point is located. Optional"),
+  arrivalOrDeparture: z.enum(["ARRIVAL", "DEPARTURE", "BOTH"]).optional().describe("If cityId is specified, this field is required."),
 });
 
 export const AddItineraryItemSchema = z.object({
@@ -206,12 +208,17 @@ export const executeTool = async (
         name: args.name,
         address: args.address,
         coordinates: { lat: 0, lng: 0 }, // Resolved later
-        category: "TRANSIT_POINT",
-        price: args.actualCost !== undefined || args.typicalCost !== undefined ? {
-          actualCost: args.actualCost ?? args.typicalCost ?? 0,
-          typicalCost: args.typicalCost ?? args.actualCost ?? 0
-        } : undefined
+        category: "TRANSIT_POINT"
       };
+
+      // Automatically link this transit point to the corresponding CityHub if found
+      const targetHub = Object.values(updatedGraph.CityHubs).find(
+        (hub) => hub.cityName.toLowerCase() === args.cityName.toLowerCase()
+      );
+      if (targetHub) {
+        if (!targetHub.arrivalNodeId) targetHub.arrivalNodeId = locId;
+        if (!targetHub.departureNodeId) targetHub.departureNodeId = locId;
+      }
       break;
     }
 
@@ -222,40 +229,72 @@ export const executeTool = async (
         throw new Error(`Activity creation failed: Target stop UUID "${args.cityId}" does not exist.`);
       }
 
-      const locId = args.itemId ? LocationIdSchema.parse(args.itemId) : generateLocationId(args.title || args.name || "activity");
+      const locId = args.itemId ? LocationIdSchema.parse(args.itemId) : generateLocationId(args.name);
       updatedGraph.Locations[locId] = {
         id: locId,
-        name: args.title,
-        address: args.address,
+        name: args.name,
+        address: args.address, // Resolve later
         coordinates: { lat: 0, lng: 0 }, // Resolved later
         category: args.category,
-        price: args.actualCost !== undefined || args.typicalCost !== undefined ? {
-          actualCost: args.actualCost ?? args.typicalCost ?? 0,
-          typicalCost: args.typicalCost ?? args.actualCost ?? 0
+        price: args.cost !== undefined ? {
+          actualCost: args.cost,
+          typicalCost: args.cost
         } : undefined
       };
 
+      const startTime = args.startDate + (args.startTime ? `T${args.startTime}` : 'T00:00:00Z');
+      const endTime = args.endDate ? args.endDate + (args.endTime ? `T${args.endTime}` : 'T00:00:00Z') : undefined;
+
       targetHub.itinerary.push({
         LocationId: locId,
-        startTime: args.startTime,
-        endTime: args.endTime
+        startTime,
+        endTime
       });
       break;
     }
 
     case "connectTransitPoints": {
-      const fromCityId = CityHubIdSchema.parse(args.fromCityId);
-      const toCityId = CityHubIdSchema.parse(args.toCityId);
       const fromLocationId = LocationIdSchema.parse(args.fromLocationId);
       const toLocationId = LocationIdSchema.parse(args.toLocationId);
 
-      const fromHub = updatedGraph.CityHubs[fromCityId];
-      const toHub = updatedGraph.CityHubs[toCityId];
-      if (!fromHub || !toHub) {
-        throw new Error(`Transit connection failed: Referenced CityHub stops must be valid active nodes.`);
+      // Dynamically locate the respective CityHubIds based on arrival/departure transit nodes
+      let fromCityId = Object.values(updatedGraph.CityHubs).find(
+        (hub) => hub.departureNodeId === fromLocationId || hub.arrivalNodeId === fromLocationId
+      )?.id;
+
+      let toCityId = Object.values(updatedGraph.CityHubs).find(
+        (hub) => hub.arrivalNodeId === toLocationId || hub.departureNodeId === toLocationId
+      )?.id;
+
+      // Fallback: search by name matching address if not explicitly linked
+      if (!fromCityId) {
+        const fromLoc = updatedGraph.Locations[fromLocationId];
+        if (fromLoc) {
+          fromCityId = Object.values(updatedGraph.CityHubs).find((hub) =>
+            fromLoc.address.toLowerCase().includes(hub.cityName.toLowerCase())
+          )?.id;
+        }
+      }
+      if (!toCityId) {
+        const toLoc = updatedGraph.Locations[toLocationId];
+        if (toLoc) {
+          toCityId = Object.values(updatedGraph.CityHubs).find((hub) =>
+            toLoc.address.toLowerCase().includes(hub.cityName.toLowerCase())
+          )?.id;
+        }
+      }
+
+      if (!fromCityId || !toCityId) {
+        throw new Error(
+          `Transit connection failed: Could not resolve CityHub nodes for location IDs from: "${fromLocationId}", to: "${toLocationId}".`
+        );
       }
 
       const transitId = generateTransitId(fromCityId, toCityId);
+      const transportMode = args.transportMode;
+      const startTime = args.departureDate + (args.departureTime ? `T${args.departureTime}` : 'T00:00:00Z');
+      const endTime = args.arrivalDate + (args.arrivalTime ? `T${args.arrivalTime}` : 'T00:00:00Z');
+
       updatedGraph.Transits[transitId] = {
         id: transitId,
         fromCityId,
@@ -264,16 +303,11 @@ export const executeTool = async (
           {
             fromLocationId,
             toLocationId,
-            pathType: args.pathType || "ARC",
-            transportType: args.transportType,
-            startTime: args.startTime,
-            endTime: args.endTime
+            transportMode,
+            startTime,
+            endTime
           }
         ],
-        price: args.actualCost !== undefined || args.typicalCost !== undefined ? {
-          actualCost: args.actualCost ?? args.typicalCost ?? 0,
-          typicalCost: args.typicalCost ?? args.actualCost ?? 0
-        } : undefined
       };
       break;
     }

@@ -100,8 +100,7 @@ export const testMockGraph = (): TripFlowGraph => {
         {
           fromLocationId: jfkId,
           toLocationId: cdgId,
-          pathType: 'ARC',
-          transportType: 'FLIGHT',
+          transportMode: 'FLIGHT',
           startTime: '2026-06-01T18:00:00Z',
           endTime: '2026-06-02T08:00:00Z',
         },
