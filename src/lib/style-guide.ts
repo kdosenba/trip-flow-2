@@ -9,17 +9,17 @@ export const STYLE_TOKENS = {
     bgCard: "rgba(18, 19, 29, 0.6)",
     borderColor: "rgba(255, 255, 255, 0.08)",
     borderHover: "rgba(255, 255, 255, 0.15)",
-    
+
     textPrimary: "#f8fafc",
     textSecondary: "#94a3b8",
     textMuted: "#64748b",
-    
+
     origin: "#8b5cf6",
     hub: "#a855f7",
     event: "#ec4899",
     transit: "#3b82f6",
     suggest: "#eab308",
-    
+
     budgetSafe: "#10b981",
     budgetWarn: "#f97316",
     budgetDanger: "#ef4444",
@@ -42,7 +42,7 @@ export const STYLE_TOKENS = {
   },
   transitions: {
     smooth: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  }
+  },
 } as const;
 
 export type StyleTokens = typeof STYLE_TOKENS;

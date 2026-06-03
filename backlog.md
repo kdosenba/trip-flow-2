@@ -7,7 +7,8 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ## 🏗️ Architectural Components
 
 ### 🧱 1. Model / Schema Development
-*Focuses on expanding our core domain data models, validation constraints, and strict typing.*
+
+_Focuses on expanding our core domain data models, validation constraints, and strict typing._
 
 - [x] **[TF-1]** Define central types and Zod schema validation in [`schema.ts`](file:///Users/seraj/trip-flow-2/src/types/schema.ts)
 - [x] **[TF-2]** Create comprehensive testing suite for schemas in [`schema.test.ts`](file:///Users/seraj/trip-flow-2/src/types/schema.test.ts)
@@ -22,7 +23,8 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ---
 
 ### 🧠 2. LLM / Gemini Integration
-*Focuses on enabling Gemini models to dynamically interact with, generate, and validate our Trip Flow model.*
+
+_Focuses on enabling Gemini models to dynamically interact with, generate, and validate our Trip Flow model._
 
 - [x] **[TF-7]** Design JSON schemas / Function Calling declarations for Gemini to inspect and manipulate the trip graph
 - [x] **[TF-8]** Implement robust system prompt instructions detailing graph syntax and constraints for Gemini
@@ -33,25 +35,30 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ---
 
 ### 🌐 3. User Interface (Globe & Canvas)
-*Focuses on creating a stunning, responsive, and tactile web experience to visualize and interact with the trip flow.*
+
+_Focuses on creating a stunning, responsive, and tactile web experience to visualize and interact with the trip flow._
 
 #### 🌍 Globe & Styling
+
 - [ ] **[TF-11]** Set up interactive 3D/2D globe canvas with beautiful custom terrain mapping and sleek styling
 - [ ] **[TF-12]** Build rich styling controls (smooth camera transitions, zoom levels, curated visual overlays)
 
 #### 🔀 Nodes & Edges
+
 - [ ] **[TF-13]** Implement visual rendering of location **nodes** placed on the globe/canvas
 - [ ] **[TF-14]** Implement visual rendering of transit **edges** representing connections between nodes (with smooth arc animation paths)
 - [x] **[TF-27]** For Origins add a button so that you can increase the traveller count
 
 #### ⚠️ Constraints Visualization
+
 - [ ] **[TF-15]** Add visual indicators for **budget constraints** (e.g., color-coded cost indicators, warnings when exceeding limits)
 - [ ] **[TF-16]** Add visual indicators for **schedule constraints** (e.g., chronological timelines, date conflicts, overlapping transits)
 
 #### 🖱️ Overall Interactions
+
 - [ ] **[TF-17]** Build drag-and-drop node editing/reordering mechanics
 - [ ] **[TF-18]** Implement premium micro-animations (hover transitions, active states, loading indicators)
-- [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together. 
+- [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together.
 - [x] **[TF-31]** Review and audit `OriginCityCard` styling, dynamic timezone, and inline traveler adjustments
 - [ ] **[TF-32]** Review and audit `CityHubCard` date range timezone formatting
 - [ ] **[TF-33]** Review and audit `ItineraryEventCard` timeline item event formatting
@@ -66,7 +73,8 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ---
 
 ### 🔌 4. Affiliate Integrations
-*Focuses on integrating external ticketing, booking, and search APIs to serve as grounding information for Gemini.*
+
+_Focuses on integrating external ticketing, booking, and search APIs to serve as grounding information for Gemini._
 
 - [ ] **[TF-19]** Set up adapter for travel/booking APIs (e.g., Tiqets API client helper)
 - [ ] **[TF-20]** Build standard normalization layer to map affiliate API data schemas to our internal Suggestion schema
@@ -76,7 +84,8 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 ---
 
 ## 💡 Inbox / Future Ideas
-*Jot down raw thoughts, user feedback, and future feature expansions here before triaging them into the sections above.*
+
+_Jot down raw thoughts, user feedback, and future feature expansions here before triaging them into the sections above._
 
 - [ ] **[TF-23]** Enable multi-user collaborative editing of the same trip flow in real time
 - [ ] **[TF-24]** Add offline support for viewing and editing saved trip flows

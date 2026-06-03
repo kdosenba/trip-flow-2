@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { TargetDateRange, TargetDateRangeSchema } from "../../types/schema";
-import { Clock, Calendar, Edit2, Check, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import {
+  Clock,
+  Calendar,
+  Edit2,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+} from "lucide-react";
 import { DateTimeFormatter } from "../../lib/utils/date";
 import { useTripFlowStore } from "../../store";
 
@@ -9,20 +17,30 @@ interface TargetDateRangeDashboardProps {
   onUpdate: (data: TargetDateRange) => void;
 }
 
-export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> = ({
-  data,
-  onUpdate,
-}) => {
-  const timezone = useTripFlowStore((state) => state.graph?.clientContext.timezone);
+export const TargetDateRangeDashboard: React.FC<
+  TargetDateRangeDashboardProps
+> = ({ data, onUpdate }) => {
+  const timezone = useTripFlowStore(
+    (state) => state.graph?.clientContext.timezone,
+  );
 
   // Local edit states
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Resolve target date values
   const isRangeModeInitial = "range" in data.target;
-  const targetStartInitial = isRangeModeInitial && "range" in data.target ? data.target.range.start : "2026-06-10";
-  const targetEndInitial = isRangeModeInitial && "range" in data.target ? data.target.range.end : "2026-06-18";
-  const targetDateInitial = !isRangeModeInitial && "date" in data.target ? data.target.date : "2026-06-10";
+  const targetStartInitial =
+    isRangeModeInitial && "range" in data.target
+      ? data.target.range.start
+      : "2026-06-10";
+  const targetEndInitial =
+    isRangeModeInitial && "range" in data.target
+      ? data.target.range.end
+      : "2026-06-18";
+  const targetDateInitial =
+    !isRangeModeInitial && "date" in data.target
+      ? data.target.date
+      : "2026-06-10";
 
   const [startInput, setStartInput] = useState(targetStartInitial);
   const [endInput, setEndInput] = useState(targetEndInitial);
@@ -42,7 +60,7 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
           data.target.range.start,
           data.target.range.end,
           timezone,
-          { month: "short", day: "numeric" }
+          { month: "short", day: "numeric" },
         );
       } catch {
         return `${data.target.range.start} - ${data.target.range.end}`;
@@ -50,7 +68,10 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
     }
     if ("date" in data.target) {
       try {
-        return DateTimeFormatter.format(data.target.date, timezone, { month: "short", day: "numeric" });
+        return DateTimeFormatter.format(data.target.date, timezone, {
+          month: "short",
+          day: "numeric",
+        });
       } catch {
         return data.target.date;
       }
@@ -63,11 +84,20 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
     if (!data.actual?.start) return "Flexible";
     try {
       const formatOption = { month: "short", day: "numeric" } as const;
-      
+
       if (data.actual.end) {
-        return DateTimeFormatter.formatRange(data.actual.start, data.actual.end, timezone, formatOption);
+        return DateTimeFormatter.formatRange(
+          data.actual.start,
+          data.actual.end,
+          timezone,
+          formatOption,
+        );
       }
-      return DateTimeFormatter.format(data.actual.start, timezone, formatOption);
+      return DateTimeFormatter.format(
+        data.actual.start,
+        timezone,
+        formatOption,
+      );
     } catch {
       return data.actual.start;
     }
@@ -98,18 +128,22 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
     const payload = {
       target: targetPayload,
       context: contextInput || undefined,
-      actual: data.actual // Actual remains unchanged (calculated by backend/store)
+      actual: data.actual, // Actual remains unchanged (calculated by backend/store)
     };
 
     try {
       const parsed = TargetDateRangeSchema.parse(payload);
       onUpdate(parsed);
       setIsEditing(false);
-    } catch (err: any) {
-      if (err.errors && err.errors.length > 0) {
-        setValidationError(err.errors[0].message);
+    } catch (err) {
+      const zError = err as {
+        errors?: Array<{ message: string }>;
+        message: string;
+      };
+      if (zError.errors && zError.errors.length > 0 && zError.errors[0]) {
+        setValidationError(zError.errors[0].message);
       } else {
-        setValidationError(err.message);
+        setValidationError(zError.message);
       }
     }
   };
@@ -117,98 +151,85 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
   const actualDays = getActualDays();
 
   return (
-    <div className="dashboard-widget date-dashboard" style={{ maxWidth: "220px", padding: "1.25rem" }}>
-      
+    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
+      <div className="absolute top-0 left-0 h-indicator w-full bg-origin-color shadow-glow-origin" />
+
       {/* TARGET ROW */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", position: "relative" }}>
-        <div className="icon-circle" style={{
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0
-        }}>
-          <Clock size={16} style={{ color: "var(--text-primary)" }} />
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+          <Clock size={16} className="text-text-primary" />
         </div>
-        
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+
+        <div className="flex-1">
+          <div className="text-super-small font-bold tracking-wider text-text-muted">
             TARGET
           </div>
-          
+
           {isEditing ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: "flex", gap: "4px" }}>
-                <button 
-                  type="button" 
-                  className={`toggle-btn ${isRange ? "active" : ""}`}
-                  style={{ padding: "2px 4px", fontSize: "0.6rem" }}
+            <div
+              className="mt-1 flex flex-col gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mt-1 flex rounded-sm border border-border-color bg-black/30 p-0.5">
+                <button
+                  type="button"
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 ${
+                    isRange
+                      ? "bg-white/10 text-text-primary"
+                      : "text-text-muted"
+                  }`}
                   onClick={() => setIsRange(true)}
                 >
                   Range
                 </button>
-                <button 
-                  type="button" 
-                  className={`toggle-btn ${!isRange ? "active" : ""}`}
-                  style={{ padding: "2px 4px", fontSize: "0.6rem" }}
+                <button
+                  type="button"
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 ${
+                    !isRange
+                      ? "bg-white/10 text-text-primary"
+                      : "text-text-muted"
+                  }`}
                   onClick={() => setIsRange(false)}
                 >
                   Date
                 </button>
               </div>
-              
+
               {isRange ? (
-                <div style={{ display: "flex", gap: "2px" }}>
-                  <input 
-                    type="date" 
-                    className="widget-input" 
-                    style={{ padding: "2px", fontSize: "0.7rem", height: "18px" }}
+                <div className="flex gap-0.5">
+                  <input
+                    type="date"
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
                     value={startInput}
                     onChange={(e) => setStartInput(e.target.value)}
                   />
-                  <input 
-                    type="date" 
-                    className="widget-input" 
-                    style={{ padding: "2px", fontSize: "0.7rem", height: "18px" }}
+                  <input
+                    type="date"
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
                     value={endInput}
                     onChange={(e) => setEndInput(e.target.value)}
                   />
                 </div>
               ) : (
-                <input 
-                  type="date" 
-                  className="widget-input" 
-                  style={{ padding: "2px", fontSize: "0.7rem", height: "18px" }}
+                <input
+                  type="date"
+                  className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
                 />
               )}
             </div>
           ) : (
-            <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", marginTop: "2px" }}>
+            <div className="mt-0.5 text-xs-dense font-bold text-text-primary">
               {getTargetDisplay()}
             </div>
           )}
         </div>
 
         {/* Edit Button */}
-        <button 
+        <button
           type="button"
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            padding: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginLeft: "auto",
-            transition: "var(--transition-smooth)"
-          }}
+          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300"
           onClick={(e) => {
             e.stopPropagation();
             if (isEditing) {
@@ -219,85 +240,55 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
           }}
         >
           {isEditing ? (
-            <Check size={14} style={{ color: "var(--budget-safe-color)" }} />
+            <Check size={14} className="text-budget-safe" />
           ) : (
-            <Edit2 size={12} className="edit-pencil-icon" />
+            <Edit2
+              size={12}
+              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100"
+            />
           )}
         </button>
       </div>
 
       {/* Validation Error Feedback */}
       {validationError && (
-        <div className="widget-error" style={{ fontSize: "0.7rem", padding: "4px 8px", marginTop: "0.5rem" }}>
-          <AlertTriangle size={10} style={{ marginRight: "4px" }} />
+        <div className="mt-2 flex items-center rounded-sm border border-red-500/25 bg-red-500/10 px-2 py-1 text-xxs text-red-300">
+          <AlertTriangle size={10} className="mr-1 shrink-0" />
           <span>{validationError}</span>
         </div>
       )}
 
       {/* DIVIDER */}
-      <div className="widget-divider" style={{ margin: "1rem 0" }} />
+      <div className="my-4 border-t border-border-color" />
 
       {/* ACTUAL ROW */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", position: "relative" }}>
-        <div className="icon-circle" style={{
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0
-        }}>
-          <Calendar size={16} style={{ color: "var(--text-primary)" }} />
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+          <Calendar size={16} className="text-text-primary" />
         </div>
-        
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+
+        <div className="flex-1">
+          <div className="text-super-small font-bold tracking-wider text-text-muted">
             ACTUAL
           </div>
-          <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", marginTop: "2px" }}>
+          <div className="mt-0.5 text-xs-dense font-bold text-text-primary">
             {getActualDisplay()}
           </div>
         </div>
 
         {/* Days count tag */}
         {actualDays !== null && (
-          <span style={{
-            fontSize: "0.65rem",
-            fontWeight: 800,
-            color: "var(--text-primary)",
-            background: "rgba(255,255,255,0.08)",
-            padding: "2px 6px",
-            borderRadius: "4px",
-            marginLeft: "auto"
-          }}>
+          <span className="ml-auto shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
             {actualDays} DAYS
           </span>
         )}
       </div>
 
       {/* EXPANDABLE BREAKDOWN SECTION */}
-      <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column" }}>
+      <div className="mt-4 flex flex-col">
         <button
           type="button"
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--text-secondary)",
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.25rem",
-            padding: "4px 0",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            width: "100%",
-            textAlign: "center"
-          }}
+          className="flex w-full cursor-pointer items-center justify-center gap-1 border-none bg-transparent py-1 text-center text-xxs font-bold tracking-wider text-text-secondary uppercase transition-all duration-300 hover:text-text-primary"
           onClick={() => setShowBreakdown(!showBreakdown)}
         >
           {showBreakdown ? (
@@ -312,23 +303,14 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
         </button>
 
         {showBreakdown && (
-          <div style={{ 
-            marginTop: "0.75rem", 
-            background: "rgba(0, 0, 0, 0.15)", 
-            padding: "0.6rem", 
-            borderRadius: "6px",
-            fontSize: "0.7rem",
-            color: "var(--text-secondary)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem"
-          }}>
+          <div className="mt-3 flex flex-col gap-2 rounded-md bg-black/15 p-2.5 text-xxs text-text-secondary">
             {isEditing ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span className="input-label" style={{ fontSize: "0.6rem" }}>Edit travel context notes</span>
-                <textarea 
-                  className="widget-textarea"
-                  style={{ minHeight: "45px", padding: "4px", fontSize: "0.7rem" }}
+              <div className="flex flex-col gap-1">
+                <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
+                  Edit travel context notes
+                </span>
+                <textarea
+                  className="box-border h-11 w-full resize-y rounded-sm border border-border-color bg-black/35 p-1 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
                   value={contextInput}
                   onChange={(e) => setContextInput(e.target.value)}
                   placeholder="Notes..."
@@ -336,14 +318,28 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
               </div>
             ) : (
               data.context && (
-                <div style={{ lineHeight: "1.4" }}>
+                <div className="leading-normal">
                   <strong>Context:</strong> {data.context}
                 </div>
               )
             )}
-            
-            <div style={{ borderTop: "1px dashed var(--border-color)", paddingTop: "0.4rem" }}>
-              <strong>Date validation:</strong> actual schedule starts on {data.actual?.start ? DateTimeFormatter.format(data.actual.start, timezone, { month: "short", day: "numeric" }) : "TBD"} and ends on {data.actual?.end ? DateTimeFormatter.format(data.actual.end, timezone, { month: "short", day: "numeric" }) : "TBD"}.
+
+            <div className="border-t border-dashed border-border-color pt-2">
+              <strong>Date validation:</strong> actual schedule starts on{" "}
+              {data.actual?.start
+                ? DateTimeFormatter.format(data.actual.start, timezone, {
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "TBD"}{" "}
+              and ends on{" "}
+              {data.actual?.end
+                ? DateTimeFormatter.format(data.actual.end, timezone, {
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "TBD"}
+              .
             </div>
           </div>
         )}

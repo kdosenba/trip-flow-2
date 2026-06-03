@@ -25,10 +25,12 @@ export const SeaDirectPreview: React.FC = () => {
           zoom: 4,
           projection: { type: "globe" },
           attributionControl: false,
-          interactive: false
+          interactive: false,
         };
 
-        const mapInstance = new maplibreglModule.Map(options as unknown as maplibregl.MapOptions);
+        const mapInstance = new maplibreglModule.Map(
+          options as unknown as maplibregl.MapOptions,
+        );
         map = mapInstance;
 
         mapInstance.on("load", () => {
@@ -41,9 +43,9 @@ export const SeaDirectPreview: React.FC = () => {
               properties: {},
               geometry: {
                 type: "LineString",
-                coordinates: seaPoints
-              }
-            }
+                coordinates: seaPoints,
+              },
+            },
           });
 
           // Markers
@@ -62,16 +64,15 @@ export const SeaDirectPreview: React.FC = () => {
             source: "sea-route",
             layout: {
               "line-cap": "round",
-              "line-join": "round"
+              "line-join": "round",
             },
             paint: {
               "line-color": "#10b981",
               "line-width": 3,
-              "line-dasharray": [2, 4]
-            }
+              "line-dasharray": [2, 4],
+            },
           });
         });
-
       } catch (err) {
         console.error("SeaDirectPreview MapLibre load failure:", err);
       }
@@ -89,22 +90,29 @@ export const SeaDirectPreview: React.FC = () => {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "200px" }}>
-      <div 
-        ref={containerRef} 
-        style={{ width: "100%", height: "100%", borderRadius: "8px", overflow: "hidden" }} 
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "8px",
+          overflow: "hidden",
+        }}
       />
-      <div style={{
-        position: "absolute",
-        bottom: "8px",
-        left: "8px",
-        background: "rgba(13, 14, 20, 0.8)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "4px",
-        padding: "2px 6px",
-        fontSize: "0.65rem",
-        fontWeight: 700,
-        color: "#10b981"
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "8px",
+          left: "8px",
+          background: "rgba(13, 14, 20, 0.8)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "4px",
+          padding: "2px 6px",
+          fontSize: "0.65rem",
+          fontWeight: 700,
+          color: "#10b981",
+        }}
+      >
         SEA DIRECT (DIRECT)
       </div>
     </div>

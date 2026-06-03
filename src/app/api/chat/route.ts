@@ -7,15 +7,24 @@ export async function POST(req: NextRequest) {
     const { prompt, graph } = await req.json();
 
     if (!prompt) {
-      return NextResponse.json({ error: "Missing prompt field in request body." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing prompt field in request body." },
+        { status: 400 },
+      );
     }
     if (!graph) {
-      return NextResponse.json({ error: "Missing graph field in request body." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing graph field in request body." },
+        { status: 400 },
+      );
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API key is not configured on the server." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Gemini API key is not configured on the server." },
+        { status: 500 },
+      );
     }
 
     const systemInstruction = `You are the core AI planner for Trip Flow, a dynamic itinerary graph builder.
@@ -53,19 +62,19 @@ All tool functions are write-only graph mutators that execute state updates and 
           role: "user",
           parts: [
             {
-              text: `Current TripFlowGraph:\n${JSON.stringify(graph)}\n\nRequest: ${prompt}`
-            }
-          ]
-        }
+              text: `Current TripFlowGraph:\n${JSON.stringify(graph)}\n\nRequest: ${prompt}`,
+            },
+          ],
+        },
       ],
       systemInstruction: {
         parts: [
           {
-            text: systemInstruction
-          }
-        ]
+            text: systemInstruction,
+          },
+        ],
       },
-      tools: GEMINI_TOOLS
+      tools: GEMINI_TOOLS,
     };
 
     const response = await fetch(
@@ -73,23 +82,34 @@ All tool functions are write-only graph mutators that execute state updates and 
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
-      }
+        body: JSON.stringify(payload),
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API HTTP Error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Gemini API HTTP Error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const resData = await response.json();
 
     const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parts = resData.candidates?.[0]?.content?.parts || [];
+    interface GeminiPart {
+      text?: string;
+      functionCall?: {
+        name: string;
+        args: Record<string, unknown>;
+      };
+    }
+
+    const parts = (resData.candidates?.[0]?.content?.parts ||
+      []) as GeminiPart[];
     const functionCalls = parts
-      .filter((p: any) => p.functionCall)
-      .map((p: any) => p.functionCall);
+      .filter((p) => p.functionCall)
+      .map((p) => p.functionCall!);
 
     let updatedGraph = graph;
     const executedToolsList = [];
@@ -121,10 +141,11 @@ All tool functions are write-only graph mutators that execute state updates and 
       graph: updatedGraph,
       executedTools: executedToolsList,
       rawSent: payload,
-      rawReceived: resData
+      rawReceived: resData,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error in /api/chat handler:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

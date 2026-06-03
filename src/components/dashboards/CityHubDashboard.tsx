@@ -12,72 +12,102 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
   cityHub,
 }) => {
   const graph = useTripFlowStore((state) => state.graph);
-  const updateTravelerCount = useTripFlowStore((state) => state.updateTravelerCount);
+  const updateTravelerCount = useTripFlowStore(
+    (state) => state.updateTravelerCount,
+  );
 
   if (!graph) return null;
 
   // Calculate Itinerary details timeline items dynamically from graph
-  const timelineItems = cityHub.itinerary.map(item => {
+  const timelineItems = cityHub.itinerary.map((item) => {
     const loc = graph.Locations[item.LocationId];
     const label = loc ? loc.name : "Unknown Event";
-    const formatted = DateTimeFormatter.format(item.startTime, cityHub.timezone);
-    
+    const formatted = DateTimeFormatter.format(
+      item.startTime,
+      cityHub.timezone,
+    );
+
     return {
       label,
       subLabel: formatted,
-      cost: loc?.price?.actualCost
+      cost: loc?.price?.actualCost,
     };
   });
 
   return (
-    <div className="dashboard-widget hub-dashboard" style={{ maxWidth: "220px" }}>
-      <div className="widget-header">
-        <div className="widget-title-group">
-          <Navigation className="widget-icon" size={18} style={{ color: "var(--hub-color)" }} />
-          <h3 className="widget-title">Hub Details</h3>
+    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
+      <div className="absolute top-0 left-0 h-indicator w-full bg-hub-color shadow-glow-hub" />
+
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Navigation className="shrink-0 text-hub-color" size={18} />
+          <h3 className="m-0 text-xs-dense font-extrabold tracking-wider text-text-primary uppercase">
+            Hub Details
+          </h3>
         </div>
-        <span className="widget-badge badge-hub">Sidebar Widget</span>
+        <span className="rounded-sm border border-hub-color/20 bg-hub-color/10 px-1.5 py-0.5 text-super-small font-bold tracking-wider text-hub-color uppercase">
+          Sidebar Widget
+        </span>
       </div>
 
-      <p className="widget-desc">Detailed itinerary view for destination city.</p>
+      <p className="mt-0 mb-3.5 text-xs-dense leading-relaxed text-text-muted">
+        Detailed itinerary view for destination city.
+      </p>
 
       {/* City Hub Title */}
-      <div style={{ marginBottom: "1rem" }}>
-        <h4 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>{cityHub.cityName}</h4>
-        <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{cityHub.country}</span>
+      <div className="mb-4">
+        <h4 className="m-0 text-sm font-extrabold text-text-primary">
+          {cityHub.cityName}
+        </h4>
+        <span className="text-xs-dense text-text-secondary">
+          {cityHub.country}
+        </span>
       </div>
 
       {/* Details list */}
-      <div className="card-details" style={{ fontSize: "0.8rem", gap: "0.4rem" }}>
-        <div className="detail-row" style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <MapPin size={12} style={{ color: "var(--text-muted)" }} />
-          <span>{cityHub.coordinates.lat.toFixed(4)}°, {cityHub.coordinates.lng.toFixed(4)}°</span>
+      <div className="mb-3 flex flex-col gap-1 text-xs-dense text-text-secondary">
+        <div className="flex items-center gap-1.5">
+          <MapPin size={12} className="shrink-0 text-text-muted" />
+          <span>
+            {cityHub.coordinates.lat.toFixed(4)}°,{" "}
+            {cityHub.coordinates.lng.toFixed(4)}°
+          </span>
         </div>
-        
-        <div className="detail-row" style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <Users size={12} style={{ color: "var(--text-muted)" }} />
-          <span>{cityHub.travelerCount} Traveler{cityHub.travelerCount > 1 ? "s" : ""}</span>
+
+        <div className="flex items-center gap-1.5">
+          <Users size={12} className="shrink-0 text-text-muted" />
+          <span>
+            {cityHub.travelerCount} Traveler
+            {cityHub.travelerCount > 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 
       {/* Traveler Count Incrementor */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.75rem" }}>
-        <span className="input-label" style={{ fontSize: "0.65rem" }}>Traveler count</span>
-        <div className="traveler-control" style={{ padding: "2px 6px" }}>
-          <button 
-            className="traveler-btn" 
-            style={{ width: "20px", height: "20px", fontSize: "0.8rem" }}
-            onClick={() => updateTravelerCount(cityHub.id, Math.max(1, cityHub.travelerCount - 1))}
+      <div className="mt-3 flex items-center justify-between border-t border-border-color pt-3">
+        <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
+          Traveler count
+        </span>
+        <div className="inline-flex items-center gap-1.5 rounded bg-black/30 p-1">
+          <button
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+            onClick={() =>
+              updateTravelerCount(
+                cityHub.id,
+                Math.max(1, cityHub.travelerCount - 1),
+              )
+            }
           >
             -
           </button>
-          <span className="traveler-count" style={{ fontSize: "0.8rem", minWidth: "12px" }}>
+          <span className="min-w-3 text-center text-xs-dense font-bold text-text-primary">
             {cityHub.travelerCount}
           </span>
-          <button 
-            className="traveler-btn" 
-            style={{ width: "20px", height: "20px", fontSize: "0.8rem" }}
-            onClick={() => updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)}
+          <button
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+            onClick={() =>
+              updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)
+            }
           >
             +
           </button>
@@ -87,21 +117,28 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
       {/* Itinerary Details list */}
       {timelineItems.length > 0 && (
         <>
-          <div className="widget-divider" style={{ margin: "1rem 0" }} />
-          <h4 className="widget-section-title" style={{ fontSize: "0.8rem", margin: "0 0 0.5rem 0" }}>
-            <Calendar size={12} style={{ color: "var(--event-color)", marginRight: "4px" }} /> 
+          <div className="my-4 border-t border-border-color" />
+          <h4 className="mb-2 flex items-center gap-1 text-super-small font-extrabold tracking-wider text-text-muted uppercase">
+            <Calendar size={12} className="text-event-color" />
             ITINERARY DETAILS
           </h4>
-          <div className="hub-itinerary-timeline" style={{ fontSize: "0.75rem", paddingLeft: "0.5rem" }}>
+          <div className="relative mt-2 flex flex-col gap-2 border-l border-border-color pl-2.5">
             {timelineItems.map((item, idx) => (
-              <div key={idx} className="timeline-item" style={{ marginBottom: "0.5rem" }}>
-                <span className="timeline-dot" style={{ left: "-12px", width: "6px", height: "6px", top: "5px" }} />
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontWeight: 600 }}>{item.label}</span>
-                  <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>{item.subLabel}</span>
+              <div
+                key={idx}
+                className="relative flex items-start justify-between"
+              >
+                <span className="absolute top-1.5 -left-3 h-1.5 w-1.5 rounded-full border border-bg-dark bg-hub-color" />
+                <div className="flex flex-col">
+                  <span className="font-bold text-text-primary">
+                    {item.label}
+                  </span>
+                  <span className="mt-0.5 text-super-small text-text-muted">
+                    {item.subLabel}
+                  </span>
                 </div>
                 {item.cost !== undefined && (
-                  <span style={{ marginLeft: "auto", fontWeight: 700, color: "var(--text-primary)" }}>
+                  <span className="ml-auto text-xs-dense font-bold text-text-primary">
                     ${item.cost}
                   </span>
                 )}
@@ -112,13 +149,15 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
       )}
 
       {/* Connective nodes */}
-      <div className="widget-divider" style={{ margin: "1rem 0" }} />
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
-          <Compass size={10} /> Arrival: {cityHub.arrivalNodeId ? "CDG" : "None"}
+      <div className="my-4 border-t border-border-color" />
+      <div className="flex justify-between text-super-small font-semibold text-text-muted">
+        <span className="flex items-center gap-1">
+          <Compass size={10} /> Arrival:{" "}
+          {cityHub.arrivalNodeId ? "CDG" : "None"}
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: "2px" }}>
-          <Compass size={10} /> Departure: {cityHub.departureNodeId ? "CDG" : "None"}
+        <span className="flex items-center gap-1">
+          <Compass size={10} /> Departure:{" "}
+          {cityHub.departureNodeId ? "CDG" : "None"}
         </span>
       </div>
     </div>

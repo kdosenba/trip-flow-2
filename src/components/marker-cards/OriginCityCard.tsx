@@ -17,7 +17,9 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
   onClick,
 }) => {
   const graph = useTripFlowStore((state) => state.graph);
-  const updateTravelerCount = useTripFlowStore((state) => state.updateTravelerCount);
+  const updateTravelerCount = useTripFlowStore(
+    (state) => state.updateTravelerCount,
+  );
 
   if (!graph) return null;
 
@@ -25,73 +27,86 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
 
   // Find departure transit edge (outgoing from origin hub)
   const departingTransit = Object.values(graph.Transits).find(
-    (t) => t.fromCityId === originCity.id
+    (t) => t.fromCityId === originCity.id,
   );
   const firstSegment = departingTransit?.segments[0];
   const departureTime = firstSegment?.startTime;
-  const departureLoc = firstSegment ? graph.Locations[firstSegment.fromLocationId] : undefined;
+  const departureLoc = firstSegment
+    ? graph.Locations[firstSegment.fromLocationId]
+    : undefined;
   const departureIata = departureLoc?.iata ? `${departureLoc.iata} ` : "";
 
   // Find return transit edge (returning to origin hub)
   const returningTransit = Object.values(graph.Transits).find(
-    (t) => t.toCityId === originCity.id
+    (t) => t.toCityId === originCity.id,
   );
   const returningSegments = returningTransit?.segments;
-  const lastSegment = returningSegments && returningSegments.length > 0
-    ? returningSegments[returningSegments.length - 1]
-    : undefined;
+  const lastSegment =
+    returningSegments && returningSegments.length > 0
+      ? returningSegments[returningSegments.length - 1]
+      : undefined;
   const returnTime = lastSegment?.endTime;
-  const returnLoc = lastSegment ? graph.Locations[lastSegment.toLocationId] : undefined;
+  const returnLoc = lastSegment
+    ? graph.Locations[lastSegment.toLocationId]
+    : undefined;
   const returnIata = returnLoc?.iata ? `${returnLoc.iata} ` : "";
 
   return (
     <div
-      className={`tf-card ${isActive ? "active" : ""}`}
-      style={{
-        "--accent-color": STYLE_TOKENS.colors.origin,
-        "--accent-glow": STYLE_TOKENS.glows.origin,
-        "--accent-border-hover": "rgba(139, 92, 246, 0.4)",
-        minHeight: "unset", // Let it resize dynamically based on content density
-        width: "fit-content",
-        maxWidth: "200px",
-        padding: "0.4rem 0.6rem",
-        gap: "0.2rem",
-        display: "inline-flex",
-        flexDirection: "column",
-        justifyContent: "flex-start",
-      } as React.CSSProperties}
+      className={`relative inline-flex w-fit max-w-card-max cursor-pointer flex-col justify-start gap-1 rounded-lg border bg-bg-card p-1.5 shadow-glass transition-all duration-300 ${
+        isActive
+          ? "border-origin-color shadow-glow-origin"
+          : "border-border-color hover:-translate-y-0.5 hover:border-border-hover"
+      }`}
       onClick={onClick}
     >
       {/* Title section with Home icon & City Name */}
-      <div className="card-header" style={{ marginBottom: 0, display: "flex", gap: "0.35rem", alignItems: "center", borderBottom: "none", paddingBottom: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--origin-color)", flexShrink: 0 }}>
+      <div className="mb-0 flex items-center gap-1 border-b-0 pb-0">
+        <div className="flex shrink-0 items-center justify-center text-origin-color">
           <HomeIcon />
         </div>
-        <div className="card-title-group" style={{ flexGrow: 1, minWidth: 0 }}>
-          <h3 className="card-name" style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, whiteSpace: "normal" }}>{originCity.cityName}</h3>
+        <div className="min-w-0 grow">
+          <h3
+            className="m-0 text-sm-dense font-bold text-text-primary normal-case"
+            style={{ whiteSpace: "normal" }}
+          >
+            {originCity.cityName}
+          </h3>
         </div>
       </div>
 
       {/* Details pane (Inline traveler controls & Dates) */}
-      <div className="card-details" style={{ margin: 0, gap: "0.2rem" }}>
+      <div className="m-0 flex flex-col gap-1 text-xs-dense text-text-secondary">
         {/* Travelers Inline Row */}
-        <div className="detail-row" style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <div className="flex items-center gap-1.5">
           {travelerCount > 1 ? <UsersIcon /> : <UserIcon />}
-          <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>traveler{travelerCount > 1 ? "s" : ""}</span>
-          <div className="traveler-control" onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "1px 4px", background: "rgba(0, 0, 0, 0.3)" }}>
+          <span className="text-xs-dense text-text-secondary">
+            traveler{travelerCount > 1 ? "s" : ""}
+          </span>
+          <div
+            className="inline-flex items-center gap-1 rounded bg-black/30 p-0.5"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              className="traveler-btn"
-              style={{ width: "16px", height: "16px", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center" }}
-              onClick={() => updateTravelerCount(originCity.id, Math.max(1, travelerCount - 1))}
+              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+              onClick={() =>
+                updateTravelerCount(
+                  originCity.id,
+                  Math.max(1, travelerCount - 1),
+                )
+              }
               title="Decrease Travelers"
             >
               -
             </button>
-            <span className="traveler-count" style={{ fontSize: "0.75rem", minWidth: "10px", textAlign: "center" }}>{travelerCount}</span>
+            <span className="min-w-2.5 text-center text-xs-dense text-text-primary">
+              {travelerCount}
+            </span>
             <button
-              className="traveler-btn"
-              style={{ width: "16px", height: "16px", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center" }}
-              onClick={() => updateTravelerCount(originCity.id, travelerCount + 1)}
+              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+              onClick={() =>
+                updateTravelerCount(originCity.id, travelerCount + 1)
+              }
               title="Increase Travelers"
             >
               +
@@ -101,20 +116,26 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
 
         {/* Departure Details (Only if specified) */}
         {departureTime && (
-          <div className="detail-row" style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.75rem" }}>
-            <span style={{ fontWeight: 700, color: "var(--origin-color)", minWidth: "48px" }}>Depart:</span>
-            <span style={{ color: "var(--text-primary)" }}>
-              {departureIata}{DateTimeFormatter.format(departureTime, originCity.timezone)}
+          <div className="flex items-center gap-1">
+            <span className="min-w-12 font-bold text-origin-color">
+              Depart:
+            </span>
+            <span className="text-text-primary">
+              {departureIata}
+              {DateTimeFormatter.format(departureTime, originCity.timezone)}
             </span>
           </div>
         )}
 
         {/* Return/Arrival Details (Only if specified) */}
         {returnTime && (
-          <div className="detail-row" style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.75rem" }}>
-            <span style={{ fontWeight: 700, color: "var(--origin-color)", minWidth: "48px" }}>Return:</span>
-            <span style={{ color: "var(--text-primary)" }}>
-              {returnIata}{DateTimeFormatter.format(returnTime, originCity.timezone)}
+          <div className="flex items-center gap-1">
+            <span className="min-w-12 font-bold text-origin-color">
+              Return:
+            </span>
+            <span className="text-text-primary">
+              {returnIata}
+              {DateTimeFormatter.format(returnTime, originCity.timezone)}
             </span>
           </div>
         )}

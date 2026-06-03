@@ -5,7 +5,7 @@
 export function getGeodesicPath(
   start: [number, number],
   end: [number, number],
-  numPoints: number = 50
+  numPoints: number = 50,
 ): [number, number][] {
   const lon1 = (start[0] * Math.PI) / 180;
   const lat1 = (start[1] * Math.PI) / 180;
@@ -17,8 +17,8 @@ export function getGeodesicPath(
     Math.asin(
       Math.sqrt(
         Math.sin((lat1 - lat2) / 2) ** 2 +
-          Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon1 - lon2) / 2) ** 2
-      )
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon1 - lon2) / 2) ** 2,
+      ),
     );
 
   const path: [number, number][] = [];
@@ -30,8 +30,10 @@ export function getGeodesicPath(
     }
     const A = Math.sin((1 - f) * d) / Math.sin(d);
     const B = Math.sin(f * d) / Math.sin(d);
-    const x = A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
-    const y = A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
+    const x =
+      A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
+    const y =
+      A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
     const z = A * Math.sin(lat1) + B * Math.sin(lat2);
 
     const lat = Math.atan2(z, Math.sqrt(x ** 2 + y ** 2));

@@ -25,13 +25,13 @@ export class DateTimeFormatter {
     isoString: string,
     timezone?: string | undefined,
     options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: false,
     },
-    overrideLocale?: string | undefined
+    overrideLocale?: string | undefined,
   ): string {
     const locale = DateTimeFormatter.getLocale(overrideLocale);
     try {
@@ -41,16 +41,19 @@ export class DateTimeFormatter {
       }
       return new Intl.DateTimeFormat(locale, {
         ...options,
-        timeZone: timezone || 'UTC',
+        timeZone: timezone || "UTC",
       }).format(date);
     } catch (err) {
-      console.warn(`DateTimeFormatter failed for value "${isoString}" with timezone "${timezone}" and locale "${locale}":`, err);
+      console.warn(
+        `DateTimeFormatter failed for value "${isoString}" with timezone "${timezone}" and locale "${locale}":`,
+        err,
+      );
       // Fallback to UTC if timezone is invalid
       try {
         const date = new Date(isoString);
-        return new Intl.DateTimeFormat('en-US', {
+        return new Intl.DateTimeFormat("en-US", {
           ...options,
-          timeZone: 'UTC',
+          timeZone: "UTC",
         }).format(date);
       } catch {
         return isoString;
@@ -66,13 +69,23 @@ export class DateTimeFormatter {
     endIso: string,
     timezone?: string | undefined,
     options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
+      month: "short",
+      day: "numeric",
     },
-    overrideLocale?: string | undefined
+    overrideLocale?: string | undefined,
   ): string {
-    const startStr = DateTimeFormatter.format(startIso, timezone, options, overrideLocale);
-    const endStr = DateTimeFormatter.format(endIso, timezone, options, overrideLocale);
+    const startStr = DateTimeFormatter.format(
+      startIso,
+      timezone,
+      options,
+      overrideLocale,
+    );
+    const endStr = DateTimeFormatter.format(
+      endIso,
+      timezone,
+      options,
+      overrideLocale,
+    );
     return `${startStr.toUpperCase()} - ${endStr.toUpperCase()}`;
   }
 }

@@ -32,7 +32,8 @@ export const zodToStandardJsonSchema = (schema: z.ZodTypeAny): any => {
       break;
     case "enum":
       type = "string";
-      enumValues = (currentSchema as any).options || Object.keys(currentDef.entries || {});
+      enumValues =
+        (currentSchema as any).options || Object.keys(currentDef.entries || {});
       break;
     case "object":
       type = "object";
@@ -65,8 +66,13 @@ export const AddCityHubSchema = z.object({
   cityName: z.string().describe("The name of the destination city, e.g. Paris"),
   country: z.string().describe("The country name, e.g. France"),
   region: z.string().optional().describe("The region or state name (optional)"),
-  type: z.enum(["ORIGIN", "HUB"]).describe("Whether this stop is the trip origin or a standard hub"),
-  travelerCount: z.number().optional().describe("The number of travelers (optional, default 1)"),
+  type: z
+    .enum(["ORIGIN", "HUB"])
+    .describe("Whether this stop is the trip origin or a standard hub"),
+  travelerCount: z
+    .number()
+    .optional()
+    .describe("The number of travelers (optional, default 1)"),
 });
 
 console.log(JSON.stringify(zodToStandardJsonSchema(AddCityHubSchema), null, 2));

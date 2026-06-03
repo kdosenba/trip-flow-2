@@ -1,63 +1,71 @@
 import React from "react";
-import { 
-  MapPin, 
-  Map, 
-  Calendar, 
-  DollarSign, 
-  Plane, 
-  Users, 
-  User, 
+import {
+  MapPin,
+  Map,
+  Calendar,
+  DollarSign,
+  Plane,
+  Users,
+  User,
   ArrowRight,
   TrendingUp,
   AlertTriangle,
   Clock,
-  Home
+  Home,
 } from "lucide-react";
 
 // Standard icon components with consistent styling classes
 export const HomeIcon = () => (
-  <Home className="detail-icon" size={14} strokeWidth={2} />
+  <Home className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 export const CoordinatesIcon = () => (
-  <MapPin className="detail-icon" size={14} strokeWidth={2} />
+  <MapPin className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const AddressIcon = () => (
-  <Map className="detail-icon" size={14} strokeWidth={2} />
+  <Map className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const CalendarIcon = () => (
-  <Calendar className="detail-icon" size={14} strokeWidth={2} />
+  <Calendar className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const DollarIcon = () => (
-  <DollarSign className="detail-icon" size={14} strokeWidth={2} />
+  <DollarSign className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const PlaneIcon = () => (
-  <Plane className="detail-icon" size={14} strokeWidth={2} style={{ transform: "rotate(45deg)" }} />
+  <Plane
+    className="shrink-0 rotate-45 text-text-muted"
+    size={14}
+    strokeWidth={2}
+  />
 );
 
 export const UserIcon = () => (
-  <User className="detail-icon" size={14} strokeWidth={2} />
+  <User className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const UsersIcon = () => (
-  <Users className="detail-icon" size={14} strokeWidth={2} />
+  <Users className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const ArrowRightIcon = () => (
-  <ArrowRight className="detail-icon" size={14} strokeWidth={2} />
+  <ArrowRight className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const TrendingUpIcon = () => (
-  <TrendingUp className="detail-icon" size={14} strokeWidth={2} />
+  <TrendingUp className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );
 
 export const AlertTriangleIcon = () => (
-  <AlertTriangle className="detail-icon" size={14} strokeWidth={2} />
+  <AlertTriangle
+    className="shrink-0 text-text-muted"
+    size={14}
+    strokeWidth={2}
+  />
 );
 
 export const ClockIcon = () => (
-  <Clock className="detail-icon" size={14} strokeWidth={2} />
+  <Clock className="shrink-0 text-text-muted" size={14} strokeWidth={2} />
 );

@@ -12,8 +12,26 @@ export interface GeocodingService {
   geocode: (query: string, language?: string) => Promise<GeocodeResult | null>;
 }
 
-export const constructAddressFromNominatim = (address: any): string => {
-  if (!address) return '';
+export interface NominatimAddress {
+  house_number?: string;
+  road?: string;
+  suburb?: string;
+  neighbourhood?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  municipality?: string;
+  state?: string;
+  region?: string;
+  county?: string;
+  postcode?: string;
+  country?: string;
+}
+
+export const constructAddressFromNominatim = (
+  address: NominatimAddress | null | undefined,
+): string => {
+  if (!address) return "";
   const parts: string[] = [];
 
   // 1. House number and road
@@ -31,7 +49,8 @@ export const constructAddressFromNominatim = (address: any): string => {
   }
 
   // 3. City / Town / Village
-  const city = address.city || address.town || address.village || address.municipality;
+  const city =
+    address.city || address.town || address.village || address.municipality;
   if (city) {
     parts.push(city);
   }
@@ -52,12 +71,18 @@ export const constructAddressFromNominatim = (address: any): string => {
     parts.push(address.country);
   }
 
-  return parts.join(', ');
+  return parts.join(", ");
 };
 
 export class NominatimGeocodingService implements GeocodingService {
-  async geocode(query: string, language?: string): Promise<GeocodeResult | null> {
-    const parts = query.split(',').map(p => p.trim()).filter(Boolean);
+  async geocode(
+    query: string,
+    language?: string,
+  ): Promise<GeocodeResult | null> {
+    const parts = query
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
     const queriesToTry: string[] = [query];
 
     if (parts.length >= 3) {
@@ -70,16 +95,23 @@ export class NominatimGeocodingService implements GeocodingService {
         // Try stripping city prefix if it exists in name (e.g. "Paris Charles de Gaulle Airport" -> "Charles de Gaulle Airport")
         let strippedName = name;
         if (name.toLowerCase().startsWith(city.toLowerCase())) {
-          strippedName = name.substring(city.length).replace(/^[,\-\s]+/, '').trim();
+          strippedName = name
+            .substring(city.length)
+            .replace(/^[,\-\s]+/, "")
+            .trim();
         }
 
         // Tier 2: Try without city constraint (original name)
-        const queryWithoutCity = region ? `${name}, ${region}, ${country}` : `${name}, ${country}`;
+        const queryWithoutCity = region
+          ? `${name}, ${region}, ${country}`
+          : `${name}, ${country}`;
         queriesToTry.push(queryWithoutCity);
 
         // Tier 3: Try without city constraint (stripped name)
         if (strippedName !== name) {
-          const queryStrippedWithoutCity = region ? `${strippedName}, ${region}, ${country}` : `${strippedName}, ${country}`;
+          const queryStrippedWithoutCity = region
+            ? `${strippedName}, ${region}, ${country}`
+            : `${strippedName}, ${country}`;
           queriesToTry.push(queryStrippedWithoutCity);
         }
 
@@ -90,7 +122,9 @@ export class NominatimGeocodingService implements GeocodingService {
         }
 
         // Tier 5: Fallback to city center
-        const queryCityCenter = region ? `${city}, ${region}, ${country}` : `${city}, ${country}`;
+        const queryCityCenter = region
+          ? `${city}, ${region}, ${country}`
+          : `${city}, ${country}`;
         queriesToTry.push(queryCityCenter);
       }
     } else if (parts.length === 2) {
@@ -102,28 +136,33 @@ export class NominatimGeocodingService implements GeocodingService {
     }
 
     // De-duplicate fallback queries while maintaining order
-    const uniqueQueries = queriesToTry.filter((q, idx) => queriesToTry.indexOf(q) === idx);
-    const cityCenterQuery = (parts.length >= 3 && uniqueQueries.length > 0) ? (uniqueQueries[uniqueQueries.length - 1] as string) : undefined;
+    const uniqueQueries = queriesToTry.filter(
+      (q, idx) => queriesToTry.indexOf(q) === idx,
+    );
+    const cityCenterQuery =
+      parts.length >= 3 && uniqueQueries.length > 0
+        ? (uniqueQueries[uniqueQueries.length - 1] as string)
+        : undefined;
 
     for (let i = 0; i < uniqueQueries.length; i++) {
       const q = uniqueQueries[i];
       if (!q) continue;
 
-      const isCityFallback = (q === cityCenterQuery);
+      const isCityFallback = q === cityCenterQuery;
 
       try {
         if (i > 0) {
           // Polite delay before fallback requests
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
 
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=1&extratags=1&namedetails=1`,
           {
             headers: {
-              'User-Agent': 'TripFlow-Planner/1.0',
+              "User-Agent": "TripFlow-Planner/1.0",
             },
-          }
+          },
         );
         if (!response.ok) continue;
         const data = await response.json();
@@ -136,27 +175,36 @@ export class NominatimGeocodingService implements GeocodingService {
 
         const addressObj = first.address || {};
         const country = addressObj.country;
-        const region = addressObj.state || addressObj.region || addressObj.county;
-        const address = constructAddressFromNominatim(addressObj) || first.display_name;
+        const region =
+          addressObj.state || addressObj.region || addressObj.county;
+        const address =
+          constructAddressFromNominatim(addressObj) || first.display_name;
 
         // Resolve name based on language context
         const namedetails = first.namedetails || {};
-        const split = language ? language.split('-') : [];
-        const baseLang = (split.length > 0 && split[0] ? split[0].toLowerCase() : 'en');
+        const split = language ? language.split("-") : [];
+        const baseLang =
+          split.length > 0 && split[0] ? split[0].toLowerCase() : "en";
 
-        let resolvedName = '';
+        let resolvedName = "";
         if (isCityFallback) {
           resolvedName = parts[0] || query;
         } else {
-          resolvedName = namedetails[`name:${baseLang}`] ||
+          resolvedName =
+            namedetails[`name:${baseLang}`] ||
             namedetails[`alt_name:${baseLang}`] ||
-            namedetails['name'] ||
+            namedetails["name"] ||
             first.name ||
             parts[0] ||
             query;
         }
 
-        const iata = namedetails && typeof namedetails.iata === 'string' && namedetails.iata.trim() ? namedetails.iata.trim().toUpperCase() : undefined;
+        const iata =
+          namedetails &&
+          typeof namedetails.iata === "string" &&
+          namedetails.iata.trim()
+            ? namedetails.iata.trim().toUpperCase()
+            : undefined;
 
         return {
           lat,
@@ -176,6 +224,6 @@ export class NominatimGeocodingService implements GeocodingService {
   }
 }
 
-let activeService: GeocodingService = new NominatimGeocodingService();
+const activeService: GeocodingService = new NominatimGeocodingService();
 
 export const getGeocodingService = () => activeService;

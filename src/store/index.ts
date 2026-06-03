@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 import {
   TripFlowGraph,
   Location,
@@ -10,10 +10,10 @@ import {
   Suggestion,
   SuggestionId,
   Budget,
-  TargetDateRange
-} from '../types/schema';
-import { initializeClientContext } from '../lib/utils/clientContext';
-import { generateCityHubId } from '../lib/utils/id';
+  TargetDateRange,
+} from "../types/schema";
+import { initializeClientContext } from "../lib/utils/clientContext";
+import { generateCityHubId } from "../lib/utils/id";
 
 interface TripFlowState {
   graph: TripFlowGraph | null;
@@ -153,7 +153,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
           cityName: clientContext.location.name,
           country: clientContext.location.country_name,
           coordinates: clientContext.location.coordinates,
-          type: 'ORIGIN',
+          type: "ORIGIN",
           itinerary: [],
           travelerCount: 1,
           timezone: clientContext.timezone,
@@ -178,5 +178,5 @@ export const useTripFlowStore = create<TripFlowStore>()(
         });
       }
     },
-  }))
+  })),
 );

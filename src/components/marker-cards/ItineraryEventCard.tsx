@@ -25,96 +25,104 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
     ? `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })}`
     : DateTimeFormatter.format(startTime, timezone);
 
-  // Determine dynamic styles and labels based on category
-  let accentColor: string = STYLE_TOKENS.colors.event;
-  let accentGlow: string = STYLE_TOKENS.glows.event;
-  let accentBorderHover: string = STYLE_TOKENS.colors.borderHover;
-  let badgeClass = "";
+  // Determine dynamic styling classes based on category
+  let cardBorderClass = "border-border-color hover:border-border-hover";
+  let activeClass = "";
+  let badgeClass = "text-text-primary bg-white/5 border-border-color";
   let badgeLabel = eventLocation.category.toString();
   let priceLabel = "Price";
   let showSaving = false;
 
   switch (eventLocation.category) {
     case "LODGING":
-      accentColor = STYLE_TOKENS.colors.hub;
-      accentGlow = "rgba(168, 85, 247, 0.1)";
-      accentBorderHover = "rgba(168, 85, 247, 0.3)";
-      badgeClass = "badge-lodging";
+      cardBorderClass =
+        "border-border-color hover:border-hub-color/30 hover:shadow-glow-hub";
+      activeClass = "border-hub-color shadow-glow-hub";
+      badgeClass = "text-hub-color bg-hub-color/10 border-hub-color/25";
       badgeLabel = "Lodging";
       priceLabel = "Price / Night";
       break;
     case "ACTIVITY":
-      accentColor = STYLE_TOKENS.colors.budgetSafe;
-      accentGlow = STYLE_TOKENS.glows.budgetSafe;
-      accentBorderHover = "rgba(16, 185, 129, 0.3)";
-      badgeClass = "badge-activity";
+      cardBorderClass =
+        "border-border-color hover:border-budget-safe/30 hover:shadow-glow-safe";
+      activeClass = "border-budget-safe shadow-glow-safe";
+      badgeClass = "text-budget-safe bg-budget-safe/10 border-budget-safe/25";
       badgeLabel = "Activity";
       priceLabel = "Cost";
-      // Render a little dynamic saving tag if actual cost is less than typical
       if (eventLocation.price?.typicalCost && eventLocation.price?.actualCost) {
-        showSaving = eventLocation.price.typicalCost > eventLocation.price.actualCost;
+        showSaving =
+          eventLocation.price.typicalCost > eventLocation.price.actualCost;
       }
       break;
     case "MEAL":
-      accentColor = STYLE_TOKENS.colors.budgetWarn;
-      accentGlow = STYLE_TOKENS.glows.budgetWarn;
-      accentBorderHover = "rgba(249, 115, 22, 0.3)";
-      badgeClass = "badge-meal";
+      cardBorderClass =
+        "border-border-color hover:border-budget-warn/30 hover:shadow-glow-warn";
+      activeClass = "border-budget-warn shadow-glow-warn";
+      badgeClass = "text-budget-warn bg-budget-warn/10 border-budget-warn/25";
       badgeLabel = "Meal";
       priceLabel = "Est. Cost / Person";
       break;
   }
 
-  const savingsAmount = showSaving 
-    ? (eventLocation.price!.typicalCost! - eventLocation.price!.actualCost!) 
+  const savingsAmount = showSaving
+    ? eventLocation.price!.typicalCost! - eventLocation.price!.actualCost!
     : 0;
 
   return (
-    <div 
-      className={`tf-card ${isActive ? "active" : ""}`}
-      style={{ 
-        "--accent-color": accentColor,
-        "--accent-glow": accentGlow,
-        "--accent-border-hover": accentBorderHover
-      } as React.CSSProperties}
+    <div
+      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
+        isActive ? activeClass : cardBorderClass
+      }`}
       onClick={onClick}
     >
-      <div className="card-header">
-        <div className="card-title-group">
-          <h3 className="card-name">{eventLocation.name}</h3>
-          <span className="card-subtitle">{eventLocation.category} Booking</span>
+      <div className="mb-3 flex items-start justify-between gap-1">
+        <div className="flex flex-col overflow-hidden">
+          <h3 className="m-0 truncate text-sm-dense font-bold text-text-primary">
+            {eventLocation.name}
+          </h3>
+          <span className="mt-0.5 truncate text-xs-dense text-text-secondary">
+            {eventLocation.category} Booking
+          </span>
         </div>
-        <span className={`badge ${badgeClass}`}>{badgeLabel}</span>
+        <span
+          className={`shrink-0 rounded-xs border px-1.5 py-0.5 text-super-small font-bold tracking-wider uppercase ${badgeClass}`}
+        >
+          {badgeLabel}
+        </span>
       </div>
 
-      <div className="card-details">
-        <div className="detail-row">
+      <div className="mb-3 flex flex-col gap-1.5 text-xs-dense text-text-secondary">
+        <div className="flex items-center gap-1.5">
           <AddressIcon />
-          <span style={{ fontSize: "0.8rem" }}>{eventLocation.address}</span>
+          <span className="text-xs-dense text-text-secondary">
+            {eventLocation.address}
+          </span>
         </div>
-        <div className="detail-row">
+        <div className="flex items-center gap-1.5">
           <CalendarIcon />
           <span>{formattedTime}</span>
         </div>
       </div>
 
-      <div className="card-footer">
-        <div className="price-display">
-          <span className="price-label">{priceLabel}</span>
-          <span className="price-value">
-            {eventLocation.price?.actualCost !== undefined 
+      <div className="mt-auto flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-xxs font-bold tracking-wider text-text-muted uppercase">
+            {priceLabel}
+          </span>
+          <span className="mt-0.5 text-sm-dense font-bold text-text-primary">
+            {eventLocation.price?.actualCost !== undefined
               ? `$${eventLocation.price.actualCost} USD`
               : "Free"}
           </span>
         </div>
-        
+
         {showSaving ? (
-          <span style={{ fontSize: "0.75rem", color: "#10b981", fontWeight: "bold" }}>
+          <span className="text-xs-dense font-bold text-budget-safe">
             Saved ${savingsAmount}!
           </span>
         ) : (
           eventLocation.price?.typicalCost !== undefined && (
-            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+            <span className="text-xs-dense text-text-muted">
               Typical: ${eventLocation.price.typicalCost}
             </span>
           )

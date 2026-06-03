@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Budget, BudgetSchema } from "../../types/schema";
-import { Wallet, TrendingUp, Edit2, Check, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import {
+  Wallet,
+  TrendingUp,
+  Edit2,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+} from "lucide-react";
 
 interface BudgetDashboardProps {
   data: Budget;
@@ -17,14 +25,18 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
     { label: "Louvre Museum Tour", cost: 45 },
     { label: "Le Jules Verne Dinner", cost: 215 },
     { label: "Delta Flight JFK-CDG", cost: 680 },
-    { label: "Heathrow Layover Fee", cost: 35 }
-  ]
+    { label: "Heathrow Layover Fee", cost: 35 },
+  ],
 }) => {
   // Editing state toggles
   const [isEditing, setIsEditing] = useState(false);
-  const [minInput, setMinInput] = useState(data.budget.min !== undefined ? data.budget.min.toString() : "");
-  const [maxInput, setMaxInput] = useState(data.budget.max !== undefined ? data.budget.max.toString() : "");
-  
+  const [minInput, setMinInput] = useState(
+    data.budget.min !== undefined ? data.budget.min.toString() : "",
+  );
+  const [maxInput, setMaxInput] = useState(
+    data.budget.max !== undefined ? data.budget.max.toString() : "",
+  );
+
   // Breakdown toggle state
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -34,7 +46,8 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
     const min = data.budget.min;
     const max = data.budget.max;
     if (min === undefined && max === undefined) return "Not Set";
-    if (min !== undefined && max !== undefined) return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
+    if (min !== undefined && max !== undefined)
+      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
     if (max !== undefined) return `Max $${max.toLocaleString()}`;
     if (min !== undefined) return `Min $${min.toLocaleString()}`;
     return "Not Set";
@@ -45,7 +58,8 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
     const low = data.estimate.low;
     const high = data.estimate.high;
     if (low === undefined && high === undefined) return "$0";
-    if (low !== undefined && high !== undefined) return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
+    if (low !== undefined && high !== undefined)
+      return `$${low.toLocaleString()} - $${high.toLocaleString()}`;
     if (low !== undefined) return `$${low.toLocaleString()}+`;
     return "$0";
   };
@@ -70,86 +84,72 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
         min: parsedMin,
         max: parsedMax,
       },
-      estimate: data.estimate // Estimate remains unchanged
+      estimate: data.estimate, // Estimate remains unchanged
     };
 
     try {
       const parsed = BudgetSchema.parse(payload);
       onUpdate(parsed);
       setIsEditing(false);
-    } catch (err: any) {
-      if (err.errors && err.errors.length > 0) {
-        setValidationError(err.errors[0].message);
+    } catch (err) {
+      const zError = err as {
+        errors?: Array<{ message: string }>;
+        message: string;
+      };
+      if (zError.errors && zError.errors.length > 0 && zError.errors[0]) {
+        setValidationError(zError.errors[0].message);
       } else {
-        setValidationError(err.message);
+        setValidationError(zError.message);
       }
     }
   };
 
   return (
-    <div className="dashboard-widget budget-dashboard" style={{ maxWidth: "220px", padding: "1.25rem" }}>
-      
+    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
+      <div className="absolute top-0 left-0 h-indicator w-full bg-suggest-color shadow-glow-suggest" />
+
       {/* BUDGET ROW */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", position: "relative" }}>
-        <div className="icon-circle" style={{
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0
-        }}>
-          <Wallet size={16} style={{ color: "var(--text-primary)" }} />
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+          <Wallet size={16} className="text-text-primary" />
         </div>
-        
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+
+        <div className="flex-1">
+          <div className="text-super-small font-bold tracking-wider text-text-muted">
             BUDGET
           </div>
-          
+
           {isEditing ? (
-            <div style={{ display: "flex", gap: "4px", marginTop: "4px" }} onClick={(e) => e.stopPropagation()}>
-              <input 
-                type="text" 
-                className="widget-input" 
-                style={{ padding: "2px 4px", fontSize: "0.75rem", height: "20px" }}
+            <div
+              className="mt-1 flex gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="text"
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15"
                 placeholder="Min"
                 value={minInput}
                 onChange={(e) => setMinInput(e.target.value)}
               />
-              <input 
-                type="text" 
-                className="widget-input" 
-                style={{ padding: "2px 4px", fontSize: "0.75rem", height: "20px" }}
+              <input
+                type="text"
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15"
                 placeholder="Max"
                 value={maxInput}
                 onChange={(e) => setMaxInput(e.target.value)}
               />
             </div>
           ) : (
-            <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", marginTop: "2px" }}>
+            <div className="mt-0.5 text-xs-dense font-bold text-text-primary">
               {getBudgetDisplay()}
             </div>
           )}
         </div>
 
         {/* Edit/Save Trigger */}
-        <button 
+        <button
           type="button"
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            padding: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginLeft: "auto",
-            transition: "var(--transition-smooth)"
-          }}
+          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300"
           onClick={(e) => {
             e.stopPropagation();
             if (isEditing) {
@@ -160,70 +160,48 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
           }}
         >
           {isEditing ? (
-            <Check size={14} style={{ color: "var(--budget-safe-color)" }} />
+            <Check size={14} className="text-budget-safe" />
           ) : (
-            <Edit2 size={12} className="edit-pencil-icon" />
+            <Edit2
+              size={12}
+              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100"
+            />
           )}
         </button>
       </div>
 
       {/* Zod Validation Error Feedback (for budget inputs) */}
       {validationError && (
-        <div className="widget-error" style={{ fontSize: "0.7rem", padding: "4px 8px", marginTop: "0.5rem" }}>
-          <AlertTriangle size={10} style={{ marginRight: "4px" }} />
+        <div className="mt-2 flex items-center rounded-sm border border-red-500/25 bg-red-500/10 px-2 py-1 text-xxs text-red-300">
+          <AlertTriangle size={10} className="mr-1 shrink-0" />
           <span>{validationError}</span>
         </div>
       )}
 
       {/* DIVIDER */}
-      <div className="widget-divider" style={{ margin: "1rem 0" }} />
+      <div className="my-4 border-t border-border-color" />
 
       {/* ESTIMATE ROW (Non-editable) */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-        <div className="icon-circle" style={{
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0
-        }}>
-          <TrendingUp size={16} style={{ color: "var(--text-primary)" }} />
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+          <TrendingUp size={16} className="text-text-primary" />
         </div>
-        
+
         <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+          <div className="text-super-small font-bold tracking-wider text-text-muted">
             ESTIMATE
           </div>
-          <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", marginTop: "2px" }}>
+          <div className="mt-0.5 text-xs-dense font-bold text-text-primary">
             {getEstimateDisplay()}
           </div>
         </div>
       </div>
 
       {/* VIEW BREAKDOWN PANEL */}
-      <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column" }}>
+      <div className="mt-4 flex flex-col">
         <button
           type="button"
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--text-secondary)",
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.25rem",
-            padding: "4px 0",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            width: "100%",
-            textAlign: "center"
-          }}
+          className="flex w-full cursor-pointer items-center justify-center gap-1 border-none bg-transparent py-1 text-center text-xxs font-bold tracking-wider text-text-secondary uppercase transition-all duration-300 hover:text-text-primary"
           onClick={() => setShowBreakdown(!showBreakdown)}
         >
           {showBreakdown ? (
@@ -238,26 +216,20 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
         </button>
 
         {showBreakdown && (
-          <div style={{ 
-            marginTop: "0.75rem", 
-            background: "rgba(0, 0, 0, 0.15)", 
-            padding: "0.5rem", 
-            borderRadius: "6px",
-            fontSize: "0.7rem",
-            color: "var(--text-secondary)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.4rem"
-          }}>
+          <div className="mt-3 flex flex-col gap-1.5 rounded-md bg-black/15 p-2 text-xxs text-text-secondary">
             {breakdownItems.map((item, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between" }}>
+              <div key={idx} className="flex justify-between">
                 <span>{item.label}</span>
-                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>${item.cost}</span>
+                <span className="font-semibold text-text-primary">
+                  ${item.cost}
+                </span>
               </div>
             ))}
-            <div style={{ borderTop: "1px dashed var(--border-color)", paddingTop: "0.4rem", marginTop: "0.2rem", display: "flex", justifyContent: "space-between", fontWeight: 700, color: "var(--text-primary)" }}>
+            <div className="mt-1 flex justify-between border-t border-dashed border-border-color pt-1.5 font-bold text-text-primary">
               <span>Total Projected</span>
-              <span>${breakdownItems.reduce((acc, curr) => acc + curr.cost, 0)}</span>
+              <span>
+                ${breakdownItems.reduce((acc, curr) => acc + curr.cost, 0)}
+              </span>
             </div>
           </div>
         )}

@@ -1,12 +1,15 @@
-import countryToCurrency from 'country-to-currency';
-import { ClientContext } from '../../types/schema';
-import { fetchWhereAmI } from '../adapters/travelpayouts';
+import countryToCurrency from "country-to-currency";
+import { ClientContext } from "../../types/schema";
+import { fetchWhereAmI } from "../adapters/travelpayouts";
 
 /**
  * Resolves the national currency code for a given ISO country code (e.g. "FR" -> "EUR").
  */
 export const getCurrencyForCountry = (countryCode: string): string => {
-  return (countryToCurrency as Record<string, string>)[countryCode.toUpperCase()] || 'USD';
+  return (
+    (countryToCurrency as Record<string, string>)[countryCode.toUpperCase()] ||
+    "USD"
+  );
 };
 
 /**
@@ -15,14 +18,17 @@ export const getCurrencyForCountry = (countryCode: string): string => {
  * This places context initialization strictly on the critical path of initialization.
  */
 export const initializeClientContext = async (): Promise<ClientContext> => {
-  let language = 'en-US';
-  if (typeof navigator !== 'undefined') {
+  let language = "en-US";
+  if (typeof navigator !== "undefined") {
     language = navigator.language;
   }
-  
+
   const location = await fetchWhereAmI(language);
   const currency = getCurrencyForCountry(location.country_code);
-  const timezone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
+  const timezone =
+    typeof Intl !== "undefined"
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : "UTC";
 
   return {
     location,
