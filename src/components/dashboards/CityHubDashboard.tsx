@@ -1,18 +1,34 @@
 import React from "react";
 import { CityHub } from "../../types/schema";
 import { MapPin, Users, Calendar, Compass, Navigation } from "lucide-react";
+import { useTripFlowStore } from "../../store";
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface CityHubDashboardProps {
   cityHub: CityHub;
-  timelineItems?: Array<{ label: string; subLabel: string; cost?: number | undefined }>;
-  onTravelerCountChange: (count: number) => void;
 }
 
 export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
   cityHub,
-  timelineItems = [],
-  onTravelerCountChange,
 }) => {
+  const graph = useTripFlowStore((state) => state.graph);
+  const updateTravelerCount = useTripFlowStore((state) => state.updateTravelerCount);
+
+  if (!graph) return null;
+
+  // Calculate Itinerary details timeline items dynamically from graph
+  const timelineItems = cityHub.itinerary.map(item => {
+    const loc = graph.Locations[item.LocationId];
+    const label = loc ? loc.name : "Unknown Event";
+    const formatted = DateTimeFormatter.format(item.startTime, cityHub.timezone);
+    
+    return {
+      label,
+      subLabel: formatted,
+      cost: loc?.price?.actualCost
+    };
+  });
+
   return (
     <div className="dashboard-widget hub-dashboard" style={{ maxWidth: "220px" }}>
       <div className="widget-header">
@@ -51,7 +67,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
           <button 
             className="traveler-btn" 
             style={{ width: "20px", height: "20px", fontSize: "0.8rem" }}
-            onClick={() => onTravelerCountChange(Math.max(1, cityHub.travelerCount - 1))}
+            onClick={() => updateTravelerCount(cityHub.id, Math.max(1, cityHub.travelerCount - 1))}
           >
             -
           </button>
@@ -61,7 +77,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
           <button 
             className="traveler-btn" 
             style={{ width: "20px", height: "20px", fontSize: "0.8rem" }}
-            onClick={() => onTravelerCountChange(cityHub.travelerCount + 1)}
+            onClick={() => updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)}
           >
             +
           </button>

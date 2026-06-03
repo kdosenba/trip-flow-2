@@ -6,13 +6,18 @@ import {
   DollarSign, 
   Plane, 
   Users, 
+  User, 
   ArrowRight,
   TrendingUp,
   AlertTriangle,
-  Clock
+  Clock,
+  Home
 } from "lucide-react";
 
 // Standard icon components with consistent styling classes
+export const HomeIcon = () => (
+  <Home className="detail-icon" size={14} strokeWidth={2} />
+);
 export const CoordinatesIcon = () => (
   <MapPin className="detail-icon" size={14} strokeWidth={2} />
 );
@@ -31,6 +36,10 @@ export const DollarIcon = () => (
 
 export const PlaneIcon = () => (
   <Plane className="detail-icon" size={14} strokeWidth={2} style={{ transform: "rotate(45deg)" }} />
+);
+
+export const UserIcon = () => (
+  <User className="detail-icon" size={14} strokeWidth={2} />
 );
 
 export const UsersIcon = () => (

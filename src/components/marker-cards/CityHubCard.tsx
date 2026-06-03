@@ -1,6 +1,7 @@
 import React from "react";
 import { CityHub } from "../../types/schema";
 import { Trash2 } from "lucide-react";
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface CityHubCardProps {
   cityHub: CityHub;
@@ -36,10 +37,11 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
         }
       });
       
-      const start = new Date(minStart);
-      const end = new Date(maxEnd);
-      const formatOption = { month: "short", day: "numeric" } as const;
-      const rangeLabel = `${start.toLocaleDateString("en-US", formatOption).toUpperCase()} - ${end.toLocaleDateString("en-US", formatOption).toUpperCase()}`;
+      const rangeLabel = DateTimeFormatter.formatRange(
+        new Date(minStart).toISOString(),
+        new Date(maxEnd).toISOString(),
+        cityHub.timezone
+      );
       
       const diffTime = Math.abs(maxEnd - minStart);
       const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;

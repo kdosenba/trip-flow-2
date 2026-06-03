@@ -156,6 +156,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
           type: 'ORIGIN',
           itinerary: [],
           travelerCount: 1,
+          timezone: clientContext.timezone,
         };
 
         set((state) => {

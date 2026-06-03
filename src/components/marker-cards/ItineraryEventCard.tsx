@@ -2,20 +2,29 @@ import React from "react";
 import { Location } from "../../types/schema";
 import { AddressIcon, CalendarIcon } from "./icons";
 import { STYLE_TOKENS } from "../../lib/style-guide";
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface ItineraryEventCardProps {
   eventLocation: Location;
-  timeLabel: string;
+  startTime: string;
+  endTime?: string | undefined;
+  timezone?: string | undefined;
   isActive?: boolean;
   onClick?: () => void;
 }
 
 export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
   eventLocation,
-  timeLabel,
+  startTime,
+  endTime,
+  timezone,
   isActive = false,
   onClick,
 }) => {
+  const formattedTime = endTime
+    ? `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })}`
+    : DateTimeFormatter.format(startTime, timezone);
+
   // Determine dynamic styles and labels based on category
   let accentColor: string = STYLE_TOKENS.colors.event;
   let accentGlow: string = STYLE_TOKENS.glows.event;
@@ -85,7 +94,7 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
         </div>
         <div className="detail-row">
           <CalendarIcon />
-          <span>{timeLabel}</span>
+          <span>{formattedTime}</span>
         </div>
       </div>
 

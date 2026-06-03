@@ -22,10 +22,12 @@ export const initializeClientContext = async (): Promise<ClientContext> => {
   
   const location = await fetchWhereAmI(language);
   const currency = getCurrencyForCountry(location.country_code);
+  const timezone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
 
   return {
     location,
     language,
     currency,
+    timezone,
   };
 };

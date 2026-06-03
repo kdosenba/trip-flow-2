@@ -2,6 +2,7 @@ import React from "react";
 import { Location } from "../../types/schema";
 import { CoordinatesIcon, PlaneIcon } from "./icons";
 import { STYLE_TOKENS } from "../../lib/style-guide";
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface TransitLocationCardProps {
   location: Location;
@@ -13,6 +14,11 @@ interface TransitLocationCardProps {
   sourceLabel?: string | undefined;
   destinationLabel?: string | undefined;
   
+  // Dynamic timezone parameters
+  startTime?: string | undefined;
+  endTime?: string | undefined;
+  timezone?: string | undefined;
+
   // Layover specific labels
   layoverDurationLabel?: string | undefined;
   
@@ -28,13 +34,29 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
   variant,
   sourceCode = "NYC",
   destinationCode = "PAR",
-  sourceLabel = "Source",
-  destinationLabel = "Dest.",
+  sourceLabel,
+  destinationLabel,
+  startTime,
+  endTime,
+  timezone,
   layoverDurationLabel = "2h 20m layover",
   footerBadgeText,
   isActive = false,
   onClick,
 }) => {
+  // Compute labels dynamically using timezone and formatter if not explicitly supplied
+  const displaySourceLabel = sourceLabel !== undefined
+    ? sourceLabel
+    : (startTime
+        ? `${DateTimeFormatter.format(startTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })} Dep`
+        : "Source");
+
+  const displayDestLabel = destinationLabel !== undefined
+    ? destinationLabel
+    : (endTime
+        ? `${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })} Arr`
+        : "Dest.");
+
   return (
     <div 
       className={`tf-card transit-ticket ${isActive ? "active" : ""}`}
@@ -55,11 +77,11 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
       </div>
 
       {variant === "layover" ? (
-        /* LAYOVER DISP LAY */
+        /* LAYOVER DISPLAY */
         <div className="transit-flow-display">
           <div>
             <div className="transit-node-code" style={{ fontSize: "1.2rem" }}>{sourceCode}</div>
-            <div className="transit-node-time">{sourceLabel}</div>
+            <div className="transit-node-time">{displaySourceLabel}</div>
           </div>
           <div className="transit-line-path">
             <div style={{ fontSize: "0.75rem", color: "var(--transit-color)", fontWeight: "bold", marginBottom: "2px" }}>
@@ -78,18 +100,18 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
           </div>
           <div>
             <div className="transit-node-code" style={{ fontSize: "1.2rem" }}>{destinationCode}</div>
-            <div className="transit-node-time">{destinationLabel}</div>
+            <div className="transit-node-time">{displayDestLabel}</div>
           </div>
         </div>
       ) : (
-        /* STANDARD FLOW DISP LAY */
+        /* STANDARD FLOW DISPLAY */
         <div className="transit-flow-display">
           <div>
             <div className="transit-node-code" style={{ color: variant === "departure" ? "var(--text-primary)" : "var(--text-muted)" }}>
               {variant === "departure" ? (location.iata || "SRC") : sourceCode}
             </div>
             <div className="transit-node-time" style={{ color: variant === "departure" ? "var(--transit-color)" : "var(--text-muted)" }}>
-              {sourceLabel}
+              {displaySourceLabel}
             </div>
           </div>
           <div className="transit-line-path">
@@ -101,7 +123,7 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
               {variant === "arrival" ? (location.iata || "DST") : destinationCode}
             </div>
             <div className="transit-node-time" style={{ color: variant === "arrival" ? "var(--transit-color)" : "var(--text-muted)" }}>
-              {destinationLabel}
+              {displayDestLabel}
             </div>
           </div>
         </div>

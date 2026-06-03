@@ -2,6 +2,8 @@ import React from "react";
 import { Suggestion } from "../../types/schema";
 import { AddressIcon, CalendarIcon, PlaneIcon } from "./icons";
 import { STYLE_TOKENS } from "../../lib/style-guide";
+import { useTripFlowStore } from "../../store";
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface SuggestionCardProps {
   suggestion: Suggestion;
@@ -20,21 +22,24 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
 }) => {
   const isLocation = suggestion.type === "LOCATION_SUGGESTION";
   
+  const graph = useTripFlowStore((state) => state.graph);
+  const targetCity = suggestion.targetCityId && graph
+    ? graph.CityHubs[suggestion.targetCityId]
+    : undefined;
+  const timezone = targetCity?.timezone;
+
   // Format segment dates nicely
   const getSegmentTimeLabel = () => {
     if (!suggestion.suggestedSegments || !suggestion.suggestedSegments[0]) return "";
     const segment = suggestion.suggestedSegments[0];
     try {
-      const start = new Date(segment.startTime);
-      const end = new Date(segment.endTime);
-      
-      const dateStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      const startStr = start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-      const endStr = end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+      const dateStr = DateTimeFormatter.format(segment.startTime, timezone, { month: "short", day: "numeric" });
+      const startStr = DateTimeFormatter.format(segment.startTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
+      const endStr = DateTimeFormatter.format(segment.endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
       
       return `${dateStr}, ${startStr} - ${endStr}`;
     } catch {
-      return "June 9, 22:30 - June 10, 11:45";
+      return "";
     }
   };
 

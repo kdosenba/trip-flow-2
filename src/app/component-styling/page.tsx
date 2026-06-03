@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import "./page.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 // Import schemas and types
 import {
@@ -31,6 +32,14 @@ import { SuggestionCard } from "../../components/marker-cards/SuggestionCard";
 import { BudgetDashboard } from "../../components/dashboards/BudgetDashboard";
 import { TargetDateRangeDashboard } from "../../components/dashboards/TargetDateRangeDashboard";
 import { CityHubDashboard } from "../../components/dashboards/CityHubDashboard";
+
+// Import transit preview components
+import { AirArcPreview } from "../../components/transit-previews/AirArcPreview";
+import { LandRoutePreview } from "../../components/transit-previews/LandRoutePreview";
+import { SeaDirectPreview } from "../../components/transit-previews/SeaDirectPreview";
+
+// Import utilities
+import { DateTimeFormatter } from "../../lib/utils/date";
 
 // Import Lucide icons for empty states
 import { Database, PlusCircle, Trash2, ArrowRight } from "lucide-react";
@@ -79,6 +88,7 @@ export default function ComponentStylingPage() {
       type: "ORIGIN",
       itinerary: [],
       travelerCount: 2,
+      timezone: "America/New_York",
     };
 
     const mockCityHub: CityHub = {
@@ -107,7 +117,8 @@ export default function ComponentStylingPage() {
       ],
       arrivalNodeId: "loc-cdg-arr" as any,
       departureNodeId: "loc-cdg-dep" as any,
-      travelerCount: 2
+      travelerCount: 2,
+      timezone: "Europe/Paris",
     };
 
     const mockHotelRitz: Location = {
@@ -254,7 +265,8 @@ export default function ComponentStylingPage() {
         coordinates: { lat: 40.7128, lng: -74.0060 }
       },
       language: "en",
-      currency: "USD"
+      currency: "USD",
+      timezone: "America/New_York"
     };
 
     const payload: TripFlowGraph = {
@@ -387,6 +399,9 @@ export default function ComponentStylingPage() {
   // Analyze segment topology in Transits
   Object.values(graph.Transits).forEach(transit => {
     const segments = transit.segments;
+    const sourceHub = graph.CityHubs[transit.fromCityId];
+    const destHub = graph.CityHubs[transit.toCityId];
+
     segments.forEach((seg, idx) => {
       const fromLoc = transitRoles[seg.fromLocationId];
       if (fromLoc) {
@@ -399,8 +414,8 @@ export default function ComponentStylingPage() {
           fromLoc.destCode = graph.Locations[seg.toLocationId]?.iata || "DST";
         }
         try {
-          const startD = new Date(seg.startTime);
-          fromLoc.sourceTimeLabel = startD.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) + " Dep";
+          const timeStr = DateTimeFormatter.format(seg.startTime, sourceHub?.timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
+          fromLoc.sourceTimeLabel = `${timeStr} Dep`;
         } catch {}
       }
 
@@ -408,8 +423,8 @@ export default function ComponentStylingPage() {
       if (toLoc) {
         toLoc.isDestination = true;
         try {
-          const endD = new Date(seg.endTime);
-          toLoc.destTimeLabel = endD.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) + " Arr";
+          const timeStr = DateTimeFormatter.format(seg.endTime, destHub?.timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
+          toLoc.destTimeLabel = `${timeStr} Arr`;
         } catch {}
       }
     });
@@ -430,12 +445,14 @@ export default function ComponentStylingPage() {
           role.destCode = graph.Locations[nextSegment.toLocationId]?.iata || "DST";
           
           try {
+            const arrTimeStr = DateTimeFormatter.format(currentSegment.endTime, destHub?.timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
+            const depTimeStr = DateTimeFormatter.format(nextSegment.startTime, destHub?.timezone, { hour: "2-digit", minute: "2-digit", hour12: false });
+            
+            role.sourceTimeLabel = `${arrTimeStr} Arr`;
+            role.destTimeLabel = `${depTimeStr} Dep`;
+            
             const arrTime = new Date(currentSegment.endTime);
             const depTime = new Date(nextSegment.startTime);
-            
-            role.sourceTimeLabel = arrTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) + " Arr";
-            role.destTimeLabel = depTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) + " Dep";
-            
             const diff = depTime.getTime() - arrTime.getTime();
             const hours = Math.floor(diff / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -451,21 +468,7 @@ export default function ComponentStylingPage() {
     || hubs.find(h => h.type === "HUB") 
     || hubs[0];
 
-  const activeHubTimelineItems = activeHub 
-    ? activeHub.itinerary.map(item => {
-        const loc = graph.Locations[item.LocationId];
-        const label = loc ? loc.name : "Unknown Event";
-        const start = new Date(item.startTime);
-        const dateStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        const timeStr = start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-        
-        return {
-          label,
-          subLabel: `${dateStr} ${timeStr}`,
-          cost: loc?.price?.actualCost
-        };
-      })
-    : [];
+
 
   // Suggestions lists
   const suggestions = Object.values(graph.suggestions);
@@ -568,8 +571,6 @@ export default function ComponentStylingPage() {
                   <OriginCityCard
                     key={hub.id}
                     originCity={hub}
-                    travelerCount={hub.travelerCount}
-                    onTravelerCountChange={(count) => updateTravelerCount(hub.id, count)}
                     isActive={activeCardId === hub.id}
                     onClick={() => {
                       setActiveCardId(hub.id);
@@ -630,17 +631,14 @@ export default function ComponentStylingPage() {
                 </div>
               ) : (
                 plannedEvents.map(({ item, location, hubId }) => {
-                  const start = new Date(item.startTime);
-                  const formatOption = { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false } as const;
-                  const timeLabel = item.endTime 
-                    ? `${start.toLocaleDateString("en-US", formatOption)} - ${new Date(item.endTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`
-                    : start.toLocaleDateString("en-US", formatOption);
-
+                  const hub = graph.CityHubs[hubId];
                   return (
                     <ItineraryEventCard
                       key={`${hubId}-${location.id}`}
                       eventLocation={location}
-                      timeLabel={timeLabel}
+                      startTime={item.startTime}
+                      endTime={item.endTime}
+                      timezone={hub?.timezone}
                       isActive={activeCardId === location.id}
                       onClick={() => setActiveCardId(location.id)}
                     />
@@ -820,6 +818,29 @@ export default function ComponentStylingPage() {
             </div>
           </section>
 
+          {/* (6) TRANSIT ROUTE GLOBE PREVIEWS */}
+          <section className="segment" style={{ "--accent-color": "var(--transit-color)" } as React.CSSProperties}>
+            <div className="segment-header">
+              <div>
+                <h2 className="segment-title">6. Transit Route Globe Previews</h2>
+                <p className="segment-desc">Visualizations of great-circle arcs, land roadway paths, and sea direct connections on a MapLibre globe.</p>
+              </div>
+              <span className="widget-badge">Map Globe</span>
+            </div>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+              <div style={{ background: "rgba(18,19,29,0.3)", border: "1px solid var(--border-color)", padding: "0.5rem", borderRadius: "12px" }}>
+                <AirArcPreview />
+              </div>
+              <div style={{ background: "rgba(18,19,29,0.3)", border: "1px solid var(--border-color)", padding: "0.5rem", borderRadius: "12px" }}>
+                <LandRoutePreview />
+              </div>
+              <div style={{ background: "rgba(18,19,29,0.3)", border: "1px solid var(--border-color)", padding: "0.5rem", borderRadius: "12px" }}>
+                <SeaDirectPreview />
+              </div>
+            </div>
+          </section>
+
         </div>
 
         {/* --- RIGHT PANEL: SCREEN-ANCHORED SIDEBAR DASHBOARDS (max-width: 220px) --- */}
@@ -853,8 +874,6 @@ export default function ComponentStylingPage() {
           {activeHub ? (
             <CityHubDashboard
               cityHub={activeHub}
-              timelineItems={activeHubTimelineItems}
-              onTravelerCountChange={(count) => updateTravelerCount(activeHub.id, count)}
             />
           ) : (
             <div className="dashboard-widget" style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontStyle: "italic" }}>

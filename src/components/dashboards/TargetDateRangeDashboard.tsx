@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { TargetDateRange, TargetDateRangeSchema } from "../../types/schema";
 import { Clock, Calendar, Edit2, Check, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { DateTimeFormatter } from "../../lib/utils/date";
+import { useTripFlowStore } from "../../store";
 
 interface TargetDateRangeDashboardProps {
   data: TargetDateRange;
@@ -11,6 +13,8 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
   data,
   onUpdate,
 }) => {
+  const timezone = useTripFlowStore((state) => state.graph?.clientContext.timezone);
+
   // Local edit states
   const [isEditing, setIsEditing] = useState(false);
   
@@ -34,18 +38,19 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
   const getTargetDisplay = () => {
     if ("range" in data.target) {
       try {
-        const start = new Date(data.target.range.start);
-        const end = new Date(data.target.range.end);
-        const formatOption = { month: "short", day: "numeric" } as const;
-        return `${start.toLocaleDateString("en-US", formatOption)} - ${end.toLocaleDateString("en-US", formatOption)}`;
+        return DateTimeFormatter.formatRange(
+          data.target.range.start,
+          data.target.range.end,
+          timezone,
+          { month: "short", day: "numeric" }
+        );
       } catch {
         return `${data.target.range.start} - ${data.target.range.end}`;
       }
     }
     if ("date" in data.target) {
       try {
-        const d = new Date(data.target.date);
-        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return DateTimeFormatter.format(data.target.date, timezone, { month: "short", day: "numeric" });
       } catch {
         return data.target.date;
       }
@@ -57,14 +62,12 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
   const getActualDisplay = () => {
     if (!data.actual?.start) return "Flexible";
     try {
-      const start = new Date(data.actual.start);
-      const end = data.actual.end ? new Date(data.actual.end) : null;
       const formatOption = { month: "short", day: "numeric" } as const;
       
-      if (end) {
-        return `${start.toLocaleDateString("en-US", formatOption)} - ${end.toLocaleDateString("en-US", formatOption)}`;
+      if (data.actual.end) {
+        return DateTimeFormatter.formatRange(data.actual.start, data.actual.end, timezone, formatOption);
       }
-      return start.toLocaleDateString("en-US", formatOption);
+      return DateTimeFormatter.format(data.actual.start, timezone, formatOption);
     } catch {
       return data.actual.start;
     }
@@ -340,7 +343,7 @@ export const TargetDateRangeDashboard: React.FC<TargetDateRangeDashboardProps> =
             )}
             
             <div style={{ borderTop: "1px dashed var(--border-color)", paddingTop: "0.4rem" }}>
-              <strong>Date validation:</strong> actual schedule starts on {data.actual?.start || "TBD"} and ends on {data.actual?.end || "TBD"}.
+              <strong>Date validation:</strong> actual schedule starts on {data.actual?.start ? DateTimeFormatter.format(data.actual.start, timezone, { month: "short", day: "numeric" }) : "TBD"} and ends on {data.actual?.end ? DateTimeFormatter.format(data.actual.end, timezone, { month: "short", day: "numeric" }) : "TBD"}.
             </div>
           </div>
         )}

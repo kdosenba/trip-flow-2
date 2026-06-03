@@ -100,6 +100,7 @@ export const ClientContextSchema = z.object({
   location: WhereAmILocationSchema,
   language: z.string(),
   currency: z.string(),
+  timezone: z.string(),
 });
 export type ClientContext = z.infer<typeof ClientContextSchema>;
 
@@ -156,6 +157,7 @@ export const CityHubSchema = z.object({
   arrivalNodeId: LocationIdSchema.optional(),   // Layout entry point for transit
   departureNodeId: LocationIdSchema.optional(), // Layout exit point for transit
   travelerCount: z.number().int().positive().default(1),
+  timezone: z.string().optional(),
 });
 export type CityHub = z.infer<typeof CityHubSchema>;
 

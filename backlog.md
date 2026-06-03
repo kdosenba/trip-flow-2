@@ -42,7 +42,7 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 #### 🔀 Nodes & Edges
 - [ ] **[TF-13]** Implement visual rendering of location **nodes** placed on the globe/canvas
 - [ ] **[TF-14]** Implement visual rendering of transit **edges** representing connections between nodes (with smooth arc animation paths)
-- [ ] **[TF-27]** For Origins add a button so that you can increase the traveller count
+- [x] **[TF-27]** For Origins add a button so that you can increase the traveller count
 
 #### ⚠️ Constraints Visualization
 - [ ] **[TF-15]** Add visual indicators for **budget constraints** (e.g., color-coded cost indicators, warnings when exceeding limits)
@@ -52,6 +52,16 @@ Welcome to the project backlog! Use this document to keep track of feature ideas
 - [ ] **[TF-17]** Build drag-and-drop node editing/reordering mechanics
 - [ ] **[TF-18]** Implement premium micro-animations (hover transitions, active states, loading indicators)
 - [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together. 
+- [x] **[TF-31]** Review and audit `OriginCityCard` styling, dynamic timezone, and inline traveler adjustments
+- [ ] **[TF-32]** Review and audit `CityHubCard` date range timezone formatting
+- [ ] **[TF-33]** Review and audit `ItineraryEventCard` timeline item event formatting
+- [ ] **[TF-34]** Review and audit `TransitLocationCard` layover and standard flow timezone display
+- [ ] **[TF-35]** Review and audit `SuggestionCard` segment time formatting
+- [ ] **[TF-36]** Review and audit `CityHubDashboard` dynamic timeline items calculation
+- [ ] **[TF-37]** Review and audit `TargetDateRangeDashboard` bounds timezone formatting
+- [ ] **[TF-38]** Review and audit `AirArcPreview` 3D globe visualization
+- [ ] **[TF-39]** Review and audit `LandRoutePreview` 3D globe visualization
+- [ ] **[TF-40]** Review and audit `SeaDirectPreview` 3D globe visualization
 
 ---
 
