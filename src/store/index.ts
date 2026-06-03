@@ -8,7 +8,9 @@ import {
   Transit,
   TransitId,
   Suggestion,
-  SuggestionId
+  SuggestionId,
+  Budget,
+  TargetDateRange
 } from '../types/schema';
 import { initializeClientContext } from '../lib/utils/clientContext';
 import { generateCityHubId } from '../lib/utils/id';
@@ -32,6 +34,10 @@ interface TripFlowActions {
   selectEdge: (id: TransitId | null) => void;
   selectSuggestion: (id: SuggestionId | null) => void;
   initializeClientContext: () => Promise<void>;
+  updateBudget: (budget: Budget) => void;
+  updateTargetDateRange: (range: TargetDateRange) => void;
+  updateTravelerCount: (id: CityHubId, count: number) => void;
+  deleteCityHub: (id: CityHubId) => void;
 }
 
 export type TripFlowStore = TripFlowState & TripFlowActions;
@@ -98,6 +104,38 @@ export const useTripFlowStore = create<TripFlowStore>()(
     selectSuggestion: (id) => {
       set((state) => {
         state.activeSuggestionId = id;
+      });
+    },
+
+    updateBudget: (budget) => {
+      set((state) => {
+        if (state.graph) {
+          state.graph.budget = budget;
+        }
+      });
+    },
+
+    updateTargetDateRange: (range) => {
+      set((state) => {
+        if (state.graph) {
+          state.graph.targetDateRange = range;
+        }
+      });
+    },
+
+    updateTravelerCount: (id, count) => {
+      set((state) => {
+        if (state.graph && state.graph.CityHubs[id]) {
+          state.graph.CityHubs[id].travelerCount = count;
+        }
+      });
+    },
+
+    deleteCityHub: (id) => {
+      set((state) => {
+        if (state.graph) {
+          delete state.graph.CityHubs[id];
+        }
       });
     },
 

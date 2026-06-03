@@ -4,7 +4,7 @@ import { MapPin, Users, Calendar, Compass, Navigation } from "lucide-react";
 
 interface CityHubDashboardProps {
   cityHub: CityHub;
-  timelineItems?: Array<{ label: string; subLabel: string; cost?: number }>;
+  timelineItems?: Array<{ label: string; subLabel: string; cost?: number | undefined }>;
   onTravelerCountChange: (count: number) => void;
 }
 
