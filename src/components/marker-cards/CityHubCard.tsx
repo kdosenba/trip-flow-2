@@ -1,78 +1,89 @@
 import React from "react";
 import { CityHub } from "../../types/schema";
-import { CoordinatesIcon } from "./icons";
-import { STYLE_TOKENS } from "../../lib/style-guide";
+import { Trash2 } from "lucide-react";
 
 interface CityHubCardProps {
   cityHub: CityHub;
-  timelineItems?: Array<{ label: string; subLabel: string }>;
-  isActive?: boolean;
-  onClick?: () => void;
+  isActive?: boolean | undefined;
+  onClick?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
 }
 
 export const CityHubCard: React.FC<CityHubCardProps> = ({
   cityHub,
-  timelineItems = [],
   isActive = false,
   onClick,
+  onDelete,
 }) => {
+  // Calculate date range and days count dynamically from itinerary
+  const getItineraryRangeAndDuration = () => {
+    if (!cityHub.itinerary || cityHub.itinerary.length === 0) {
+      return { rangeLabel: "FLEXIBLE", days: 1 };
+    }
+    
+    try {
+      let minStart = Infinity;
+      let maxEnd = -Infinity;
+      
+      cityHub.itinerary.forEach((item) => {
+        const s = new Date(item.startTime).getTime();
+        minStart = Math.min(minStart, s);
+        if (item.endTime) {
+          const e = new Date(item.endTime).getTime();
+          maxEnd = Math.max(maxEnd, e);
+        } else {
+          maxEnd = Math.max(maxEnd, s);
+        }
+      });
+      
+      const start = new Date(minStart);
+      const end = new Date(maxEnd);
+      const formatOption = { month: "short", day: "numeric" } as const;
+      const rangeLabel = `${start.toLocaleDateString("en-US", formatOption).toUpperCase()} - ${end.toLocaleDateString("en-US", formatOption).toUpperCase()}`;
+      
+      const diffTime = Math.abs(maxEnd - minStart);
+      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
+      return { rangeLabel, days };
+    } catch {
+      return { rangeLabel: "JUN 10 - JUN 15", days: 6 };
+    }
+  };
+
+  const { rangeLabel, days } = getItineraryRangeAndDuration();
+
   return (
     <div 
-      className={`tf-card ${isActive ? "active" : ""}`}
-      style={{ 
-        "--accent-color": STYLE_TOKENS.colors.hub,
-        "--accent-glow": STYLE_TOKENS.glows.hub,
-        "--accent-border-hover": "rgba(168, 85, 247, 0.4)"
-      } as React.CSSProperties}
+      className={`hub-pill-card ${isActive ? "active" : ""}`}
+      style={{ maxWidth: "200px" }}
       onClick={onClick}
     >
-      <div className="card-header">
-        <div className="card-title-group">
-          <h3 className="card-name">{cityHub.cityName}</h3>
-          <span className="card-subtitle">
-            {cityHub.region ? `${cityHub.region}, ` : ""}{cityHub.country}
-          </span>
-        </div>
-        <span className="badge badge-hub">City Hub</span>
+      {/* Left duration badge */}
+      <div className="hub-pill-badge">
+        <span className="hub-pill-badge-num">{days}</span>
+        <span className="hub-pill-badge-lbl">{days > 1 ? "DAYS" : "DAY"}</span>
       </div>
 
-      <div className="card-details">
-        <div className="detail-row">
-          <CoordinatesIcon />
-          <span>
-            {cityHub.coordinates.lat.toFixed(4)}° N, {cityHub.coordinates.lng.toFixed(4)}° E
-          </span>
-        </div>
-        
-        {timelineItems.length > 0 && (
-          <>
-            <div className="detail-row" style={{ marginTop: "0.25rem" }}>
-              <strong>Itinerary Schedule</strong>
-            </div>
-            <div className="hub-itinerary-timeline">
-              {timelineItems.map((item, idx) => (
-                <div key={idx} className="timeline-item">
-                  <span className="timeline-dot" />
-                  <span>{item.label}</span>
-                  <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>
-                    {item.subLabel}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+      {/* Middle city & schedule info */}
+      <div className="hub-pill-info">
+        <h4 className="hub-pill-name">{cityHub.cityName}</h4>
+        <span className="hub-pill-dates">{rangeLabel}</span>
       </div>
 
-      <div className="card-footer">
-        <div className="price-display">
-          <span className="price-label">Activity Count</span>
-          <span className="price-value">{cityHub.itinerary.length} Events</span>
-        </div>
-        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", background: "rgba(255,255,255,0.03)", padding: "4px 8px", borderRadius: "4px" }}>
-          Arrival via {cityHub.arrivalNodeId ? "CDG" : "None"}
-        </span>
-      </div>
+      {/* Right delete/trash icon */}
+      {onDelete && (
+        <button 
+          className="hub-pill-delete"
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          title="Remove Hub"
+        >
+          <Trash2 size={12} />
+        </button>
+      )}
     </div>
   );
 };

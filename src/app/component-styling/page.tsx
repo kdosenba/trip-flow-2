@@ -28,17 +28,22 @@ import { SuggestionCard } from "../../components/marker-cards/SuggestionCard";
 // Import modular dashboard components
 import { BudgetDashboard } from "../../components/dashboards/BudgetDashboard";
 import { TargetDateRangeDashboard } from "../../components/dashboards/TargetDateRangeDashboard";
+import { CityHubDashboard } from "../../components/dashboards/CityHubDashboard";
 
 export default function ComponentStylingPage() {
   // --- STATE FOR CARD MARKERS ---
-  // Interactive state for Origin Hub traveler count [TF-27]
-  const [travelerCount, setTravelerCount] = useState(2);
+  // Traveler counts for both cities
+  const [originTravelers, setOriginTravelers] = useState(2);
+  const [hubTravelers, setHubTravelers] = useState(2);
   
-  // Interactive state for suggestions
+  // Suggestion added triggers
   const [addedSuggestions, setAddedSuggestions] = useState<Record<string, boolean>>({});
 
-  // Interactive state for selected active node cards
-  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  // Active highlighted card ID
+  const [activeCardId, setActiveCardId] = useState<string | null>("hub-par");
+
+  // Simulated deletion trigger
+  const [deletedHubs, setDeletedHubs] = useState<Record<string, boolean>>({});
 
   // --- STATE FOR DASHBOARDS ---
   const [budgetData, setBudgetData] = useState<Budget>({
@@ -49,18 +54,18 @@ export default function ComponentStylingPage() {
   const [dateRangeData, setDateRangeData] = useState<TargetDateRange>({
     target: {
       range: {
-        start: "2026-06-10",
-        end: "2026-06-18",
+        start: "2026-07-10",
+        end: "2026-07-18",
       },
     },
     context: "Summer holiday season in France. High hotel rates, warm weather.",
     actual: {
-      start: "2026-06-10",
-      end: "2026-06-15",
+      start: "2026-07-10",
+      end: "2026-07-13",
     },
   });
 
-  // --- MOCK MARKER DATA ---
+  // --- MOCK DATA ---
   const mockOriginCity: CityHub = {
     id: "hub-nyc" as any,
     cityName: "New York",
@@ -69,7 +74,7 @@ export default function ComponentStylingPage() {
     coordinates: { lat: 40.7128, lng: -74.0060 },
     type: "ORIGIN",
     itinerary: [],
-    travelerCount: travelerCount,
+    travelerCount: originTravelers,
   };
 
   const mockCityHub: CityHub = {
@@ -82,23 +87,23 @@ export default function ComponentStylingPage() {
     itinerary: [
       {
         LocationId: "loc-hotel-ritz" as any,
-        startTime: "2026-06-10T15:00:00Z",
-        endTime: "2026-06-15T11:00:00Z"
+        startTime: "2026-07-10T15:00:00Z",
+        endTime: "2026-07-15T11:00:00Z"
       },
       {
         LocationId: "loc-louvre" as any,
-        startTime: "2026-06-11T10:00:00Z",
-        endTime: "2026-06-11T13:00:00Z"
+        startTime: "2026-07-11T10:00:00Z",
+        endTime: "2026-07-11T13:00:00Z"
       },
       {
         LocationId: "loc-jules-verne" as any,
-        startTime: "2026-06-12T19:30:00Z",
-        endTime: "2026-06-12T22:30:00Z"
+        startTime: "2026-07-12T19:30:00Z",
+        endTime: "2026-07-12T22:30:00Z"
       }
     ],
     arrivalNodeId: "loc-cdg-arr" as any,
     departureNodeId: "loc-cdg-dep" as any,
-    travelerCount: 2
+    travelerCount: hubTravelers,
   };
 
   // Itinerary events (Locations)
@@ -220,7 +225,7 @@ export default function ComponentStylingPage() {
     }
   };
 
-  // Run Zod schema parsing validations on state changes
+  // Run Zod validations
   let schemaValidationError: string | null = null;
   try {
     CityHubSchema.parse(mockOriginCity);
@@ -242,7 +247,7 @@ export default function ComponentStylingPage() {
     console.error("Zod Schema Validation Error:", err);
   }
 
-  // Interactive suggestion adding toggle
+  // Interactive suggestion toggle
   const toggleSuggestion = (id: string) => {
     setAddedSuggestions(prev => ({
       ...prev,
@@ -250,12 +255,24 @@ export default function ComponentStylingPage() {
     }));
   };
 
-  // Timeline list for City Hub Card
+  // Timeline list for City Hub Details
   const timelineItems = [
-    { label: "Hotel Ritz Paris", subLabel: "June 10 - 15" },
-    { label: "Louvre Private Tour", subLabel: "June 11 10:00" },
-    { label: "Le Jules Verne Dinner", subLabel: "June 12 19:30" }
+    { label: "Hotel Ritz Paris", subLabel: "June 10 - 15", cost: 950 },
+    { label: "Louvre Private Tour", subLabel: "June 11 10:00", cost: 45 },
+    { label: "Le Jules Verne Dinner", subLabel: "June 12 19:30", cost: 215 }
   ];
+
+  // simulated budget breakdown calculation
+  const getSimulatedBudgetBreakdown = () => {
+    const items = [
+      { label: "Hotel Ritz Paris", cost: 950 },
+      { label: "Louvre Museum Tour", cost: 45 },
+      { label: "Le Jules Verne Dinner", cost: 215 },
+      { label: "Delta Flight JFK-CDG", cost: 680 },
+      { label: "Heathrow Layover Fee", cost: 35 }
+    ];
+    return items;
+  };
 
   return (
     <main className="page-container">
@@ -272,7 +289,7 @@ export default function ComponentStylingPage() {
       <header className="page-header">
         <h1 className="page-title">Trip Flow Component Design Arena</h1>
         <p className="page-subtitle">
-          Sleek UI sandbox prototyping both on-globe Marker Cards and on-screen Sidebar Dashboards.
+          Sleek UI sandbox prototyping compact on-globe Marker Cards (max 200px) and on-screen Sidebar Dashboards (max 220px).
         </p>
       </header>
 
@@ -296,10 +313,10 @@ export default function ComponentStylingPage() {
         )}
       </div>
 
-      {/* Responsive Two-Column Sandbox Layout */}
+      {/* Responsive Two-Column Layout */}
       <div className="sandbox-layout">
         
-        {/* --- LEFT PANEL: GEOLOCATED MARKER CARDS (Point-Anchored UI) --- */}
+        {/* --- LEFT PANEL: COMPACT GEOLOCATED MARKER CARDS (max-width: 200px) --- */}
         <div className="main-panels">
           
           {/* (1) ORIGIN CITY */}
@@ -307,15 +324,15 @@ export default function ComponentStylingPage() {
             <div className="segment-header">
               <div>
                 <h2 className="segment-title">1. Origin City Node</h2>
-                <p className="segment-desc">Visual marker anchored to the traveler's origin coordinates.</p>
+                <p className="segment-desc">On-globe marker (max-width 200px).</p>
               </div>
               <span className="widget-badge">Map Marker</span>
             </div>
             <div className="cards-row">
               <OriginCityCard
                 originCity={mockOriginCity}
-                travelerCount={travelerCount}
-                onTravelerCountChange={setTravelerCount}
+                travelerCount={originTravelers}
+                onTravelerCountChange={setOriginTravelers}
                 isActive={activeCardId === mockOriginCity.id}
                 onClick={() => setActiveCardId(mockOriginCity.id)}
               />
@@ -327,17 +344,33 @@ export default function ComponentStylingPage() {
             <div className="segment-header">
               <div>
                 <h2 className="segment-title">2. City Hub Node</h2>
-                <p className="segment-desc">Anchored to destination cities. Summarizes internal itinerary milestones.</p>
+                <p className="segment-desc">Pill-shaped map marker (max-width 200px) with custom days badge & delete icon.</p>
               </div>
               <span className="widget-badge">Map Marker</span>
             </div>
             <div className="cards-row">
-              <CityHubCard
-                cityHub={mockCityHub}
-                timelineItems={timelineItems}
-                isActive={activeCardId === mockCityHub.id}
-                onClick={() => setActiveCardId(mockCityHub.id)}
-              />
+              {!deletedHubs[mockCityHub.id] ? (
+                <CityHubCard
+                  cityHub={mockCityHub}
+                  isActive={activeCardId === mockCityHub.id}
+                  onClick={() => setActiveCardId(mockCityHub.id)}
+                  onDelete={() => {
+                    setDeletedHubs(prev => ({ ...prev, [mockCityHub.id]: true }));
+                    if (activeCardId === mockCityHub.id) setActiveCardId(null);
+                  }}
+                />
+              ) : (
+                <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontStyle: "italic", padding: "10px 0" }}>
+                  Hub removed.{" "}
+                  <button 
+                    type="button" 
+                    style={{ background: "transparent", border: "none", color: "var(--hub-color)", textDecoration: "underline", cursor: "pointer", fontSize: "inherit", padding: 0 }}
+                    onClick={() => setDeletedHubs(prev => ({ ...prev, [mockCityHub.id]: false }))}
+                  >
+                    Restore Hub
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
@@ -346,7 +379,7 @@ export default function ComponentStylingPage() {
             <div className="segment-header">
               <div>
                 <h2 className="segment-title">3. Itinerary Event Nodes</h2>
-                <p className="segment-desc">Anchored to specific lodgings, meals, and sights inside city bounds.</p>
+                <p className="segment-desc">On-globe markers (max-width 200px) for Lodgings, Meals, and Sights.</p>
               </div>
               <span className="widget-badge">Map Marker</span>
             </div>
@@ -377,7 +410,7 @@ export default function ComponentStylingPage() {
             <div className="segment-header">
               <div>
                 <h2 className="segment-title">4. Transit Locations</h2>
-                <p className="segment-desc">Boarding tickets anchored to transit points (airports/train terminals).</p>
+                <p className="segment-desc">On-globe markers (max-width 200px) showing leg connections.</p>
               </div>
               <span className="widget-badge">Map Marker</span>
             </div>
@@ -386,7 +419,6 @@ export default function ComponentStylingPage() {
               <div className="subsegment">
                 <div className="subsegment-header">
                   <h3 className="subsegment-title">Variant A: Source Location</h3>
-                  <p className="subsegment-desc">Exclusive departure terminal for outgoing transits.</p>
                 </div>
                 <div className="cards-row">
                   <TransitLocationCard
@@ -406,7 +438,6 @@ export default function ComponentStylingPage() {
               <div className="subsegment">
                 <div className="subsegment-header">
                   <h3 className="subsegment-title">Variant B: Destination Location</h3>
-                  <p className="subsegment-desc">Exclusive arrival terminal for incoming transits.</p>
                 </div>
                 <div className="cards-row">
                   <TransitLocationCard
@@ -426,7 +457,6 @@ export default function ComponentStylingPage() {
               <div className="subsegment">
                 <div className="subsegment-header">
                   <h3 className="subsegment-title">Variant C: Layover / Connection</h3>
-                  <p className="subsegment-desc">Arrival of previous leg and departure of next leg.</p>
                 </div>
                 <div className="cards-row">
                   <TransitLocationCard
@@ -451,7 +481,7 @@ export default function ComponentStylingPage() {
             <div className="segment-header">
               <div>
                 <h2 className="segment-title">5. AI Suggestions</h2>
-                <p className="segment-desc">Recommendation overlays generated by AI helper models.</p>
+                <p className="segment-desc">On-globe suggestion overlays (max-width 200px).</p>
               </div>
               <span className="widget-badge">Map Marker</span>
             </div>
@@ -491,13 +521,14 @@ export default function ComponentStylingPage() {
 
         </div>
 
-        {/* --- RIGHT PANEL: SCREEN-ANCHORED SIDEBAR DASHBOARDS (Global Overlays) --- */}
+        {/* --- RIGHT PANEL: SCREEN-ANCHORED SIDEBAR DASHBOARDS (max-width: 220px) --- */}
         <div className="sidebar-panels">
           
           {/* Budget Dashboard Widget */}
           <BudgetDashboard
             data={budgetData}
             onUpdate={setBudgetData}
+            breakdownItems={getSimulatedBudgetBreakdown()}
           />
 
           {/* Target Date Range Dashboard Widget */}
@@ -505,6 +536,15 @@ export default function ComponentStylingPage() {
             data={dateRangeData}
             onUpdate={setDateRangeData}
           />
+          
+          {/* Detailed City Hub Dashboard Sidebar Panel */}
+          {!deletedHubs[mockCityHub.id] && (
+            <CityHubDashboard
+              cityHub={mockCityHub}
+              timelineItems={timelineItems}
+              onTravelerCountChange={setHubTravelers}
+            />
+          )}
           
         </div>
 
