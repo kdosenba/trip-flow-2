@@ -1,7 +1,6 @@
 import React from "react";
 import { CityHub } from "../../types/schema";
 import { UsersIcon, UserIcon, HomeIcon } from "./icons";
-import { STYLE_TOKENS } from "../../lib/style-guide";
 import { useTripFlowStore } from "../../store";
 import { DateTimeFormatter } from "../../lib/utils/date";
 

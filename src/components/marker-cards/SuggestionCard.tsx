@@ -1,7 +1,6 @@
 import React from "react";
 import { Suggestion } from "../../types/schema";
 import { AddressIcon, CalendarIcon, PlaneIcon } from "./icons";
-import { STYLE_TOKENS } from "../../lib/style-guide";
 import { useTripFlowStore } from "../../store";
 import { DateTimeFormatter } from "../../lib/utils/date";
 

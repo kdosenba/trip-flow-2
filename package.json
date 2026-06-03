@@ -29,7 +29,7 @@
     "plugins": [
       "prettier-plugin-tailwindcss"
     ],
-    "tailwindStylesheet": "./src/styles/theme.css"
+    "tailwindStylesheet": "./src/app/globals.css"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

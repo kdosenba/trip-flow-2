@@ -1,7 +1,6 @@
 import React from "react";
 import { Location } from "../../types/schema";
 import { CoordinatesIcon, PlaneIcon } from "./icons";
-import { STYLE_TOKENS } from "../../lib/style-guide";
 import { DateTimeFormatter } from "../../lib/utils/date";
 
 interface TransitLocationCardProps {

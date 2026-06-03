@@ -24,7 +24,7 @@ const eslintConfig = defineConfig([
       tailwindcss: {
         callees: ["classnames", "clsx", "ctl"],
         whitelist: ["maplibregl\\-.*"],
-        cssConfigPath: path.resolve(__dirname, "src/styles/theme.css"),
+        cssConfigPath: path.resolve(__dirname, "src/app/globals.css"),
       },
     },
   },
