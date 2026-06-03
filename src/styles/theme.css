@@ -1,0 +1,52 @@
+/* Trip Flow Central Theme Variables */
+:root {
+  /* Colors - Base Backgrounds */
+  --bg-darker: #07070a;
+  --bg-dark: #0d0e14;
+  --bg-card: rgba(18, 19, 29, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Theme Presets & Node Accents */
+  --origin-color: #8b5cf6;       /* Violet */
+  --origin-glow: rgba(139, 92, 246, 0.15);
+  
+  --hub-color: #a855f7;          /* Purple */
+  --hub-glow: rgba(168, 85, 247, 0.15);
+  
+  --event-color: #ec4899;        /* Pink */
+  --event-glow: rgba(236, 72, 153, 0.15);
+  
+  --transit-color: #3b82f6;      /* Blue */
+  --transit-glow: rgba(59, 130, 246, 0.15);
+  
+  --suggest-color: #eab308;      /* Amber */
+  --suggest-glow: rgba(234, 179, 8, 0.15);
+
+  /* Budget Constraint Accents [TF-15] */
+  --budget-safe-color: #10b981;    /* Emerald */
+  --budget-safe-glow: rgba(16, 185, 129, 0.15);
+  --budget-warn-color: #f97316;    /* Orange */
+  --budget-warn-glow: rgba(249, 115, 22, 0.15);
+  --budget-danger-color: #ef4444;  /* Red */
+  --budget-danger-glow: rgba(239, 68, 68, 0.15);
+
+  /* Shared Visual Effects */
+  --glass-blur: blur(20px);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  --glass-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.5);
+  
+  /* Dimensions & Spacing */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
