@@ -535,23 +535,32 @@ export default function ComponentStylingPage() {
     <main className="min-h-screen bg-bg-darker bg-page-gradient p-12 font-sans leading-relaxed text-text-primary md:p-8 md:py-12">
       {/* Back Link & Reset Control */}
       <div className="mx-auto mb-6 flex max-w-7xl items-center justify-between">
-        <Link
-          href="/globe"
-          className="inline-flex items-center gap-2 text-sm text-text-secondary transition-colors duration-200 hover:text-text-primary"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="flex items-center gap-4">
+          <Link
+            href="/globe"
+            className="inline-flex items-center gap-2 text-sm text-text-secondary transition-colors duration-200 hover:text-text-primary"
           >
-            <line x1="19" y1="12" x2="5" y2="12" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
-          Back to Globe View
-        </Link>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Globe View
+          </Link>
+          <span className="text-text-muted">|</span>
+          <Link
+            href="/debug"
+            className="inline-flex items-center gap-2 text-sm text-text-secondary transition-colors duration-200 hover:text-text-primary"
+          >
+            ⚡ Debug Playground
+          </Link>
+        </div>
 
         <div className="flex gap-2">
           <button

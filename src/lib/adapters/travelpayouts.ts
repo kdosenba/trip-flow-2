@@ -70,3 +70,4 @@ export const fetchWhereAmI = async (
     coordinates: { lat, lng },
   });
 };
+

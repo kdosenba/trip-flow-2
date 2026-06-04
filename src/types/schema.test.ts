@@ -148,6 +148,7 @@ export const testMockGraph = (): TripFlowGraph => {
       },
       language: "en-US",
       currency: "USD",
+      timezone: "America/New_York",
     },
   };
 

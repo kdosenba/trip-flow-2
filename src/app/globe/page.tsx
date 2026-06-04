@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import type { StyleSpecification } from "maplibre-gl";
 import { CollapsibleJsonViewer } from "../../components/CollapsibleJsonViewer";
 import { initialPaperGlobeStyle } from "../../config/paper-globe-style";
@@ -475,6 +476,11 @@ export default function GlobePage() {
             <span style={{ fontSize: "0.7rem", color: "#71717a" }}>
               Dynamic WebGL 3D Globe Sandbox
             </span>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem" }}>
+            <Link href="/component-styling" style={{ color: "#a1a1aa", textDecoration: "none" }}>🎨 Styling</Link>
+            <Link href="/debug" style={{ color: "#a1a1aa", textDecoration: "none" }}>⚡ Debug</Link>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>

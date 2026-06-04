@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useTripFlowStore } from "../../store";
 import { CollapsibleJsonViewer } from "../../components/CollapsibleJsonViewer";
 import { TripFlowGraphSchema, TripFlowGraph } from "../../types/schema";
@@ -184,9 +185,8 @@ export default function DebugPage() {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gridTemplateRows: "1fr 1fr",
+        display: "flex",
+        flexDirection: "column",
         height: "100vh",
         background: "#09090b",
         color: "#e4e4e7",
@@ -194,324 +194,354 @@ export default function DebugPage() {
         overflow: "hidden",
       }}
     >
-      {/* --- QUADRANT 1: SENT PAYLOAD (TOP LEFT) --- */}
-      <section
+      {/* Top Header Navigation */}
+      <header
         style={{
-          borderRight: "1px solid #27272a",
-          borderBottom: "1px solid #27272a",
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0.5rem 1.25rem",
+          background: "#121215",
+          borderBottom: "1px solid #27272a",
+        }}
+      >
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <span style={{ fontWeight: "bold", color: "#eab308" }}>⚡ TripFlow Debug Playground</span>
+        </div>
+        <div style={{ display: "flex", gap: "1.5rem" }}>
+          <Link href="/component-styling" style={{ color: "#a1a1aa", textDecoration: "none", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>🎨 Component Styling</Link>
+          <Link href="/globe" style={{ color: "#a1a1aa", textDecoration: "none", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>🗺️ Globe View</Link>
+        </div>
+      </header>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gridTemplateRows: "1fr 1fr",
+          flex: 1,
           overflow: "hidden",
         }}
       >
-        <header
+        {/* --- QUADRANT 1: SENT PAYLOAD (TOP LEFT) --- */}
+        <section
           style={{
-            background: "#18181b",
-            padding: "0.75rem 1rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            borderRight: "1px solid #27272a",
             borderBottom: "1px solid #27272a",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-          <span style={{ fontWeight: "bold", color: "#38bdf8" }}>
-            📤 Quadrant 1: JSON Payload Sent to Gemini
-          </span>
-          <span
+          <header
             style={{
-              fontSize: "0.75rem",
-              background: "#0c4a6e",
-              color: "#38bdf8",
-              padding: "2px 8px",
-              borderRadius: "4px",
+              background: "#18181b",
+              padding: "0.75rem 1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid #27272a",
             }}
           >
-            Total Sent: {sentTokenCount} tokens
-          </span>
-        </header>
-        <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
-          {sentPayload ? (
-            <CollapsibleJsonViewer data={sentPayload} depth={0} />
-          ) : (
-            <div style={{ color: "#71717a", fontStyle: "italic" }}>
-              No request payload has been sent yet. Submit a message to populate
-              this view.
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* --- QUADRANT 2: RECEIVED PAYLOAD (TOP RIGHT) --- */}
-      <section
-        style={{
-          borderBottom: "1px solid #27272a",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        <header
-          style={{
-            background: "#18181b",
-            padding: "0.75rem 1rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: "1px solid #27272a",
-          }}
-        >
-          <span style={{ fontWeight: "bold", color: "#22c55e" }}>
-            📥 Quadrant 2: JSON Response from Gemini
-          </span>
-          <span
-            style={{
-              fontSize: "0.75rem",
-              background: "#064e3b",
-              color: "#34d399",
-              padding: "2px 8px",
-              borderRadius: "4px",
-            }}
-          >
-            Total Received: {receivedTokenCount} tokens
-          </span>
-        </header>
-        <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
-          {receivedPayload ? (
-            <CollapsibleJsonViewer data={receivedPayload} depth={0} />
-          ) : (
-            <div style={{ color: "#71717a", fontStyle: "italic" }}>
-              No response payload received yet. Submit a message to populate
-              this view.
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* --- QUADRANT 3: CHAT DIALOGUE (BOTTOM LEFT) --- */}
-      <section
-        style={{
-          borderRight: "1px solid #27272a",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          background: "#0c0c0e",
-        }}
-      >
-        <header
-          style={{
-            background: "#18181b",
-            padding: "0.75rem 1rem",
-            fontWeight: "bold",
-            color: "#eab308",
-            borderBottom: "1px solid #27272a",
-          }}
-        >
-          💬 Quadrant 3: Chat Prompt & LLM Response
-        </header>
-
-        {/* Dialogue Feed */}
-        <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
-          {chatHistory.length === 0 && (
-            <div
+            <span style={{ fontWeight: "bold", color: "#38bdf8" }}>
+              📤 Quadrant 1: JSON Payload Sent to Gemini
+            </span>
+            <span
               style={{
-                color: "#71717a",
-                lineHeight: "1.6",
-                maxWidth: "500px",
-                margin: "2rem auto",
-                textAlign: "center",
+                fontSize: "0.75rem",
+                background: "#0c4a6e",
+                color: "#38bdf8",
+                padding: "2px 8px",
+                borderRadius: "4px",
               }}
             >
-              <p style={{ fontWeight: "bold", color: "#e4e4e7" }}>
-                🤖 Welcome to the Trip Flow Gemini Playground!
-              </p>
-              <p style={{ fontSize: "0.875rem" }}>
-                Type a natural language instruction below to update your trip.
-                For example:{" "}
-                <i>
-                  {
-                    '"Add an activity named Louvre museum in Paris for 50 USD on June 3rd"'
-                  }
-                </i>
-              </p>
-            </div>
-          )}
-
-          {chatHistory.map((msg, idx) => (
-            <div
-              key={idx}
-              style={{
-                marginBottom: "1rem",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: msg.role === "user" ? "flex-end" : "flex-start",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#71717a",
-                  marginBottom: "4px",
-                }}
-              >
-                {msg.role === "user" ? "YOU" : "GEMINI"}
-              </span>
-              <div
-                style={{
-                  background: msg.role === "user" ? "#2563eb" : "#27272a",
-                  color: msg.role === "user" ? "#ffffff" : "#e4e4e7",
-                  padding: "0.75rem 1rem",
-                  borderRadius: "8px",
-                  maxWidth: "80%",
-                  lineHeight: "1.4",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {msg.text}
+              Total Sent: {sentTokenCount} tokens
+            </span>
+          </header>
+          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+            {sentPayload ? (
+              <CollapsibleJsonViewer data={sentPayload} depth={0} />
+            ) : (
+              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+                No request payload has been sent yet. Submit a message to populate
+                this view.
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+        </section>
 
-          {isQuerying && (
-            <div
+        {/* --- QUADRANT 2: RECEIVED PAYLOAD (TOP RIGHT) --- */}
+        <section
+          style={{
+            borderBottom: "1px solid #27272a",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <header
+            style={{
+              background: "#18181b",
+              padding: "0.75rem 1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid #27272a",
+            }}
+          >
+            <span style={{ fontWeight: "bold", color: "#22c55e" }}>
+              📥 Quadrant 2: JSON Response from Gemini
+            </span>
+            <span
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                marginBottom: "1rem",
+                fontSize: "0.75rem",
+                background: "#064e3b",
+                color: "#34d399",
+                padding: "2px 8px",
+                borderRadius: "4px",
               }}
             >
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#71717a",
-                  marginBottom: "4px",
-                }}
-              >
-                GEMINI
-              </span>
+              Total Received: {receivedTokenCount} tokens
+            </span>
+          </header>
+          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+            {receivedPayload ? (
+              <CollapsibleJsonViewer data={receivedPayload} depth={0} />
+            ) : (
+              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+                No response payload received yet. Submit a message to populate
+                this view.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* --- QUADRANT 3: CHAT DIALOGUE (BOTTOM LEFT) --- */}
+        <section
+          style={{
+            borderRight: "1px solid #27272a",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            background: "#0c0c0e",
+          }}
+        >
+          <header
+            style={{
+              background: "#18181b",
+              padding: "0.75rem 1rem",
+              fontWeight: "bold",
+              color: "#eab308",
+              borderBottom: "1px solid #27272a",
+            }}
+          >
+            💬 Quadrant 3: Chat Prompt & LLM Response
+          </header>
+
+          {/* Dialogue Feed */}
+          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+            {chatHistory.length === 0 && (
               <div
                 style={{
-                  background: "#18181b",
-                  color: "#eab308",
-                  padding: "0.75rem 1rem",
-                  borderRadius: "8px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
+                  color: "#71717a",
+                  lineHeight: "1.6",
+                  maxWidth: "500px",
+                  margin: "2rem auto",
+                  textAlign: "center",
+                }}
+              >
+                <p style={{ fontWeight: "bold", color: "#e4e4e7" }}>
+                  🤖 Welcome to the Trip Flow Gemini Playground!
+                </p>
+                <p style={{ fontSize: "0.875rem" }}>
+                  Type a natural language instruction below to update your trip.
+                  For example:{" "}
+                  <i>
+                    {
+                      '"Add an activity named Louvre museum in Paris for 50 USD on June 3rd"'
+                    }
+                  </i>
+                </p>
+              </div>
+            )}
+
+            {chatHistory.map((msg, idx) => (
+              <div
+                key={idx}
+                style={{
+                  marginBottom: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: msg.role === "user" ? "flex-end" : "flex-start",
                 }}
               >
                 <span
-                  className="animate-pulse"
                   style={{
-                    display: "inline-block",
-                    width: "8px",
-                    height: "8px",
-                    background: "#eab308",
-                    borderRadius: "50%",
+                    fontSize: "0.75rem",
+                    color: "#71717a",
+                    marginBottom: "4px",
                   }}
-                />
-                AI is planning & validating schema delta...
+                >
+                  {msg.role === "user" ? "YOU" : "GEMINI"}
+                </span>
+                <div
+                  style={{
+                    background: msg.role === "user" ? "#2563eb" : "#27272a",
+                    color: msg.role === "user" ? "#ffffff" : "#e4e4e7",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "8px",
+                    maxWidth: "80%",
+                    lineHeight: "1.4",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {msg.text}
+                </div>
               </div>
-            </div>
-          )}
+            ))}
 
-          {validationError && (
-            <div
+            {isQuerying && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  marginBottom: "1rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#71717a",
+                    marginBottom: "4px",
+                  }}
+                >
+                  GEMINI
+                </span>
+                <div
+                  style={{
+                    background: "#18181b",
+                    color: "#eab308",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "8px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span
+                    className="animate-pulse"
+                    style={{
+                      display: "inline-block",
+                      width: "8px",
+                      height: "8px",
+                      background: "#eab308",
+                      borderRadius: "50%",
+                    }}
+                  />
+                  AI is planning & validating schema delta...
+                </div>
+              </div>
+            )}
+
+            {validationError && (
+              <div
+                style={{
+                  background: "#450a0a",
+                  border: "1px solid #ef4444",
+                  color: "#fca5a5",
+                  padding: "0.75rem 1rem",
+                  borderRadius: "8px",
+                  marginTop: "1rem",
+                  fontSize: "0.875rem",
+                }}
+              >
+                <strong>⚠️ Validation Error:</strong> {validationError}
+              </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
+
+          {/* Input Form */}
+          <form
+            onSubmit={handleSendPrompt}
+            style={{
+              padding: "1rem",
+              background: "#18181b",
+              borderTop: "1px solid #27272a",
+              display: "flex",
+              gap: "0.75rem",
+            }}
+          >
+            <textarea
+              value={promptInput}
+              onChange={(e) => setPromptInput(e.target.value)}
+              placeholder="Tell Gemini what modifications to apply to your Trip..."
+              disabled={isQuerying}
               style={{
-                background: "#450a0a",
-                border: "1px solid #ef4444",
-                color: "#fca5a5",
-                padding: "0.75rem 1rem",
-                borderRadius: "8px",
-                marginTop: "1rem",
+                flex: 1,
+                background: "#09090b",
+                color: "#f4f4f5",
+                border: "1px solid #27272a",
+                borderRadius: "6px",
+                padding: "0.75rem",
+                resize: "none",
+                height: "50px",
+                fontFamily: "monospace",
+                outline: "none",
+              }}
+            />
+            <button
+              type="submit"
+              disabled={isQuerying || !promptInput.trim()}
+              style={{
+                background:
+                  isQuerying || !promptInput.trim() ? "#27272a" : "#2563eb",
+                color: isQuerying || !promptInput.trim() ? "#71717a" : "#ffffff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "0 1.25rem",
+                cursor:
+                  isQuerying || !promptInput.trim() ? "not-allowed" : "pointer",
+                fontWeight: "bold",
                 fontSize: "0.875rem",
               }}
             >
-              <strong>⚠️ Validation Error:</strong> {validationError}
-            </div>
-          )}
-          <div ref={chatBottomRef} />
-        </div>
+              Send
+            </button>
+          </form>
+        </section>
 
-        {/* Input Form */}
-        <form
-          onSubmit={handleSendPrompt}
+        {/* --- QUADRANT 4: LIVE APP STATE (BOTTOM RIGHT) --- */}
+        <section
           style={{
-            padding: "1rem",
-            background: "#18181b",
-            borderTop: "1px solid #27272a",
             display: "flex",
-            gap: "0.75rem",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-          <textarea
-            value={promptInput}
-            onChange={(e) => setPromptInput(e.target.value)}
-            placeholder="Tell Gemini what modifications to apply to your Trip..."
-            disabled={isQuerying}
+          <header
             style={{
-              flex: 1,
-              background: "#09090b",
-              color: "#f4f4f5",
-              border: "1px solid #27272a",
-              borderRadius: "6px",
-              padding: "0.75rem",
-              resize: "none",
-              height: "50px",
-              fontFamily: "monospace",
-              outline: "none",
-            }}
-          />
-          <button
-            type="submit"
-            disabled={isQuerying || !promptInput.trim()}
-            style={{
-              background:
-                isQuerying || !promptInput.trim() ? "#27272a" : "#2563eb",
-              color: isQuerying || !promptInput.trim() ? "#71717a" : "#ffffff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "0 1.25rem",
-              cursor:
-                isQuerying || !promptInput.trim() ? "not-allowed" : "pointer",
+              background: "#18181b",
+              padding: "0.75rem 1rem",
               fontWeight: "bold",
-              fontSize: "0.875rem",
+              color: "#a855f7",
+              borderBottom: "1px solid #27272a",
             }}
           >
-            Send
-          </button>
-        </form>
-      </section>
-
-      {/* --- QUADRANT 4: LIVE APP STATE (BOTTOM RIGHT) --- */}
-      <section
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        <header
-          style={{
-            background: "#18181b",
-            padding: "0.75rem 1rem",
-            fontWeight: "bold",
-            color: "#a855f7",
-            borderBottom: "1px solid #27272a",
-          }}
-        >
-          ⚙️ Quadrant 4: Live Zustand Graph App State
-        </header>
-        <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
-          {graph ? (
-            <CollapsibleJsonViewer data={graph} depth={0} />
-          ) : (
-            <div style={{ color: "#71717a", fontStyle: "italic" }}>
-              No active graph state found.
-            </div>
-          )}
-        </div>
-      </section>
+            ⚙️ Quadrant 4: Live Zustand Graph App State
+          </header>
+          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+            {graph ? (
+              <CollapsibleJsonViewer data={graph} depth={0} />
+            ) : (
+              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+                No active graph state found.
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
