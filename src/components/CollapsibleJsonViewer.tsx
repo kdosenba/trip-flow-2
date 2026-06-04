@@ -125,7 +125,8 @@ const SpecTooltip: React.FC<{ textKey: string; children: React.ReactNode }> = ({
  * Heuristic to estimate token count of a JSON segment
  */
 const estimateTokens = (val: unknown): number => {
-  return Math.ceil(JSON.stringify(val).length / 4);
+  const str = JSON.stringify(val);
+  return Math.ceil((str ? str.length : 0) / 4);
 };
 
 export const CollapsibleJsonViewer: React.FC<CollapsibleJsonViewerProps> = ({

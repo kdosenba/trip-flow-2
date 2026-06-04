@@ -12,6 +12,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
   cityHub,
 }) => {
   const graph = useTripFlowStore((state) => state.graph);
+  const isPlanning = useTripFlowStore((state) => state.isPlanning);
   const updateTravelerCount = useTripFlowStore(
     (state) => state.updateTravelerCount,
   );
@@ -90,7 +91,8 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
         </span>
         <div className="inline-flex items-center gap-1.5 rounded bg-black/30 p-1">
           <button
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+            disabled={isPlanning}
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(
                 cityHub.id,
@@ -104,7 +106,8 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
             {cityHub.travelerCount}
           </span>
           <button
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+            disabled={isPlanning}
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)
             }

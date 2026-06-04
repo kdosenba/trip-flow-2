@@ -32,6 +32,13 @@ export const AirArcPreview: React.FC = () => {
         );
         map = mapInstance;
 
+        mapInstance.on("styleimagemissing", (e) => {
+          const id = e.id;
+          const size = 16;
+          const data = new Uint8Array(size * size * 4);
+          mapInstance.addImage(id, { width: size, height: size, data });
+        });
+
         mapInstance.on("load", () => {
           if (!isMounted) return;
 

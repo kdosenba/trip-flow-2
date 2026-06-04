@@ -23,9 +23,17 @@ export const TargetDateRangeDashboard: React.FC<
   const timezone = useTripFlowStore(
     (state) => state.graph?.clientContext.timezone,
   );
+  const isPlanning = useTripFlowStore((state) => state.isPlanning);
 
   // Local edit states
   const [isEditing, setIsEditing] = useState(false);
+
+  // Auto-close edit mode when planning starts
+  React.useEffect(() => {
+    if (isPlanning) {
+      setIsEditing(false);
+    }
+  }, [isPlanning]);
 
   // Resolve target date values
   const isRangeModeInitial = data.target ? "range" in data.target : false;
@@ -174,7 +182,8 @@ export const TargetDateRangeDashboard: React.FC<
               <div className="mt-1 flex rounded-sm border border-border-color bg-black/30 p-0.5">
                 <button
                   type="button"
-                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 ${
+                  disabled={isPlanning}
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
                     isRange
                       ? "bg-white/10 text-text-primary"
                       : "text-text-muted"
@@ -185,7 +194,8 @@ export const TargetDateRangeDashboard: React.FC<
                 </button>
                 <button
                   type="button"
-                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 ${
+                  disabled={isPlanning}
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
                     !isRange
                       ? "bg-white/10 text-text-primary"
                       : "text-text-muted"
@@ -200,13 +210,15 @@ export const TargetDateRangeDashboard: React.FC<
                 <div className="flex gap-0.5">
                   <input
                     type="date"
-                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
+                    disabled={isPlanning}
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                     value={startInput}
                     onChange={(e) => setStartInput(e.target.value)}
                   />
                   <input
                     type="date"
-                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
+                    disabled={isPlanning}
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                     value={endInput}
                     onChange={(e) => setEndInput(e.target.value)}
                   />
@@ -214,7 +226,8 @@ export const TargetDateRangeDashboard: React.FC<
               ) : (
                 <input
                   type="date"
-                  className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
+                  disabled={isPlanning}
+                  className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
                 />
@@ -230,7 +243,8 @@ export const TargetDateRangeDashboard: React.FC<
         {/* Edit Button */}
         <button
           type="button"
-          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300"
+          disabled={isPlanning}
+          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={(e) => {
             e.stopPropagation();
             if (isEditing) {
@@ -245,7 +259,7 @@ export const TargetDateRangeDashboard: React.FC<
           ) : (
             <Edit2
               size={12}
-              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100"
+              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100 disabled:cursor-not-allowed"
             />
           )}
         </button>
@@ -311,7 +325,8 @@ export const TargetDateRangeDashboard: React.FC<
                   Edit travel context notes
                 </span>
                 <textarea
-                  className="box-border h-11 w-full resize-y rounded-sm border border-border-color bg-black/35 p-1 font-sans text-xxs text-text-primary outline-none focus:border-white/15"
+                  disabled={isPlanning}
+                  className="box-border h-11 w-full resize-y rounded-sm border border-border-color bg-black/35 p-1 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                   value={contextInput}
                   onChange={(e) => setContextInput(e.target.value)}
                   placeholder="Notes..."

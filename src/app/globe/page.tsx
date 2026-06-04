@@ -279,6 +279,15 @@ export default function GlobePage() {
           maxPitch: 85,
         });
 
+        mapInstance.on("styleimagemissing", (e) => {
+          const id = e.id;
+          const size = 16;
+          const data = new Uint8Array(size * size * 4);
+          if (mapInstance) {
+            mapInstance.addImage(id, { width: size, height: size, data });
+          }
+        });
+
         mapRef.current = mapInstance;
 
         mapInstance.on("load", () => {

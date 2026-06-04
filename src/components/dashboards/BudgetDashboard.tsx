@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Budget, BudgetSchema } from "../../types/schema";
 import {
   Wallet,
@@ -9,6 +9,7 @@ import {
   ChevronUp,
   AlertTriangle,
 } from "lucide-react";
+import { useTripFlowStore } from "../../store";
 
 interface BudgetDashboardProps {
   data: Budget;
@@ -28,6 +29,8 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
     { label: "Heathrow Layover Fee", cost: 35 },
   ],
 }) => {
+  const isPlanning = useTripFlowStore((state) => state.isPlanning);
+
   // Editing state toggles
   const [isEditing, setIsEditing] = useState(false);
   const [minInput, setMinInput] = useState(
@@ -36,6 +39,13 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
   const [maxInput, setMaxInput] = useState(
     data.budget.max !== undefined ? data.budget.max.toString() : "",
   );
+
+  // Auto-close edit mode when planning starts
+  useEffect(() => {
+    if (isPlanning) {
+      setIsEditing(false);
+    }
+  }, [isPlanning]);
 
   // Breakdown toggle state
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -130,14 +140,16 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
             >
               <input
                 type="text"
-                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15"
+                disabled={isPlanning}
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Min"
                 value={minInput}
                 onChange={(e) => setMinInput(e.target.value)}
               />
               <input
                 type="text"
-                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15"
+                disabled={isPlanning}
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Max"
                 value={maxInput}
                 onChange={(e) => setMaxInput(e.target.value)}
@@ -153,7 +165,8 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
         {/* Edit/Save Trigger */}
         <button
           type="button"
-          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300"
+          disabled={isPlanning}
+          className="ml-auto flex cursor-pointer items-center justify-center border-none bg-transparent p-1 text-text-muted transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={(e) => {
             e.stopPropagation();
             if (isEditing) {
@@ -168,7 +181,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
           ) : (
             <Edit2
               size={12}
-              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100"
+              className="cursor-pointer opacity-50 transition-all duration-300 hover:text-text-primary hover:opacity-100 disabled:cursor-not-allowed"
             />
           )}
         </button>

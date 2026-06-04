@@ -16,6 +16,7 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
   onClick,
 }) => {
   const graph = useTripFlowStore((state) => state.graph);
+  const isPlanning = useTripFlowStore((state) => state.isPlanning);
   const updateTravelerCount = useTripFlowStore(
     (state) => state.updateTravelerCount,
   );
@@ -87,7 +88,8 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+              disabled={isPlanning}
+              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() =>
                 updateTravelerCount(
                   originCity.id,
@@ -102,7 +104,8 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
               {travelerCount}
             </span>
             <button
-              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95"
+              disabled={isPlanning}
+              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() =>
                 updateTravelerCount(originCity.id, travelerCount + 1)
               }

@@ -2,6 +2,7 @@ import React from "react";
 import { CityHub } from "../../types/schema";
 import { Trash2 } from "lucide-react";
 import { DateTimeFormatter } from "../../lib/utils/date";
+import { useTripFlowStore } from "../../store";
 
 interface CityHubCardProps {
   cityHub: CityHub;
@@ -16,43 +17,94 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
   onClick,
   onDelete,
 }) => {
-  // Calculate date range and days count dynamically from itinerary
+  const graph = useTripFlowStore((state) => state.graph);
+  const isPlanning = useTripFlowStore((state) => state.isPlanning);
+
+  // Calculate date range and days count dynamically from transits and itinerary
   const getItineraryRangeAndDuration = () => {
-    if (!cityHub.itinerary || cityHub.itinerary.length === 0) {
-      return { rangeLabel: "FLEXIBLE", days: 1 };
-    }
+    // Find arrival transit segment ending at this hub
+    const arrivalTransit = graph
+      ? Object.values(graph.Transits).find((t) => t.toCityId === cityHub.id)
+      : undefined;
+    const arrivalTimeStr = arrivalTransit?.segments[arrivalTransit.segments.length - 1]?.endTime;
+    const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr).getTime() : undefined;
 
-    try {
-      let minStart = Infinity;
-      let maxEnd = -Infinity;
+    // Find departure transit segment starting from this hub
+    const departureTransit = graph
+      ? Object.values(graph.Transits).find((t) => t.fromCityId === cityHub.id)
+      : undefined;
+    const departureTimeStr = departureTransit?.segments[0]?.startTime;
+    const departureTime = departureTimeStr ? new Date(departureTimeStr).getTime() : undefined;
 
+    // Itinerary items bounds
+    let minItineraryStart = Infinity;
+    let maxItineraryEnd = -Infinity;
+
+    if (cityHub.itinerary && cityHub.itinerary.length > 0) {
       cityHub.itinerary.forEach((item) => {
         const s = new Date(item.startTime).getTime();
-        minStart = Math.min(minStart, s);
-        if (item.endTime) {
-          const e = new Date(item.endTime).getTime();
-          maxEnd = Math.max(maxEnd, e);
-        } else {
-          maxEnd = Math.max(maxEnd, s);
+        if (!isNaN(s)) {
+          minItineraryStart = Math.min(minItineraryStart, s);
+          if (item.endTime) {
+            const e = new Date(item.endTime).getTime();
+            if (!isNaN(e)) maxItineraryEnd = Math.max(maxItineraryEnd, e);
+          } else {
+            maxItineraryEnd = Math.max(maxItineraryEnd, s);
+          }
         }
       });
-
-      const rangeLabel = DateTimeFormatter.formatRange(
-        new Date(minStart).toISOString(),
-        new Date(maxEnd).toISOString(),
-        cityHub.timezone,
-      );
-
-      const diffTime = Math.abs(maxEnd - minStart);
-      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-      return { rangeLabel, days };
-    } catch {
-      return { rangeLabel: "JUN 10 - JUN 15", days: 6 };
     }
+
+    // Determine final bounds
+    const start = arrivalTime !== undefined ? arrivalTime : (minItineraryStart !== Infinity ? minItineraryStart : undefined);
+    const end = departureTime !== undefined ? departureTime : (maxItineraryEnd !== -Infinity ? maxItineraryEnd : undefined);
+
+    if (start === undefined && end === undefined) {
+      return { rangeLabel: "FLEXIBLE", days: 1, isFlexible: true };
+    }
+
+    const hasFlexibleEnd = departureTime === undefined;
+
+    // Format range label
+    let rangeLabel = "";
+    if (start !== undefined && end !== undefined) {
+      try {
+        rangeLabel = DateTimeFormatter.formatRange(
+          new Date(start).toISOString(),
+          new Date(end).toISOString(),
+          cityHub.timezone
+        );
+        if (hasFlexibleEnd) {
+          rangeLabel += " (FLEXIBLE)";
+        }
+      } catch {
+        rangeLabel = `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}`;
+      }
+    } else if (start !== undefined) {
+      try {
+        rangeLabel = `${DateTimeFormatter.format(new Date(start).toISOString(), cityHub.timezone, { month: "short", day: "numeric" })} - ?`;
+      } catch {
+        rangeLabel = `${new Date(start).toLocaleDateString()} - ?`;
+      }
+    } else if (end !== undefined) {
+      try {
+        rangeLabel = `? - ${DateTimeFormatter.format(new Date(end).toISOString(), cityHub.timezone, { month: "short", day: "numeric" })}`;
+      } catch {
+        rangeLabel = `? - ${new Date(end).toLocaleDateString()}`;
+      }
+    }
+
+    // Calculate duration in days
+    let days = 1;
+    if (start !== undefined && end !== undefined) {
+      const diffTime = Math.abs(end - start);
+      days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    return { rangeLabel, days, isFlexible: hasFlexibleEnd };
   };
 
-  const { rangeLabel, days } = getItineraryRangeAndDuration();
+  const { rangeLabel, days, isFlexible } = getItineraryRangeAndDuration();
 
   const getDurationDisplay = (numDays: number) => {
     if (numDays >= 28) {
@@ -76,6 +128,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
   };
 
   const { value: displayValue, unit: displayUnit } = getDurationDisplay(days);
+  const finalDisplayValue = isFlexible ? `${displayValue}+` : displayValue;
 
   return (
     <div
@@ -88,7 +141,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
     >
       {/* Left duration badge */}
       <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-md bg-white px-1 shadow-hub-badge">
-        <span className="text-lg font-extrabold leading-none text-hub-pill-num">{displayValue}</span>
+        <span className="text-lg font-extrabold leading-none text-hub-pill-num">{finalDisplayValue}</span>
         <span className="text-super-small font-extrabold leading-none text-hub-pill-lbl">
           {displayUnit}
         </span>
@@ -107,7 +160,8 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
       {/* Right delete/trash icon */}
       {onDelete && (
         <button
-          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-hub-pill-muted transition-all duration-300 hover:bg-white/10 hover:text-red-300"
+          disabled={isPlanning}
+          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-hub-pill-muted transition-all duration-300 hover:bg-white/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-hub-pill-muted"
           type="button"
           onClick={(e) => {
             e.stopPropagation();

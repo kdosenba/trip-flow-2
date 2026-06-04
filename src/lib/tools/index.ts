@@ -10,6 +10,7 @@ import {
   generateTransitId,
 } from "../utils/id";
 import { getGeocodingService } from "../services/geocoding";
+import { recalculateEstimatesAndActuals } from "../utils/graph";
 
 /**
  * Custom Zod-to-Standard JSON Schema Compiler
@@ -491,5 +492,6 @@ export const executeTool = async (
       throw new Error(`Unknown function tool invocation: "${name}"`);
   }
 
+  recalculateEstimatesAndActuals(updatedGraph);
   return updatedGraph;
 };

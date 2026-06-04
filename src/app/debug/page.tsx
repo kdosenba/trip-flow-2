@@ -19,6 +19,7 @@ export default function DebugPage() {
     (state) => state.initializeClientContext,
   );
   const setGraph = useTripFlowStore((state) => state.setGraph);
+  const setPlanning = useTripFlowStore((state) => state.setPlanning);
 
   // Gemini API Log States
   const [sentPayload, setSentPayload] = useState<Record<
@@ -59,6 +60,7 @@ export default function DebugPage() {
     setPromptInput("");
     setValidationError(null);
     setIsQuerying(true);
+    setPlanning(true);
 
     // Add user message to local chat history
     setChatHistory((prev) => [...prev, { role: "user", text: currentPrompt }]);
@@ -103,8 +105,10 @@ export default function DebugPage() {
         );
       }
 
-      // Overwrite local Zustand store with valid graph
-      setGraph(resData.graph);
+      // Overwrite local Zustand store with the server-side validated and recalculated graph
+      if (resData.graph) {
+        setGraph(resData.graph);
+      }
 
       // Add response to chat history
       setChatHistory((prev) => [
@@ -121,6 +125,7 @@ export default function DebugPage() {
       ]);
     } finally {
       setIsQuerying(false);
+      setPlanning(false);
     }
   };
 

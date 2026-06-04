@@ -15,6 +15,8 @@ import {
 } from "../types/schema";
 import { initializeClientContext } from "../lib/utils/clientContext";
 import { generateCityHubId } from "../lib/utils/id";
+import { recalculateEstimatesAndActuals } from "../lib/utils/graph";
+
 
 interface TripFlowState {
   graph: TripFlowGraph | null;
@@ -23,6 +25,7 @@ interface TripFlowState {
   activeSuggestionId: SuggestionId | null;
   isLoadingContext: boolean;
   contextError: string | null;
+  isPlanning: boolean;
 }
 
 interface TripFlowActions {
@@ -40,6 +43,7 @@ interface TripFlowActions {
   updateTravelerCount: (id: CityHubId, count: number) => void;
   deleteCityHub: (id: CityHubId) => void;
   clearGraph: () => void;
+  setPlanning: (planning: boolean) => void;
 }
 
 export type TripFlowStore = TripFlowState & TripFlowActions;
@@ -53,10 +57,14 @@ export const useTripFlowStore = create<TripFlowStore>()(
       activeSuggestionId: null,
       isLoadingContext: true,
       contextError: null,
+      isPlanning: false,
 
       setGraph: (graph) => {
         set((state) => {
           state.graph = graph;
+          if (state.graph) {
+            recalculateEstimatesAndActuals(state.graph);
+          }
         });
       },
 
@@ -64,6 +72,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.Locations[location.id] = location;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -72,6 +81,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.CityHubs[hub.id] = hub;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -80,6 +90,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.Transits[transit.id] = transit;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -88,6 +99,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.suggestions[suggestion.id] = suggestion;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -114,6 +126,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.budget = budget;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -122,6 +135,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             state.graph.targetDateRange = range;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -130,6 +144,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph && state.graph.CityHubs[id]) {
             state.graph.CityHubs[id].travelerCount = count;
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -138,6 +153,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph) {
             delete state.graph.CityHubs[id];
+            recalculateEstimatesAndActuals(state.graph);
           }
         });
       },
@@ -172,6 +188,7 @@ export const useTripFlowStore = create<TripFlowStore>()(
               suggestions: {},
               clientContext,
             };
+            recalculateEstimatesAndActuals(state.graph);
             state.isLoadingContext = false;
           });
         } catch (err) {
@@ -208,24 +225,26 @@ export const useTripFlowStore = create<TripFlowStore>()(
                 min: undefined,
                 max: undefined,
               };
-              state.graph.budget.estimate = {
-                low: undefined,
-                high: undefined,
-              };
             }
 
             // Reset target date range context and actual bounds but keep the structure
             if (state.graph.targetDateRange) {
               state.graph.targetDateRange.target = undefined;
               state.graph.targetDateRange.context = undefined;
-              state.graph.targetDateRange.actual = undefined;
             }
+
+            recalculateEstimatesAndActuals(state.graph);
 
             // Reset active selections
             state.activeCityId = null;
             state.activeEdgeId = null;
             state.activeSuggestionId = null;
           }
+        });
+      },
+      setPlanning: (planning) => {
+        set((state) => {
+          state.isPlanning = planning;
         });
       },
     })),

@@ -18,6 +18,8 @@ import {
   generateSuggestionId,
 } from "../lib/utils/id";
 import { getCurrencyForCountry } from "../lib/utils/clientContext";
+import { recalculateEstimatesAndActuals } from "../lib/utils/graph";
+import { LocationId, CityHubId, TransitId } from "./schema";
 import { fetchWhereAmI } from "../lib/adapters/travelpayouts";
 
 const createLocationId = (name = "mock_loc") => generateLocationId(name);
@@ -412,6 +414,100 @@ export const runSchemaTests = async () => {
     );
   } catch (err) {
     console.error("❌ Dynamic Currency Resolution verification failed", err);
+    throw err;
+  }
+
+  // 8. Recalculation logic verification
+  try {
+    const graph: TripFlowGraph = {
+      Locations: {
+        "loc-1": {
+          id: "loc-1" as LocationId,
+          name: "Attraction 1",
+          address: "Address 1",
+          coordinates: { lat: 48.8, lng: 2.3 },
+          category: "ACTIVITY",
+          price: { typicalCost: 100 },
+        },
+        "loc-2": {
+          id: "loc-2" as LocationId,
+          name: "Hotel 1",
+          address: "Address 2",
+          coordinates: { lat: 48.9, lng: 2.4 },
+          category: "LODGING",
+          price: { actualCost: 500, typicalCost: 600 },
+        },
+      },
+      CityHubs: {
+        "hub-1": {
+          id: "hub-1" as CityHubId,
+          cityName: "Paris",
+          country: "France",
+          coordinates: { lat: 48.8, lng: 2.3 },
+          type: "HUB",
+          travelerCount: 1,
+          itinerary: [
+            {
+              LocationId: "loc-1" as LocationId,
+              startTime: "2026-07-10T12:00:00Z",
+              endTime: "2026-07-10T14:00:00Z",
+            },
+          ],
+        },
+      },
+      Transits: {
+        "transit-1": {
+          id: "transit-1" as TransitId,
+          fromCityId: "hub-nyc" as CityHubId,
+          toCityId: "hub-par" as CityHubId,
+          price: { typicalCost: 1000 },
+          segments: [
+            {
+              fromLocationId: "loc-jfk" as LocationId,
+              toLocationId: "loc-cdg" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+      },
+      suggestions: {},
+      clientContext: {
+        location: {
+          name: "NYC",
+          country_name: "USA",
+          country_code: "US",
+          coordinates: { lat: 40, lng: -74 },
+        },
+        language: "en",
+        currency: "USD",
+        timezone: "America/New_York",
+      },
+    };
+
+    recalculateEstimatesAndActuals(graph);
+
+    // Expected costs:
+    // loc-1: typicalCost 100 (low: 90, high: 110)
+    // loc-2: actualCost 500 (low: 500, high: 500)
+    // transit-1: typicalCost 1000 (low: 900, high: 1100)
+    // total low: 90 + 500 + 900 = 1490
+    // total high: 110 + 500 + 1100 = 1710
+    if (graph.budget?.estimate.low !== 1490 || graph.budget?.estimate.high !== 1710) {
+      throw new Error(`Estimate mismatch: expected low 1490 / high 1710, got low ${graph.budget?.estimate.low} / high ${graph.budget?.estimate.high}`);
+    }
+
+    // Expected actual dates:
+    // Earliest start: transit segment start "2026-07-09T08:00:00Z"
+    // Latest end: itinerary item end "2026-07-10T14:00:00Z"
+    if (graph.targetDateRange?.actual?.start !== "2026-07-09T08:00:00.000Z" || graph.targetDateRange?.actual?.end !== "2026-07-10T14:00:00.000Z") {
+      throw new Error(`Actual dates mismatch: expected start "2026-07-09T08:00:00.000Z" / end "2026-07-10T14:00:00.000Z", got start ${graph.targetDateRange?.actual?.start} / end ${graph.targetDateRange?.actual?.end}`);
+    }
+
+    console.log("✅ Auto Recalculation logic: verified successfully.");
+  } catch (err) {
+    console.error("❌ Auto Recalculation logic verification failed", err);
     throw err;
   }
 
