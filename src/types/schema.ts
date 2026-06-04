@@ -44,10 +44,23 @@ export const CostSchema = z.object({
 });
 export type Cost = z.infer<typeof CostSchema>;
 
-export const BudgetDetailSchema = z.object({
-  min: z.number().nonnegative("Budget cannot be negative").optional(),
-  max: z.number().nonnegative("Budget cannot be negative").optional(),
-});
+export const BudgetDetailSchema = z
+  .object({
+    min: z.number().nonnegative("Budget cannot be negative").optional(),
+    max: z.number().nonnegative("Budget cannot be negative").optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.min !== undefined && data.max !== undefined) {
+        return data.max > data.min;
+      }
+      return true;
+    },
+    {
+      message: "Max budget must be greater than min budget",
+      path: ["max"],
+    },
+  );
 
 export const EstimateDetailSchema = z.object({
   low: z.number().nonnegative("Estimate cannot be negative").optional(),

@@ -78,6 +78,10 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
       setValidationError("Max must be a number");
       return;
     }
+    if (parsedMin !== undefined && parsedMax !== undefined && parsedMax <= parsedMin) {
+      setValidationError("Max budget must be greater than min budget");
+      return;
+    }
 
     const payload = {
       budget: {
@@ -105,7 +109,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
   };
 
   return (
-    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
+    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-4 shadow-glass backdrop-blur-xl transition-all duration-300">
       <div className="absolute top-0 left-0 h-indicator w-full bg-suggest-color shadow-glow-suggest" />
 
       {/* BUDGET ROW */}

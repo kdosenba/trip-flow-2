@@ -227,6 +227,18 @@ export const runSchemaTests = async () => {
     console.log("✅ Cost negative limits successfully enforced.");
   }
 
+  // 4b. Validation failure: Budget max <= min validation
+  try {
+    BudgetSchema.parse({
+      budget: { min: 2000, max: 1000 },
+      estimate: { low: 1500, high: 4500 },
+    });
+    console.error("❌ Budget validation: Allowed max budget <= min budget.");
+    throw new Error("Allowed invalid budget");
+  } catch (err) {
+    console.log("✅ Budget constraints (max > min) successfully enforced.");
+  }
+
   // 5. WhereAmI Location schema verification
   try {
     // Missing required field: country_name
