@@ -93,3 +93,4 @@ _Jot down raw thoughts, user feedback, and future feature expansions here before
 - [ ] **[TF-42]** Automatic calculation of budget estimate and trip actual dates. We should not allow those to be manually set or cleared. They should just recalculate as the trip is changed.
 - [ ] **[TF-43]** Modify the budget breakdown to show breakdown by meal, lodging, transportation, activities.
 - [ ] **[TF-44]** Support cities with an arrival date but no departure date in the UX (e.g. dynamic day calculation and customized date ranges).
+- [ ] **[TF-45]** Expand target date range details section to show travel vs hub duration split, or scheduled vs free exploration time.
