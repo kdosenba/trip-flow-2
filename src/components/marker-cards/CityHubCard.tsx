@@ -54,26 +54,49 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
 
   const { rangeLabel, days } = getItineraryRangeAndDuration();
 
+  const getDurationDisplay = (numDays: number) => {
+    if (numDays >= 28) {
+      const val = (Math.ceil((numDays / 30) * 10) / 10).toFixed(1);
+      return {
+        value: val,
+        unit: parseFloat(val) === 1.0 ? "MONTH" : "MONTHS",
+      };
+    }
+    if (numDays > 6) {
+      const val = (Math.ceil((numDays / 7) * 10) / 10).toFixed(1);
+      return {
+        value: val,
+        unit: parseFloat(val) === 1.0 ? "WEEK" : "WEEKS",
+      };
+    }
+    return {
+      value: String(numDays),
+      unit: numDays === 1 ? "DAY" : "DAYS",
+    };
+  };
+
+  const { value: displayValue, unit: displayUnit } = getDurationDisplay(days);
+
   return (
     <div
-      className={`relative box-border flex w-card-max cursor-pointer items-center rounded-full border-1.5 bg-bg-hub-pill p-1 pr-2.5 shadow-glass transition-all duration-300 after:absolute after:-bottom-1.5 after:left-1/2 after:block after:w-0 after:-translate-x-1/2 after:border-x-6 after:border-t-6 after:border-b-0 after:border-x-transparent after:transition-all after:duration-300 after:content-empty hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-fit max-w-card-max cursor-pointer items-center rounded-lg border-1.5 bg-bg-hub-pill p-1.5 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
         isActive
-          ? "border-hub-color shadow-glow-hub after:border-t-hub-color"
-          : "border-transparent after:border-t-bg-hub-pill"
+          ? "border-hub-color shadow-glow-hub"
+          : "border-transparent"
       }`}
       onClick={onClick}
     >
       {/* Left duration badge */}
-      <div className="flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-full bg-white leading-none shadow-hub-badge">
-        <span className="text-lg font-extrabold text-hub-pill-num">{days}</span>
-        <span className="text-super-small font-extrabold text-hub-pill-lbl">
-          {days > 1 ? "DAYS" : "DAY"}
+      <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-md bg-white px-1 shadow-hub-badge">
+        <span className="text-lg font-extrabold leading-none text-hub-pill-num">{displayValue}</span>
+        <span className="text-super-small font-extrabold leading-none text-hub-pill-lbl">
+          {displayUnit}
         </span>
       </div>
 
       {/* Middle city & schedule info */}
       <div className="ml-2 flex grow flex-col overflow-hidden">
-        <h4 className="m-0 truncate text-sm-dense font-bold text-white">
+        <h4 className="m-0 break-words text-sm-dense font-bold text-white" style={{ whiteSpace: "normal" }}>
           {cityHub.cityName}
         </h4>
         <span className="mt-0.5 text-xxs font-bold text-hub-pill-muted">

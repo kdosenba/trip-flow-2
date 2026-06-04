@@ -60,7 +60,7 @@ _Focuses on creating a stunning, responsive, and tactile web experience to visua
 - [ ] **[TF-18]** Implement premium micro-animations (hover transitions, active states, loading indicators)
 - [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together.
 - [x] **[TF-31]** Review and audit `OriginCityCard` styling, dynamic timezone, and inline traveler adjustments
-- [ ] **[TF-32]** Review and audit `CityHubCard` date range timezone formatting
+- [x] **[TF-32]** Review and audit `CityHubCard` date range timezone formatting
 - [ ] **[TF-33]** Review and audit `ItineraryEventCard` timeline item event formatting
 - [ ] **[TF-34]** Review and audit `TransitLocationCard` layover and standard flow timezone display
 - [ ] **[TF-35]** Review and audit `SuggestionCard` segment time formatting
