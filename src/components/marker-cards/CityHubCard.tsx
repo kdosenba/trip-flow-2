@@ -132,7 +132,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
 
   return (
     <div
-      className={`relative box-border flex w-fit max-w-card-max cursor-pointer items-center rounded-lg border-1.5 bg-bg-hub-pill p-1.5 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-fit max-w-card-max cursor-pointer items-center rounded-lg border-1.5 bg-bg-card p-1.5 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
         isActive
           ? "border-hub-color shadow-glow-hub"
           : "border-transparent"
@@ -141,18 +141,18 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
     >
       {/* Left duration badge */}
       <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-md bg-white px-1 shadow-hub-badge">
-        <span className="text-lg font-extrabold leading-none text-hub-pill-num">{finalDisplayValue}</span>
-        <span className="text-super-small font-extrabold leading-none text-hub-pill-lbl">
+        <span className="text-lg font-extrabold leading-none text-text-primary">{finalDisplayValue}</span>
+        <span className="text-super-small font-extrabold leading-none text-text-secondary">
           {displayUnit}
         </span>
       </div>
 
       {/* Middle city & schedule info */}
       <div className="ml-2 flex grow flex-col overflow-hidden">
-        <h4 className="m-0 break-words text-sm-dense font-bold text-white" style={{ whiteSpace: "normal" }}>
+        <h4 className="m-0 break-words text-sm-dense font-bold text-text-primary" style={{ whiteSpace: "normal" }}>
           {cityHub.cityName}
         </h4>
-        <span className="mt-0.5 text-xxs font-bold text-hub-pill-muted">
+        <span className="mt-0.5 text-xxs font-bold text-text-muted">
           {rangeLabel}
         </span>
       </div>
@@ -161,7 +161,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
       {onDelete && (
         <button
           disabled={isPlanning}
-          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-hub-pill-muted transition-all duration-300 hover:bg-white/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-hub-pill-muted"
+          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-text-muted transition-all duration-300 hover:bg-bg-dark hover:text-budget-danger disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-text-muted"
           type="button"
           onClick={(e) => {
             e.stopPropagation();

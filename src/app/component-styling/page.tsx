@@ -557,7 +557,7 @@ export default function ComponentStylingPage() {
         <div className="flex gap-2">
           <button
             type="button"
-            className="cursor-pointer rounded border border-suggest-color/25 bg-suggest-color/10 px-2.5 py-1 text-xs font-semibold text-suggest-color transition-colors duration-200 hover:border-transparent hover:bg-suggest-color hover:text-black"
+            className="cursor-pointer rounded border border-suggest-color/25 bg-suggest-color/10 px-2.5 py-1 text-xs font-semibold text-suggest-color transition-colors duration-200 hover:border-transparent hover:bg-suggest-color hover:text-text-primary"
             onClick={handleLoadMockData}
           >
             Load Mock Data
@@ -565,7 +565,7 @@ export default function ComponentStylingPage() {
           {hubs.length > 0 && (
             <button
               type="button"
-              className="cursor-pointer rounded border border-budget-danger/25 bg-budget-danger/10 px-2.5 py-1 text-xs font-semibold text-red-300 transition-colors duration-200 hover:border-transparent hover:bg-budget-danger hover:text-white"
+              className="cursor-pointer rounded border border-budget-danger/25 bg-budget-danger/10 px-2.5 py-1 text-xs font-semibold text-budget-danger transition-colors duration-200 hover:border-transparent hover:bg-budget-danger hover:text-white"
               onClick={handleClearData}
             >
               Clear Model
@@ -588,7 +588,7 @@ export default function ComponentStylingPage() {
       {/* Zod Schema Validation Banner */}
       <div className="mx-auto max-w-7xl">
         {schemaValidationError ? (
-          <div className="mb-6 flex items-start gap-4 rounded-xl border border-budget-danger/25 bg-budget-danger/10 p-4 text-red-200">
+          <div className="mb-6 flex items-start gap-4 rounded-xl border border-budget-danger/25 bg-budget-danger/10 p-4 text-text-primary">
             <span className="text-2xl">⚠️</span>
             <div>
               <strong>Schema Validation Failure:</strong> The active Zustand
@@ -599,7 +599,7 @@ export default function ComponentStylingPage() {
             </div>
           </div>
         ) : (
-          <div className="mb-6 flex items-start gap-4 rounded-xl border border-budget-safe/25 bg-budget-safe/10 p-4 text-emerald-200">
+          <div className="mb-6 flex items-start gap-4 rounded-xl border border-budget-safe/25 bg-budget-safe/10 p-4 text-text-primary">
             <span className="text-2xl">✓</span>
             <div>
               <strong>Model Integrity Verified:</strong> Active components are
@@ -624,7 +624,7 @@ export default function ComponentStylingPage() {
                   On-globe markers representing traveler startup bases.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Marker
               </span>
             </div>
@@ -661,7 +661,7 @@ export default function ComponentStylingPage() {
                   Pill-shaped map markers showing days durations & schedules.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Marker
               </span>
             </div>
@@ -702,7 +702,7 @@ export default function ComponentStylingPage() {
                   destination city bounds.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Marker
               </span>
             </div>
@@ -744,7 +744,7 @@ export default function ComponentStylingPage() {
                   segment connections.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Marker
               </span>
             </div>
@@ -876,7 +876,7 @@ export default function ComponentStylingPage() {
                   itinerary.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Marker
               </span>
             </div>
@@ -948,7 +948,7 @@ export default function ComponentStylingPage() {
                   sea direct connections on a MapLibre globe.
                 </p>
               </div>
-              <span className="rounded border border-border-color bg-white/5 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
                 Map Globe
               </span>
             </div>

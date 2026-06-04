@@ -131,22 +131,12 @@ export default function DebugPage() {
 
   if (isLoadingContext && !graph) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          background: "#09090b",
-          color: "#f4f4f5",
-          fontFamily: "monospace",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#eab308", marginBottom: "1rem" }}>
+      <div className="flex min-h-screen items-center justify-center bg-bg-darker font-mono text-text-primary">
+        <div className="text-center">
+          <div className="mb-4 text-suggest-color">
             ⚡ Loading client context & geolocating...
           </div>
-          <div style={{ fontSize: "0.875rem", color: "#71717a" }}>
+          <div className="text-sm text-text-muted">
             Checking coordinates & local currency standards
           </div>
         </div>
@@ -156,30 +146,12 @@ export default function DebugPage() {
 
   if (contextError) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          background: "#09090b",
-          color: "#ef4444",
-          fontFamily: "monospace",
-          padding: "2rem",
-        }}
-      >
-        <div style={{ maxWidth: "600px", textAlign: "center" }}>
-          <h2 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>
+      <div className="flex min-h-screen items-center justify-center bg-bg-darker p-8 font-mono text-budget-danger">
+        <div className="w-full max-w-[600px] text-center">
+          <h2 className="mb-4 text-eed text-lg font-bold">
             Failed to initialize critical client context
           </h2>
-          <pre
-            style={{
-              background: "#18181b",
-              padding: "1.5rem",
-              borderRadius: "8px",
-              border: "1px solid #ef4444",
-            }}
-          >
+          <pre className="rounded-lg border border-budget-danger bg-bg-dark p-6 text-left whitespace-pre-wrap">
             {contextError}
           </pre>
         </div>
@@ -188,86 +160,44 @@ export default function DebugPage() {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        background: "#09090b",
-        color: "#e4e4e7",
-        fontFamily: "monospace",
-        overflow: "hidden",
-      }}
-    >
+    <div className="flex h-screen flex-col overflow-hidden bg-bg-darker font-mono text-text-primary">
       {/* Top Header Navigation */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0.5rem 1.25rem",
-          background: "#121215",
-          borderBottom: "1px solid #27272a",
-        }}
-      >
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <span style={{ fontWeight: "bold", color: "#eab308" }}>⚡ TripFlow Debug Playground</span>
+      <header className="flex items-center justify-between border-b border-border-color bg-bg-dark px-5 py-2">
+        <div className="flex items-center gap-4">
+          <span className="font-bold text-suggest-color">⚡ TripFlow Debug Playground</span>
         </div>
-        <div style={{ display: "flex", gap: "1.5rem" }}>
-          <Link href="/component-styling" style={{ color: "#a1a1aa", textDecoration: "none", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>🎨 Component Styling</Link>
-          <Link href="/globe" style={{ color: "#a1a1aa", textDecoration: "none", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>🗺️ Globe View</Link>
+        <div className="flex gap-6">
+          <Link
+            href="/component-styling"
+            className="flex items-center gap-1 text-sm text-text-secondary no-underline transition-colors hover:text-text-primary"
+          >
+            🎨 Component Styling
+          </Link>
+          <Link
+            href="/globe"
+            className="flex items-center gap-1 text-sm text-text-secondary no-underline transition-colors hover:text-text-primary"
+          >
+            🗺️ Globe View
+          </Link>
         </div>
       </header>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridTemplateRows: "1fr 1fr",
-          flex: 1,
-          overflow: "hidden",
-        }}
-      >
+      <div className="grid flex-1 grid-cols-2 grid-rows-2 overflow-hidden">
         {/* --- QUADRANT 1: SENT PAYLOAD (TOP LEFT) --- */}
-        <section
-          style={{
-            borderRight: "1px solid #27272a",
-            borderBottom: "1px solid #27272a",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          <header
-            style={{
-              background: "#18181b",
-              padding: "0.75rem 1rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderBottom: "1px solid #27272a",
-            }}
-          >
-            <span style={{ fontWeight: "bold", color: "#38bdf8" }}>
+        <section className="flex flex-col overflow-hidden border-r border-b border-border-color">
+          <header className="flex items-center justify-between border-b border-border-color bg-bg-dark px-4 py-3">
+            <span className="font-bold text-transit-color">
               📤 Quadrant 1: JSON Payload Sent to Gemini
             </span>
-            <span
-              style={{
-                fontSize: "0.75rem",
-                background: "#0c4a6e",
-                color: "#38bdf8",
-                padding: "2px 8px",
-                borderRadius: "4px",
-              }}
-            >
+            <span className="rounded-md bg-transit-color/15 px-2 py-0.5 text-xs text-transit-color">
               Total Sent: {sentTokenCount} tokens
             </span>
           </header>
-          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+          <div className="flex-1 overflow-auto p-4">
             {sentPayload ? (
               <CollapsibleJsonViewer data={sentPayload} depth={0} />
             ) : (
-              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+              <div className="italic text-text-muted">
                 No request payload has been sent yet. Submit a message to populate
                 this view.
               </div>
@@ -276,44 +206,20 @@ export default function DebugPage() {
         </section>
 
         {/* --- QUADRANT 2: RECEIVED PAYLOAD (TOP RIGHT) --- */}
-        <section
-          style={{
-            borderBottom: "1px solid #27272a",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          <header
-            style={{
-              background: "#18181b",
-              padding: "0.75rem 1rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderBottom: "1px solid #27272a",
-            }}
-          >
-            <span style={{ fontWeight: "bold", color: "#22c55e" }}>
+        <section className="flex flex-col overflow-hidden border-b border-border-color">
+          <header className="flex items-center justify-between border-b border-border-color bg-bg-dark px-4 py-3">
+            <span className="font-bold text-budget-safe">
               📥 Quadrant 2: JSON Response from Gemini
             </span>
-            <span
-              style={{
-                fontSize: "0.75rem",
-                background: "#064e3b",
-                color: "#34d399",
-                padding: "2px 8px",
-                borderRadius: "4px",
-              }}
-            >
+            <span className="rounded-md bg-budget-safe/15 px-2 py-0.5 text-xs text-budget-safe">
               Total Received: {receivedTokenCount} tokens
             </span>
           </header>
-          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+          <div className="flex-1 overflow-auto p-4">
             {receivedPayload ? (
               <CollapsibleJsonViewer data={receivedPayload} depth={0} />
             ) : (
-              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+              <div className="italic text-text-muted">
                 No response payload received yet. Submit a message to populate
                 this view.
               </div>
@@ -322,43 +228,19 @@ export default function DebugPage() {
         </section>
 
         {/* --- QUADRANT 3: CHAT DIALOGUE (BOTTOM LEFT) --- */}
-        <section
-          style={{
-            borderRight: "1px solid #27272a",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-            background: "#0c0c0e",
-          }}
-        >
-          <header
-            style={{
-              background: "#18181b",
-              padding: "0.75rem 1rem",
-              fontWeight: "bold",
-              color: "#eab308",
-              borderBottom: "1px solid #27272a",
-            }}
-          >
+        <section className="flex flex-col overflow-hidden border-r border-border-color bg-bg-darker">
+          <header className="border-b border-border-color bg-bg-dark px-4 py-3 font-bold text-text-primary">
             💬 Quadrant 3: Chat Prompt & LLM Response
           </header>
 
           {/* Dialogue Feed */}
-          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+          <div className="flex-1 overflow-auto p-4">
             {chatHistory.length === 0 && (
-              <div
-                style={{
-                  color: "#71717a",
-                  lineHeight: "1.6",
-                  maxWidth: "500px",
-                  margin: "2rem auto",
-                  textAlign: "center",
-                }}
-              >
-                <p style={{ fontWeight: "bold", color: "#e4e4e7" }}>
+              <div className="mx-auto my-8 max-w-[500px] text-center leading-relaxed text-text-secondary">
+                <p className="font-bold text-text-primary">
                   🤖 Welcome to the Trip Flow Gemini Playground!
                 </p>
-                <p style={{ fontSize: "0.875rem" }}>
+                <p className="text-sm">
                   Type a natural language instruction below to update your trip.
                   For example:{" "}
                   <i>
@@ -373,32 +255,19 @@ export default function DebugPage() {
             {chatHistory.map((msg, idx) => (
               <div
                 key={idx}
-                style={{
-                  marginBottom: "1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: msg.role === "user" ? "flex-end" : "flex-start",
-                }}
+                className={`mb-4 flex flex-col ${
+                  msg.role === "user" ? "items-end" : "items-start"
+                }`}
               >
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#71717a",
-                    marginBottom: "4px",
-                  }}
-                >
+                <span className="mb-1 text-xs text-text-muted">
                   {msg.role === "user" ? "YOU" : "GEMINI"}
                 </span>
                 <div
-                  style={{
-                    background: msg.role === "user" ? "#2563eb" : "#27272a",
-                    color: msg.role === "user" ? "#ffffff" : "#e4e4e7",
-                    padding: "0.75rem 1rem",
-                    borderRadius: "8px",
-                    maxWidth: "80%",
-                    lineHeight: "1.4",
-                    whiteSpace: "pre-wrap",
-                  }}
+                  className={`max-w-[80%] rounded-lg px-4 py-3 leading-normal whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-transit-color text-white"
+                      : "border border-border-color bg-bg-card text-text-primary shadow-glass"
+                  }`}
                 >
                   {msg.text}
                 </div>
@@ -406,61 +275,19 @@ export default function DebugPage() {
             ))}
 
             {isQuerying && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  marginBottom: "1rem",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#71717a",
-                    marginBottom: "4px",
-                  }}
-                >
+              <div className="mb-4 flex flex-col items-start">
+                <span className="mb-1 text-xs text-text-muted">
                   GEMINI
                 </span>
-                <div
-                  style={{
-                    background: "#18181b",
-                    color: "#eab308",
-                    padding: "0.75rem 1rem",
-                    borderRadius: "8px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span
-                    className="animate-pulse"
-                    style={{
-                      display: "inline-block",
-                      width: "8px",
-                      height: "8px",
-                      background: "#eab308",
-                      borderRadius: "50%",
-                    }}
-                  />
+                <div className="inline-flex items-center gap-2 rounded-lg border border-border-color bg-bg-card px-4 py-3 text-text-primary shadow-glass">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-suggest-color" />
                   AI is planning & validating schema delta...
                 </div>
               </div>
             )}
 
             {validationError && (
-              <div
-                style={{
-                  background: "#450a0a",
-                  border: "1px solid #ef4444",
-                  color: "#fca5a5",
-                  padding: "0.75rem 1rem",
-                  borderRadius: "8px",
-                  marginTop: "1rem",
-                  fontSize: "0.875rem",
-                }}
-              >
+              <div className="mt-4 rounded-lg border border-budget-danger bg-budget-danger/15 px-4 py-3 text-sm text-text-primary">
                 <strong>⚠️ Validation Error:</strong> {validationError}
               </div>
             )}
@@ -470,47 +297,23 @@ export default function DebugPage() {
           {/* Input Form */}
           <form
             onSubmit={handleSendPrompt}
-            style={{
-              padding: "1rem",
-              background: "#18181b",
-              borderTop: "1px solid #27272a",
-              display: "flex",
-              gap: "0.75rem",
-            }}
+            className="flex gap-3 border-t border-border-color bg-bg-dark p-4"
           >
             <textarea
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
               placeholder="Tell Gemini what modifications to apply to your Trip..."
               disabled={isQuerying}
-              style={{
-                flex: 1,
-                background: "#09090b",
-                color: "#f4f4f5",
-                border: "1px solid #27272a",
-                borderRadius: "6px",
-                padding: "0.75rem",
-                resize: "none",
-                height: "50px",
-                fontFamily: "monospace",
-                outline: "none",
-              }}
+              className="h-[50px] flex-1 resize-none rounded-md border border-border-color bg-bg-card p-3 font-mono text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed"
             />
             <button
               type="submit"
               disabled={isQuerying || !promptInput.trim()}
-              style={{
-                background:
-                  isQuerying || !promptInput.trim() ? "#27272a" : "#2563eb",
-                color: isQuerying || !promptInput.trim() ? "#71717a" : "#ffffff",
-                border: "none",
-                borderRadius: "6px",
-                padding: "0 1.25rem",
-                cursor:
-                  isQuerying || !promptInput.trim() ? "not-allowed" : "pointer",
-                fontWeight: "bold",
-                fontSize: "0.875rem",
-              }}
+              className={`rounded-md px-5 text-sm font-bold transition-colors ${
+                isQuerying || !promptInput.trim()
+                  ? "cursor-not-allowed bg-bg-darker text-text-muted"
+                  : "cursor-pointer bg-transit-color text-white hover:bg-transit-color/90"
+              }`}
             >
               Send
             </button>
@@ -518,29 +321,15 @@ export default function DebugPage() {
         </section>
 
         {/* --- QUADRANT 4: LIVE APP STATE (BOTTOM RIGHT) --- */}
-        <section
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          <header
-            style={{
-              background: "#18181b",
-              padding: "0.75rem 1rem",
-              fontWeight: "bold",
-              color: "#a855f7",
-              borderBottom: "1px solid #27272a",
-            }}
-          >
+        <section className="flex flex-col overflow-hidden">
+          <header className="border-b border-border-color bg-bg-dark px-4 py-3 font-bold text-hub-color">
             ⚙️ Quadrant 4: Live Zustand Graph App State
           </header>
-          <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>
+          <div className="flex-1 overflow-auto bg-bg-darker p-4">
             {graph ? (
               <CollapsibleJsonViewer data={graph} depth={0} />
             ) : (
-              <div style={{ color: "#71717a", fontStyle: "italic" }}>
+              <div className="italic text-text-muted">
                 No active graph state found.
               </div>
             )}

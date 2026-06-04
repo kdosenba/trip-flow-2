@@ -2,63 +2,47 @@
 
 /* Trip Flow Central Theme Variables & Tailwind v4 Theme Configuration */
 @theme {
-  /* Colors - Base Backgrounds */
-  --color-bg-darker: #07070a;
-  --color-bg-dark: #0d0e14;
-  --color-bg-card: rgb(18 19 29 / 0.6);
-  --color-border-color: rgb(255 255 255 / 0.08);
-  --color-border-hover: rgb(255 255 255 / 0.15);
+  /* Colors - Base Backgrounds (Warm Paper/Cardboard/Stone tones) */
+  --color-bg-darker: #F2EBE3; /* Soft sand-colored beige for main page background */
+  --color-bg-dark: #EBE5DC; /* Cardboard/stone color for panels and headers */
+  --color-bg-card: #FFFFFF; /* Pure white cardstock paper for individual widgets */
+  --color-border-color: rgba(74, 67, 58, 0.12); /* Soft organic paper edge border */
+  --color-border-hover: rgba(74, 67, 58, 0.25);
 
-  /* Text Colors */
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  /* Text Colors (Earthy print ink) */
+  --color-text-primary: #2B2521; /* Charcoal/dark ink print color */
+  --color-text-secondary: #5C544E; /* Faded graphite color for subheaders */
+  --color-text-muted: #8A8078; /* Soft clay/paper-fiber color for secondary details */
 
-  /* Theme Presets & Node Accents */
-  --color-origin-color: #8b5cf6;
-  /* Violet */
-  --color-origin-glow: rgb(139 92 246 / 0.15);
+  /* Theme Presets & Node Accents (Natural organic earth tones) */
+  --color-origin-color: #8C8275; /* Weathered wood brown */
 
-  --color-hub-color: #a855f7;
-  /* Purple */
-  --color-hub-glow: rgb(168 85 247 / 0.15);
+  --color-hub-color: #8B9A96; /* Sage/clay green */
 
-  --color-event-color: #ec4899;
-  /* Pink */
-  --color-event-glow: rgb(236 72 153 / 0.15);
+  --color-event-color: #B48A78; /* Terracotta red/tan */
 
-  --color-transit-color: #3b82f6;
-  /* Blue */
-  --color-transit-glow: rgb(59 130 246 / 0.15);
+  --color-transit-color: #5C6B73; /* Slate blue */
 
-  --color-suggest-color: #eab308;
-  /* Amber */
-  --color-suggest-glow: rgb(234 179 8 / 0.15);
+  --color-suggest-color: #D4A373; /* Sand/tan/amber */
 
-  /* Budget Constraint Accents [TF-15] */
-  --color-budget-safe: #10b981;
-  /* Emerald */
-  --color-budget-safe-glow: rgb(16 185 129 / 0.15);
-  --color-budget-warn: #f97316;
-  /* Orange */
-  --color-budget-warn-glow: rgb(249 115 22 / 0.15);
-  --color-budget-danger: #ef4444;
-  /* Red */
-  --color-budget-danger-glow: rgb(239 68 68 / 0.15);
+  /* Budget Constraint Accents (Earthy status colors) */
+  --color-budget-safe: #7B9E87; /* Forest green */
+  --color-budget-warn: #D4A373; /* Tan/orange */
+  --color-budget-danger: #C97A7A; /* Soft earth red */
 
-  /* Shared Visual Effects */
-  --shadow-glass: 0 4px 30px rgb(0 0 0 / 0.4);
-  --shadow-glass-hover: 0 12px 30px rgb(0 0 0 / 0.5);
+  /* Shared Visual Effects (Cardstock paper shadow layers) */
+  --shadow-glass: 0 2px 4px rgba(74, 67, 58, 0.05), 0 8px 16px rgba(74, 67, 58, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-glass-hover: 0 4px 8px rgba(74, 67, 58, 0.08), 0 16px 28px rgba(74, 67, 58, 0.1), 0 2px 4px rgba(0, 0, 0, 0.04);
 
-  /* Centralized Card Active Glows */
-  --shadow-glow-origin: 0 0 10px rgb(139 92 246 / 0.3);
-  --shadow-glow-hub: 0 0 10px rgb(168 85 247 / 0.3);
-  --shadow-glow-event: 0 0 10px rgb(236 72 153 / 0.3);
-  --shadow-glow-transit: 0 0 10px rgb(59 130 246 / 0.3);
-  --shadow-glow-suggest: 0 0 10px rgb(234 179 8 / 0.3);
-  --shadow-glow-safe: 0 0 10px rgb(16 185 129 / 0.3);
-  --shadow-glow-warn: 0 0 10px rgb(249 115 22 / 0.3);
-  --shadow-glow-danger: 0 0 10px rgb(239 68 68 / 0.3);
+  /* Centralized Card Active Borders and Shadows */
+  --shadow-glow-origin: 0 2px 8px rgba(140, 130, 117, 0.15), 0 0 0 1px var(--color-origin-color);
+  --shadow-glow-hub: 0 2px 8px rgba(139, 154, 150, 0.15), 0 0 0 1px var(--color-hub-color);
+  --shadow-glow-event: 0 2px 8px rgba(180, 138, 120, 0.15), 0 0 0 1px var(--color-event-color);
+  --shadow-glow-transit: 0 2px 8px rgba(92, 107, 115, 0.15), 0 0 0 1px var(--color-transit-color);
+  --shadow-glow-suggest: 0 2px 8px rgba(212, 163, 115, 0.15), 0 0 0 1px var(--color-suggest-color);
+  --shadow-glow-safe: 0 2px 8px rgba(123, 158, 135, 0.15), 0 0 0 1px var(--color-budget-safe);
+  --shadow-glow-warn: 0 2px 8px rgba(212, 163, 115, 0.15), 0 0 0 1px var(--color-budget-warn);
+  --shadow-glow-danger: 0 2px 8px rgba(201, 122, 122, 0.15), 0 0 0 1px var(--color-budget-danger);
 
   /* Dimensions & Spacing */
   --radius-sm: 4px;
@@ -74,19 +58,13 @@
   --text-xs-dense: 0.75rem;
   --text-sm-dense: 0.95rem;
 
-  /* Custom Hub Pill Colors */
-  --color-bg-hub-pill: #2b2824;
-  --color-hub-pill-muted: #aba59f;
-  --color-hub-pill-num: #1a1715;
-  --color-hub-pill-lbl: #706a64;
-
   /* Custom Border Widths */
   --border-width-6: 6px;
   --border-width-1.5: 1.5px;
 
   /* Custom Shadow Presets */
-  --shadow-hub-badge: 0 2px 5px rgb(0 0 0 / 0.2);
-  --shadow-inset-notch: inset 0 2px 4px rgb(0 0 0 / 0.5);
+  --shadow-hub-badge: 0 1px 3px rgba(74, 67, 58, 0.1);
+  --shadow-inset-notch: inset 0 1px 2px rgba(74, 67, 58, 0.15);
 
   /* Super small font */
   --text-super-small: 0.5rem;
@@ -98,14 +76,14 @@
 /* Custom Background Gradients utility classes */
 @utility bg-suggest-gradient {
   background-image: linear-gradient(135deg,
-      rgb(234 179 8 / 0.02),
-      rgb(13 14 20 / 0.4));
+      rgba(212, 163, 115, 0.05),
+      rgba(235, 229, 220, 0.4));
 }
 
 @utility bg-page-gradient {
   background-image:
-    radial-gradient(at 0% 0%, rgb(139 92 246 / 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgb(59 130 246 / 0.04) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(140, 130, 117, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(92, 107, 115, 0.05) 0px, transparent 50%);
 }
 
 /* Custom utilities */

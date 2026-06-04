@@ -110,7 +110,7 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
             <div className="text-lg font-extrabold tracking-wide text-text-primary">
               {location.iata || "CONN"}
             </div>
-            <div className="text-xs-dense font-semibold text-red-300">
+            <div className="text-xs-dense font-semibold text-transit-color">
               Connection
             </div>
           </div>
@@ -175,7 +175,7 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
 
         {footerBadgeText && (
           <span
-            className={`rounded px-1.5 py-0.5 text-xs-dense font-bold ${variant === "layover" ? "bg-red-500/10 text-red-400" : "bg-transit-color/10 text-transit-color"}`}
+            className={`rounded px-1.5 py-0.5 text-xs-dense font-bold ${variant === "layover" ? "bg-budget-danger/15 text-budget-danger" : "bg-transit-color/10 text-transit-color"}`}
           >
             {footerBadgeText}
           </span>

@@ -165,7 +165,7 @@ export const TargetDateRangeDashboard: React.FC<
 
       {/* TARGET ROW */}
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <Clock size={16} className="text-text-primary" />
         </div>
 
@@ -179,13 +179,13 @@ export const TargetDateRangeDashboard: React.FC<
               className="mt-1 flex flex-col gap-1"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mt-1 flex rounded-sm border border-border-color bg-black/30 p-0.5">
+              <div className="mt-1 flex rounded-sm border border-border-color bg-bg-dark p-0.5">
                 <button
                   type="button"
                   disabled={isPlanning}
                   className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
                     isRange
-                      ? "bg-white/10 text-text-primary"
+                      ? "bg-bg-card text-text-primary shadow-xs"
                       : "text-text-muted"
                   }`}
                   onClick={() => setIsRange(true)}
@@ -197,7 +197,7 @@ export const TargetDateRangeDashboard: React.FC<
                   disabled={isPlanning}
                   className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
                     !isRange
-                      ? "bg-white/10 text-text-primary"
+                      ? "bg-bg-card text-text-primary shadow-xs"
                       : "text-text-muted"
                   }`}
                   onClick={() => setIsRange(false)}
@@ -211,14 +211,14 @@ export const TargetDateRangeDashboard: React.FC<
                   <input
                     type="date"
                     disabled={isPlanning}
-                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-bg-dark p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                     value={startInput}
                     onChange={(e) => setStartInput(e.target.value)}
                   />
                   <input
                     type="date"
                     disabled={isPlanning}
-                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="box-border h-4.5 w-full rounded-sm border border-border-color bg-bg-dark p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                     value={endInput}
                     onChange={(e) => setEndInput(e.target.value)}
                   />
@@ -227,7 +227,7 @@ export const TargetDateRangeDashboard: React.FC<
                 <input
                   type="date"
                   disabled={isPlanning}
-                  className="box-border h-4.5 w-full rounded-sm border border-border-color bg-black/35 p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="box-border h-4.5 w-full rounded-sm border border-border-color bg-bg-dark p-0.5 font-sans text-xxs text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
                 />
@@ -267,7 +267,7 @@ export const TargetDateRangeDashboard: React.FC<
 
       {/* Validation Error Feedback */}
       {validationError && (
-        <div className="mt-2 flex items-center rounded-sm border border-red-500/25 bg-red-500/10 px-2 py-1 text-xxs text-red-300">
+        <div className="mt-2 flex items-center rounded-sm border border-budget-danger/25 bg-budget-danger/15 px-2 py-1 text-xxs text-budget-danger">
           <AlertTriangle size={10} className="mr-1 shrink-0" />
           <span>{validationError}</span>
         </div>
@@ -278,7 +278,7 @@ export const TargetDateRangeDashboard: React.FC<
 
       {/* ACTUAL ROW */}
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <Calendar size={16} className="text-text-primary" />
         </div>
 
@@ -293,7 +293,7 @@ export const TargetDateRangeDashboard: React.FC<
 
         {/* Days count tag */}
         {actualDays !== null && (
-          <span className="ml-auto shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
+          <span className="ml-auto shrink-0 rounded bg-bg-dark/50 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
             {actualDays} DAYS
           </span>
         )}
@@ -318,7 +318,7 @@ export const TargetDateRangeDashboard: React.FC<
         </button>
 
         {showBreakdown && (
-          <div className="mt-3 flex flex-col gap-2 rounded-md bg-black/15 p-2.5 text-xxs text-text-secondary">
+          <div className="mt-3 flex flex-col gap-2 rounded-md bg-bg-dark/50 p-2.5 text-xxs text-text-secondary">
             {isEditing ? (
               <div className="flex flex-col gap-1">
                 <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
@@ -326,7 +326,7 @@ export const TargetDateRangeDashboard: React.FC<
                 </span>
                 <textarea
                   disabled={isPlanning}
-                  className="box-border h-11 w-full resize-y rounded-sm border border-border-color bg-black/35 p-1 font-sans text-xxs text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="box-border h-11 w-full resize-y rounded-sm border border-border-color bg-bg-dark p-1 font-sans text-xxs text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                   value={contextInput}
                   onChange={(e) => setContextInput(e.target.value)}
                   placeholder="Notes..."

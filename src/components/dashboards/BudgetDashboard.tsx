@@ -124,7 +124,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
 
       {/* BUDGET ROW */}
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <Wallet size={16} className="text-text-primary" />
         </div>
 
@@ -141,7 +141,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
               <input
                 type="text"
                 disabled={isPlanning}
-                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-bg-dark px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Min"
                 value={minInput}
                 onChange={(e) => setMinInput(e.target.value)}
@@ -149,7 +149,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
               <input
                 type="text"
                 disabled={isPlanning}
-                className="box-border h-5 w-full rounded-sm border border-border-color bg-black/35 px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                className="box-border h-5 w-full rounded-sm border border-border-color bg-bg-dark px-1.5 py-0.5 font-sans text-xs-dense text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Max"
                 value={maxInput}
                 onChange={(e) => setMaxInput(e.target.value)}
@@ -189,7 +189,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
 
       {/* Zod Validation Error Feedback (for budget inputs) */}
       {validationError && (
-        <div className="mt-2 flex items-center rounded-sm border border-red-500/25 bg-red-500/10 px-2 py-1 text-xxs text-red-300">
+        <div className="mt-2 flex items-center rounded-sm border border-budget-danger/25 bg-budget-danger/15 px-2 py-1 text-xxs text-budget-danger">
           <AlertTriangle size={10} className="mr-1 shrink-0" />
           <span>{validationError}</span>
         </div>
@@ -200,7 +200,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
 
       {/* ESTIMATE ROW (Non-editable) */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <TrendingUp size={16} className="text-text-primary" />
         </div>
 
@@ -233,7 +233,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
         </button>
 
         {showBreakdown && (
-          <div className="mt-3 flex flex-col gap-1.5 rounded-md bg-black/15 p-2 text-xxs text-text-secondary">
+          <div className="mt-3 flex flex-col gap-1.5 rounded-md bg-bg-dark/50 p-2 text-xxs text-text-secondary">
             {breakdownItems.map((item, idx) => (
               <div key={idx} className="flex justify-between">
                 <span>{item.label}</span>

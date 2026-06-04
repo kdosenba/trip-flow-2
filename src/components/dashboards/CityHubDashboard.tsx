@@ -89,10 +89,10 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
         <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
           Traveler count
         </span>
-        <div className="inline-flex items-center gap-1.5 rounded bg-black/30 p-1">
+        <div className="inline-flex items-center gap-1.5 rounded bg-bg-dark p-1">
           <button
             disabled={isPlanning}
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(
                 cityHub.id,
@@ -107,7 +107,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
           </span>
           <button
             disabled={isPlanning}
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-black/20 text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-black/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)
             }

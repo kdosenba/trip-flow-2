@@ -193,7 +193,7 @@ export const runSchemaTests = async () => {
       context: "Specific Event / Wedding Day",
     };
     const parsed = TargetDateRangeSchema.parse(singularDateInput);
-    if (!("date" in parsed.target)) {
+    if (!parsed.target || !("date" in parsed.target)) {
       throw new Error("Expected target to contain date property");
     }
     console.log("✅ Singular target date validation passed.");

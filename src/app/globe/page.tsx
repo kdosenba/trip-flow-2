@@ -439,76 +439,41 @@ export default function GlobePage() {
   };
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        height: "100vh",
-        background: "#09090b",
-        color: "#e4e4e7",
-        fontFamily: "monospace",
-        overflow: "hidden",
-      }}
-    >
+    <div className="grid h-screen grid-cols-2 overflow-hidden bg-bg-darker font-mono text-text-primary">
       {/* --- LEFT SIDE: JSON EDITOR --- */}
-      <section
-        style={{
-          borderRight: "1px solid #27272a",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
+      <section className="flex flex-col overflow-hidden border-r border-border-color">
         {/* Header Title & Preset Config */}
-        <header
-          style={{
-            background: "#121215",
-            padding: "0.75rem 1.25rem",
-            borderBottom: "1px solid #27272a",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <header className="flex items-center justify-between border-b border-border-color bg-bg-dark px-5 py-3">
           <div>
-            <h1
-              style={{
-                fontWeight: "bold",
-                fontSize: "1rem",
-                background: "linear-gradient(90deg, #a855f7, #3b82f6)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+            <h1 className="text-base font-bold text-text-primary">
               🗺️ Globe Style Studio
             </h1>
-            <span style={{ fontSize: "0.7rem", color: "#71717a" }}>
+            <span className="text-[0.7rem] text-text-muted">
               Dynamic WebGL 3D Globe Sandbox
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem" }}>
-            <Link href="/component-styling" style={{ color: "#a1a1aa", textDecoration: "none" }}>🎨 Styling</Link>
-            <Link href="/debug" style={{ color: "#a1a1aa", textDecoration: "none" }}>⚡ Debug</Link>
+          <div className="flex gap-4 text-xs">
+            <Link
+              href="/component-styling"
+              className="text-text-secondary no-underline transition-colors hover:text-text-primary"
+            >
+              🎨 Styling
+            </Link>
+            <Link
+              href="/debug"
+              className="text-text-secondary no-underline transition-colors hover:text-text-primary"
+            >
+              ⚡ Debug
+            </Link>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <span style={{ fontSize: "0.75rem", color: "#a1a1aa" }}>
-              Preset:
-            </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-text-secondary">Preset:</span>
             <select
               value={selectedPreset}
               onChange={(e) => applyPreset(e.target.value)}
-              style={{
-                background: "#18181b",
-                color: "#f4f4f5",
-                border: "1px solid #3f3f46",
-                borderRadius: "6px",
-                padding: "4px 8px",
-                fontSize: "0.75rem",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="cursor-pointer rounded-md border border-border-color bg-bg-darker px-2 py-1 text-xs text-text-primary outline-none focus:border-border-hover"
             >
               <option value="paper">Paper Craft Globe</option>
               <option value="dark-neon">Dark Neon Cyberpunk</option>
@@ -518,74 +483,43 @@ export default function GlobePage() {
         </header>
 
         {/* Dynamic Editor Tabs */}
-        <div
-          style={{
-            background: "#18181b",
-            borderBottom: "1px solid #27272a",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "0.25rem 1rem",
-          }}
-        >
-          <div style={{ display: "flex", gap: "0.25rem" }}>
+        <div className="flex items-center justify-between border-b border-border-color bg-bg-darker px-4 py-1">
+          <div className="flex gap-1">
             <button
               onClick={() => setEditorTab("tree")}
-              style={{
-                background: editorTab === "tree" ? "#27272a" : "transparent",
-                color: editorTab === "tree" ? "#f4f4f5" : "#71717a",
-                border: "none",
-                borderRadius: "4px",
-                padding: "6px 12px",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
+              className={`cursor-pointer rounded-[4px] px-3 py-1.5 text-xs font-bold transition-all ${
+                editorTab === "tree"
+                  ? "bg-bg-dark text-text-primary"
+                  : "bg-transparent text-text-muted hover:text-text-primary"
+              }`}
             >
               🌳 Interactive Tree Editor
             </button>
             <button
               onClick={() => setEditorTab("raw")}
-              style={{
-                background: editorTab === "raw" ? "#27272a" : "transparent",
-                color: editorTab === "raw" ? "#f4f4f5" : "#71717a",
-                border: "none",
-                borderRadius: "4px",
-                padding: "6px 12px",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
+              className={`cursor-pointer rounded-[4px] px-3 py-1.5 text-xs font-bold transition-all ${
+                editorTab === "raw"
+                  ? "bg-bg-dark text-text-primary"
+                  : "bg-transparent text-text-muted hover:text-text-primary"
+              }`}
             >
               📝 Raw JSON Code
             </button>
           </div>
 
           <span
-            style={{
-              fontSize: "0.7rem",
-              color: validationError ? "#ef4444" : "#22c55e",
-              background: validationError ? "#450a0a" : "#064e3b",
-              padding: "2px 8px",
-              borderRadius: "12px",
-              fontWeight: "bold",
-            }}
+            className={`rounded-full px-2 py-0.5 text-[0.7rem] font-bold ${
+              validationError
+                ? "bg-budget-danger/15 text-budget-danger"
+                : "bg-budget-safe/15 text-budget-safe"
+            }`}
           >
             {validationError ? "⚠️ Syntax Error" : "✓ Active / Live"}
           </span>
         </div>
 
         {/* Editor Render Panel */}
-        <div
-          style={{
-            flex: 1,
-            overflow: "auto",
-            padding: "1.25rem",
-            background: "#0c0c0f",
-          }}
-        >
+        <div className="flex-1 overflow-auto bg-bg-darker p-5">
           {editorTab === "tree" ? (
             <CollapsibleJsonViewer
               data={currentStyle}
@@ -601,107 +535,35 @@ export default function GlobePage() {
               value={rawJsonText}
               onChange={(e) => handleRawJsonChange(e.target.value)}
               spellCheck="false"
-              style={{
-                width: "100%",
-                height: "100%",
-                background: "transparent",
-                color: "#22c55e",
-                border: "none",
-                outline: "none",
-                resize: "none",
-                fontFamily: "monospace",
-                fontSize: "0.875rem",
-                lineHeight: "1.5",
-              }}
+              className="h-full w-full resize-none border-none bg-transparent font-mono text-sm leading-relaxed text-budget-safe outline-none"
             />
           )}
         </div>
 
         {/* Validation Error Banner */}
         {validationError && (
-          <div
-            style={{
-              background: "#450a0a",
-              borderTop: "1px solid #ef4444",
-              color: "#fca5a5",
-              padding: "0.75rem 1rem",
-              fontSize: "0.8rem",
-              whiteSpace: "pre-wrap",
-            }}
-          >
+          <div className="border-t border-budget-danger bg-budget-danger/15 p-4 text-xs text-text-primary whitespace-pre-wrap">
             <strong>JSON Error:</strong> {validationError}
           </div>
         )}
       </section>
 
       {/* --- RIGHT SIDE: MAP & CONTROLS --- */}
-      <section
-        style={{
-          position: "relative",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <section className="relative flex h-full flex-col">
         {/* The Live Map Container */}
-        <div ref={mapContainerRef} style={{ width: "100%", flex: 1 }} />
+        <div ref={mapContainerRef} className="w-full flex-1" />
 
         {/* Floating Flight Presets */}
-        <div
-          style={{
-            position: "absolute",
-            top: "1.25rem",
-            left: "1.25rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem",
-            zIndex: 10,
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: "bold",
-              color: "#a1a1aa",
-              textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-              letterSpacing: "0.05em",
-            }}
-          >
+        <div className="absolute top-5 left-5 z-10 flex flex-col gap-2">
+          <span className="text-xs font-bold tracking-wider text-text-secondary shadow-xs">
             ✈️ FLY TO 3D REGIONS:
           </span>
-          <div
-            style={{
-              display: "flex",
-              gap: "0.4rem",
-              flexWrap: "wrap",
-              maxWidth: "420px",
-            }}
-          >
+          <div className="flex max-w-[420px] flex-wrap gap-1.5">
             {FLIGHT_DESTINATIONS.map((dest) => (
               <button
                 key={dest.name}
                 onClick={() => flyToDestination(dest)}
-                style={{
-                  background: "rgba(18, 18, 22, 0.75)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "20px",
-                  padding: "5px 12px",
-                  color: "#f4f4f5",
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.borderColor = "#a855f7";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.borderColor =
-                    "rgba(255, 255, 255, 0.1)";
-                }}
+                className="cursor-pointer rounded-full border border-border-color bg-bg-card px-3 py-1 text-xs text-text-primary shadow-glass backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-origin-color"
               >
                 {dest.name}
               </button>
@@ -710,148 +572,57 @@ export default function GlobePage() {
         </div>
 
         {/* Elegant Controller Console Panel (Bottom Overlay) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "1.5rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "rgba(12, 12, 16, 0.8)",
-            backdropFilter: "blur(16px)",
-            border: "1px solid rgba(63, 63, 70, 0.5)",
-            borderRadius: "16px",
-            padding: "1rem 1.5rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "1.5rem",
-            width: "85%",
-            maxWidth: "680px",
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6)",
-            zIndex: 10,
-          }}
-        >
+        <div className="absolute bottom-6 left-1/2 z-10 flex w-[85%] max-w-[680px] -translate-x-1/2 items-center gap-6 rounded-2xl border border-border-color bg-white/90 p-4 px-6 shadow-glass-hover backdrop-blur-md">
           {/* Spin Animation Toggle */}
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
-          >
-            <span
-              style={{
-                fontSize: "0.65rem",
-                color: "#a1a1aa",
-                textTransform: "uppercase",
-              }}
-            >
+          <div className="flex flex-col gap-1">
+            <span className="text-[0.65rem] uppercase text-text-secondary">
               Auto Orbit
             </span>
             <button
               onClick={() => setIsSpinning(!isSpinning)}
-              style={{
-                background: isSpinning
-                  ? "linear-gradient(135deg, #a855f7, #6b21a8)"
-                  : "#27272a",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: isSpinning
-                  ? "0 0 12px rgba(168, 85, 247, 0.6)"
-                  : "none",
-              }}
+              className={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all duration-300 ${
+                isSpinning
+                  ? "bg-origin-color text-white shadow-glass-hover"
+                  : "bg-bg-dark text-text-primary"
+              }`}
             >
               <span
-                style={{
-                  display: "inline-block",
-                  width: "6px",
-                  height: "6px",
-                  background: isSpinning ? "#ffffff" : "#71717a",
-                  borderRadius: "50%",
-                  animation: isSpinning ? "pulse 1.5s infinite" : "none",
-                }}
+                className={`inline-block h-1.5 w-1.5 rounded-full ${
+                  isSpinning ? "animate-pulse bg-white" : "bg-text-secondary"
+                }`}
               />
               {isSpinning ? "Spinning On" : "Spin Globe"}
             </button>
           </div>
 
           {/* Vertical Divider */}
-          <div
-            style={{
-              width: "1px",
-              height: "36px",
-              background: "rgba(255,255,255,0.1)",
-            }}
-          />
+          <div className="h-9 w-px bg-border-color" />
 
           {/* Terrain 3D Elevation Toggle */}
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
-          >
-            <span
-              style={{
-                fontSize: "0.65rem",
-                color: "#a1a1aa",
-                textTransform: "uppercase",
-              }}
-            >
+          <div className="flex flex-col gap-1">
+            <span className="text-[0.65rem] uppercase text-text-secondary">
               Terrain 3D
             </span>
             <button
               onClick={toggleTerrain}
-              style={{
-                background: terrainOn
-                  ? "linear-gradient(135deg, #3b82f6, #1d4ed8)"
-                  : "#27272a",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: terrainOn
-                  ? "0 0 12px rgba(59, 130, 246, 0.6)"
-                  : "none",
-              }}
+              className={`cursor-pointer rounded-lg px-4 py-2 text-xs font-bold transition-all duration-300 ${
+                terrainOn
+                  ? "bg-transit-color text-white shadow-glass-hover"
+                  : "bg-bg-dark text-text-primary"
+              }`}
             >
               Elevation: {terrainOn ? "Enabled" : "Disabled"}
             </button>
           </div>
 
           {/* Vertical Divider */}
-          <div
-            style={{
-              width: "1px",
-              height: "36px",
-              background: "rgba(255,255,255,0.1)",
-            }}
-          />
+          <div className="h-9 w-px bg-border-color" />
 
           {/* Terrain Exaggeration Slider */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.25rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "0.65rem",
-                color: "#a1a1aa",
-              }}
-            >
+          <div className="flex flex-1 flex-col gap-1">
+            <div className="flex justify-between text-[0.65rem] text-text-secondary">
               <span>MOUNTAIN RELIEF</span>
-              <span style={{ color: "#3b82f6", fontWeight: "bold" }}>
+              <span className="font-bold text-transit-color">
                 {exaggeration.toFixed(1)}x
               </span>
             </div>
@@ -865,13 +636,9 @@ export default function GlobePage() {
               onChange={(e) =>
                 handleExaggerationSlider(parseFloat(e.target.value))
               }
-              style={{
-                width: "100%",
-                accentColor: "#3b82f6",
-                cursor: terrainOn ? "pointer" : "not-allowed",
-                opacity: terrainOn ? 1 : 0.4,
-                transition: "opacity 0.2s",
-              }}
+              className={`w-full accent-transit-color transition-opacity ${
+                terrainOn ? "cursor-pointer opacity-100" : "cursor-not-allowed opacity-40"
+              }`}
             />
           </div>
         </div>
