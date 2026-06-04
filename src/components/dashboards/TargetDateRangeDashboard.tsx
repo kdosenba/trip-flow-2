@@ -28,17 +28,17 @@ export const TargetDateRangeDashboard: React.FC<
   const [isEditing, setIsEditing] = useState(false);
 
   // Resolve target date values
-  const isRangeModeInitial = "range" in data.target;
+  const isRangeModeInitial = data.target ? "range" in data.target : false;
   const targetStartInitial =
-    isRangeModeInitial && "range" in data.target
+    data.target && "range" in data.target
       ? data.target.range.start
       : "2026-06-10";
   const targetEndInitial =
-    isRangeModeInitial && "range" in data.target
+    data.target && "range" in data.target
       ? data.target.range.end
       : "2026-06-18";
   const targetDateInitial =
-    !isRangeModeInitial && "date" in data.target
+    data.target && "date" in data.target
       ? data.target.date
       : "2026-06-10";
 
@@ -54,6 +54,7 @@ export const TargetDateRangeDashboard: React.FC<
 
   // Format target display
   const getTargetDisplay = () => {
+    if (!data.target) return "Flexible";
     if ("range" in data.target) {
       try {
         return DateTimeFormatter.formatRange(

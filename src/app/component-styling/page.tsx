@@ -65,6 +65,7 @@ export default function ComponentStylingPage() {
   const initializeClientContext = useTripFlowStore(
     (state) => state.initializeClientContext,
   );
+  const clearGraph = useTripFlowStore((state) => state.clearGraph);
 
   // Active highlighted card ID (for visual selection effect in playground)
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -337,17 +338,8 @@ export default function ComponentStylingPage() {
 
   // Clear Zustand store graph data
   const handleClearData = () => {
-    if (graph) {
-      setGraph({
-        Locations: {},
-        CityHubs: {},
-        Transits: {},
-        suggestions: {},
-        clientContext: graph.clientContext,
-      });
-      selectCity(null);
-      setActiveCardId(null);
-    }
+    clearGraph();
+    setActiveCardId(null);
   };
 
   // Ensure graph is loaded

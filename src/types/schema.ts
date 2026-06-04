@@ -91,7 +91,7 @@ export const DateOrDateRangeSchema = z.union([
 ]);
 
 export const TargetDateRangeSchema = z.object({
-  target: DateOrDateRangeSchema,
+  target: DateOrDateRangeSchema.optional(),
   context: z.string().optional(),
   actual: z
     .object({

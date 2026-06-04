@@ -89,3 +89,5 @@ _Jot down raw thoughts, user feedback, and future feature expansions here before
 
 - [ ] **[TF-23]** Enable multi-user collaborative editing of the same trip flow in real time
 - [ ] **[TF-24]** Add offline support for viewing and editing saved trip flows
+- [x] **[TF-41]** Define the clear function so that we can correctly clear the data from the store. Some data should not be cleared, like the context or the budget and target date range object, just some of their values.
+- [ ] **[TF-42]** Automatic calculation of budget estimate and trip actual dates. We should not allow those to be manually set or cleared. They should just recalculate as the trip is changed.

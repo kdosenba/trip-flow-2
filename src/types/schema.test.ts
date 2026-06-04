@@ -200,6 +200,21 @@ export const runSchemaTests = async () => {
     throw err;
   }
 
+  // 2b. Optional Target Date omission
+  try {
+    const omittedTargetInput = {
+      context: "Flexible schedule test case",
+    };
+    const parsed = TargetDateRangeSchema.parse(omittedTargetInput);
+    if (parsed.target !== undefined) {
+      throw new Error("Expected target to be undefined");
+    }
+    console.log("✅ Optional target date omission validation passed.");
+  } catch (err) {
+    console.error("❌ Optional target date omission validation failed", err);
+    throw err;
+  }
+
   // 3. Validation failure: Invalid target date range (end before start)
   try {
     const invalidRangeInput = {

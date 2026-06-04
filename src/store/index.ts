@@ -39,6 +39,7 @@ interface TripFlowActions {
   updateTargetDateRange: (range: TargetDateRange) => void;
   updateTravelerCount: (id: CityHubId, count: number) => void;
   deleteCityHub: (id: CityHubId) => void;
+  clearGraph: () => void;
 }
 
 export type TripFlowStore = TripFlowState & TripFlowActions;
@@ -179,6 +180,53 @@ export const useTripFlowStore = create<TripFlowStore>()(
             state.isLoadingContext = false;
           });
         }
+      },
+
+      clearGraph: () => {
+        set((state) => {
+          if (state.graph) {
+            state.graph.Locations = {};
+            state.graph.Transits = {};
+            state.graph.suggestions = {};
+
+            // Retain origin hubs, clear itinerary and reset travelerCount to 1
+            const originHubs: Record<string, CityHub> = {};
+            Object.entries(state.graph.CityHubs).forEach(([id, hub]) => {
+              if (hub.type === "ORIGIN") {
+                originHubs[id] = {
+                  ...hub,
+                  itinerary: [],
+                  travelerCount: 1,
+                };
+              }
+            });
+            state.graph.CityHubs = originHubs;
+
+            // Reset budget min/max and estimate values but keep the structure
+            if (state.graph.budget) {
+              state.graph.budget.budget = {
+                min: undefined,
+                max: undefined,
+              };
+              state.graph.budget.estimate = {
+                low: undefined,
+                high: undefined,
+              };
+            }
+
+            // Reset target date range context and actual bounds but keep the structure
+            if (state.graph.targetDateRange) {
+              state.graph.targetDateRange.target = undefined;
+              state.graph.targetDateRange.context = undefined;
+              state.graph.targetDateRange.actual = undefined;
+            }
+
+            // Reset active selections
+            state.activeCityId = null;
+            state.activeEdgeId = null;
+            state.activeSuggestionId = null;
+          }
+        });
       },
     })),
     {
