@@ -4,6 +4,7 @@ import { AddressIcon, CalendarIcon, PlaneIcon } from "./icons";
 import { useTripFlowStore } from "../../store";
 import { DateTimeFormatter } from "../../lib/utils/date";
 import { EventPriceSection } from "./EventPriceSection";
+import { getHubStayNights } from "../../lib/utils/graph";
 
 interface SuggestionCardProps {
   suggestion: Suggestion;
@@ -28,6 +29,13 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
       ? graph.CityHubs[suggestion.targetCityId]
       : undefined;
   const timezone = targetCity?.timezone;
+
+  const nights = React.useMemo(() => {
+    const category = suggestion.suggestedLocation?.category;
+    if (category !== "LODGING") return undefined;
+    if (!graph || !suggestion.targetCityId) return 1;
+    return getHubStayNights(graph, suggestion.targetCityId);
+  }, [graph, suggestion.suggestedLocation?.category, suggestion.targetCityId]);
 
   // Format segment dates nicely
   const getSegmentTimeLabel = () => {
@@ -115,6 +123,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         price={suggestion.suggestedLocation?.price || suggestion.price}
         travelerCount={targetCity ? (targetCity.resolvedTravelerCount || targetCity.travelerCount) : 1}
         currency={graph?.clientContext?.currency || "USD"}
+        nights={nights}
       />
 
       <div className="mt-3 flex justify-end">

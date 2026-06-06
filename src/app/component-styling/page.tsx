@@ -633,7 +633,7 @@ export default function ComponentStylingPage() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-5">
+            <div className="flex flex-wrap items-start gap-5">
               {originCityHubs.length === 0 ? (
                 <div className="text-sm text-text-muted italic">
                   No origin city hubs found in the active model.
@@ -670,7 +670,7 @@ export default function ComponentStylingPage() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-5">
+            <div className="flex flex-wrap items-start gap-5">
               {destinationCityHubs.length === 0 ? (
                 <div className="text-sm text-text-muted italic">
                   No destination city hubs found in the active model.
@@ -711,7 +711,7 @@ export default function ComponentStylingPage() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-5">
+            <div className="flex flex-wrap items-start gap-5">
               {plannedEvents.length === 0 ? (
                 <div className="text-sm text-text-muted italic">
                   No itinerary events scheduled. Add items to a city hub
@@ -767,7 +767,7 @@ export default function ComponentStylingPage() {
                         Source Departures
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-5">
+                    <div className="flex flex-wrap items-start gap-5">
                       {Object.entries(transitRoles)
                         .filter(
                           ([_, role]) => role.isSource && !role.isDestination,
@@ -800,7 +800,7 @@ export default function ComponentStylingPage() {
                         Destination Arrivals
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-5">
+                    <div className="flex flex-wrap items-start gap-5">
                       {Object.entries(transitRoles)
                         .filter(
                           ([_, role]) => role.isDestination && !role.isSource,
@@ -833,7 +833,7 @@ export default function ComponentStylingPage() {
                         Layover Connections
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-5">
+                    <div className="flex flex-wrap items-start gap-5">
                       {Object.entries(transitRoles)
                         .filter(
                           ([_, role]) => role.isSource && role.isDestination,
@@ -892,7 +892,7 @@ export default function ComponentStylingPage() {
                     Location Recommendations
                   </h3>
                 </div>
-                <div className="flex flex-wrap gap-5">
+                <div className="flex flex-wrap items-start gap-5">
                   {locationSuggestions.length === 0 ? (
                     <div className="text-sm text-text-muted italic">
                       No location suggestions.
@@ -918,7 +918,7 @@ export default function ComponentStylingPage() {
                     Transit Recommendations
                   </h3>
                 </div>
-                <div className="flex flex-wrap gap-5">
+                <div className="flex flex-wrap items-start gap-5">
                   {transitSuggestions.length === 0 ? (
                     <div className="text-sm text-text-muted italic">
                       No transit suggestions.

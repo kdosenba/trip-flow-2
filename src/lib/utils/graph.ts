@@ -168,6 +168,60 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
 };
 
 /**
+ * Helper to calculate the stay duration in nights for a city hub.
+ */
+export const getHubStayNights = (graph: TripFlowGraph, hubId: string): number => {
+  const hubs = graph.CityHubs;
+  if (!hubs) return 1;
+  const cityHub = hubs[hubId];
+  if (!cityHub) return 1;
+
+  // Find arrival transit segment ending at this hub
+  const arrivalTransit = graph.Transits 
+    ? Object.values(graph.Transits).find((t) => t.toCityId === hubId)
+    : undefined;
+  const arrivalTimeStr = arrivalTransit?.segments[arrivalTransit.segments.length - 1]?.endTime;
+  const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr).getTime() : undefined;
+
+  // Find departure transit segment starting from this hub
+  const departureTransit = graph.Transits 
+    ? Object.values(graph.Transits).find((t) => t.fromCityId === hubId)
+    : undefined;
+  const departureTimeStr = departureTransit?.segments[0]?.startTime;
+  const departureTime = departureTimeStr ? new Date(departureTimeStr).getTime() : undefined;
+
+  // Itinerary items bounds
+  let minItineraryStart = Infinity;
+  let maxItineraryEnd = -Infinity;
+
+  if (cityHub.itinerary && cityHub.itinerary.length > 0) {
+    cityHub.itinerary.forEach((item) => {
+      const s = new Date(item.startTime).getTime();
+      if (!isNaN(s)) {
+        minItineraryStart = Math.min(minItineraryStart, s);
+        if (item.endTime) {
+          const e = new Date(item.endTime).getTime();
+          if (!isNaN(e)) maxItineraryEnd = Math.max(maxItineraryEnd, e);
+        } else {
+          maxItineraryEnd = Math.max(maxItineraryEnd, s);
+        }
+      }
+    });
+  }
+
+  // Determine bounds
+  const start = arrivalTime !== undefined ? arrivalTime : (minItineraryStart !== Infinity ? minItineraryStart : undefined);
+  const end = departureTime !== undefined ? departureTime : (maxItineraryEnd !== -Infinity ? maxItineraryEnd : undefined);
+
+  if (start !== undefined && end !== undefined && end > start) {
+    const diffTime = end - start;
+    return Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+  }
+
+  return 1; // Default fallback to 1 night
+};
+
+/**
  * Automatically recalculates the budget estimate and actual trip dates based on active locations and transits.
  * Does not allow manual override. Overwrites existing estimates and actual bounds.
  */
@@ -190,14 +244,29 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
         const unit = loc.price.unit || "ROOM";
         const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
 
+        // Find parent itinerary item to calculate nights
+        const itineraryItem = parentHub?.itinerary?.find((item) => item.LocationId === loc.id);
+        let nights = 1;
+        if (itineraryItem && itineraryItem.endTime) {
+          const start = new Date(itineraryItem.startTime).getTime();
+          const end = new Date(itineraryItem.endTime).getTime();
+          if (!isNaN(start) && !isNaN(end) && end > start) {
+            nights = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+          }
+        } else if (parentHub) {
+          nights = getHubStayNights(graph, parentHub.id);
+        }
+
+        const costMultiplier = factor * nights;
+
         if (loc.price.actualCost !== undefined) {
-          loc.price.total = loc.price.actualCost * factor;
-          loc.price.totalLow = loc.price.actualCost * factor;
-          loc.price.totalHigh = loc.price.actualCost * factor;
+          loc.price.total = loc.price.actualCost * costMultiplier;
+          loc.price.totalLow = loc.price.actualCost * costMultiplier;
+          loc.price.totalHigh = loc.price.actualCost * costMultiplier;
         } else if (loc.price.typicalCost !== undefined) {
-          loc.price.total = loc.price.typicalCost * factor;
-          loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
-          loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+          loc.price.total = loc.price.typicalCost * costMultiplier;
+          loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * costMultiplier);
+          loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * costMultiplier);
         }
       } else if (loc.category === "ACTIVITY") {
         const unit = loc.price.unit || "PERSON";
@@ -241,15 +310,17 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
         if (loc.category === "LODGING") {
           const unit = loc.price.unit || "ROOM";
           const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
+          const nights = targetHub ? getHubStayNights(graph, targetHub.id) : 1;
+          const costMultiplier = factor * nights;
 
           if (loc.price.actualCost !== undefined) {
-            loc.price.total = loc.price.actualCost * factor;
-            loc.price.totalLow = loc.price.actualCost * factor;
-            loc.price.totalHigh = loc.price.actualCost * factor;
+            loc.price.total = loc.price.actualCost * costMultiplier;
+            loc.price.totalLow = loc.price.actualCost * costMultiplier;
+            loc.price.totalHigh = loc.price.actualCost * costMultiplier;
           } else if (loc.price.typicalCost !== undefined) {
-            loc.price.total = loc.price.typicalCost * factor;
-            loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
-            loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+            loc.price.total = loc.price.typicalCost * costMultiplier;
+            loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * costMultiplier);
+            loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * costMultiplier);
           }
         } else if (loc.category === "ACTIVITY") {
           const unit = loc.price.unit || "PERSON";
@@ -287,15 +358,17 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
         if (category === "LODGING") {
           const unit = sug.price.unit || "ROOM";
           const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
+          const nights = targetHub ? getHubStayNights(graph, targetHub.id) : 1;
+          const costMultiplier = factor * nights;
 
           if (sug.price.actualCost !== undefined) {
-            sug.price.total = sug.price.actualCost * factor;
-            sug.price.totalLow = sug.price.actualCost * factor;
-            sug.price.totalHigh = sug.price.actualCost * factor;
+            sug.price.total = sug.price.actualCost * costMultiplier;
+            sug.price.totalLow = sug.price.actualCost * costMultiplier;
+            sug.price.totalHigh = sug.price.actualCost * costMultiplier;
           } else if (sug.price.typicalCost !== undefined) {
-            sug.price.total = sug.price.typicalCost * factor;
-            sug.price.totalLow = Math.round(sug.price.typicalCost * 0.9 * factor);
-            sug.price.totalHigh = Math.round(sug.price.typicalCost * 1.1 * factor);
+            sug.price.total = sug.price.typicalCost * costMultiplier;
+            sug.price.totalLow = Math.round(sug.price.typicalCost * 0.9 * costMultiplier);
+            sug.price.totalHigh = Math.round(sug.price.typicalCost * 1.1 * costMultiplier);
           }
         } else if (category === "ACTIVITY") {
           const unit = sug.price.unit || "PERSON";

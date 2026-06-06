@@ -24,9 +24,17 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
 }) => {
   const graph = useTripFlowStore((state) => state.graph);
 
-  const formattedTime = endTime
-    ? `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })}`
-    : DateTimeFormatter.format(startTime, timezone);
+  const formattedTime = React.useMemo(() => {
+    if (!endTime) {
+      return DateTimeFormatter.format(startTime, timezone);
+    }
+    const startDay = DateTimeFormatter.format(startTime, timezone, { year: "numeric", month: "numeric", day: "numeric" });
+    const endDay = DateTimeFormatter.format(endTime, timezone, { year: "numeric", month: "numeric", day: "numeric" });
+    if (startDay === endDay) {
+      return `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+    }
+    return `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone)}`;
+  }, [startTime, endTime, timezone]);
 
   // Find travelerCount from target/parent hub in store graph
   const travelerCount = React.useMemo(() => {
@@ -73,12 +81,12 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
 
   return (
     <div
-      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-start gap-2 rounded-lg border bg-bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 ${
         isActive ? activeClass : cardBorderClass
       }`}
       onClick={onClick}
     >
-      <div className="mb-3 flex items-start justify-between gap-2">
+      <div className="flex items-start gap-2">
         <div className="flex min-w-0 items-start gap-1.5">
           <div className="mt-0.5 shrink-0">
             {categoryIcon}
@@ -87,26 +95,34 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
             {eventLocation.name}
           </h3>
         </div>
-        <span
-          className={`shrink-0 rounded-xs border px-1.5 py-0.5 text-super-small font-bold tracking-wider uppercase ${badgeClass}`}
-        >
-          {badgeLabel}
-        </span>
       </div>
 
-      <div className="mb-3 flex flex-col gap-1.5 text-xs-dense text-text-secondary">
+      <div className="flex flex-col gap-1.5 text-xs-dense text-text-secondary">
         <div className="flex items-center gap-1.5">
           <CalendarIcon />
           <span>{formattedTime}</span>
         </div>
       </div>
 
-      <EventPriceSection
-        category={eventLocation.category}
-        price={eventLocation.price}
-        travelerCount={travelerCount}
-        currency={graph?.clientContext?.currency || "USD"}
-      />
+      {(() => {
+        let nights = 1;
+        if (startTime && endTime) {
+          const start = new Date(startTime).getTime();
+          const end = new Date(endTime).getTime();
+          if (!isNaN(start) && !isNaN(end) && end > start) {
+            nights = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+          }
+        }
+        return (
+          <EventPriceSection
+            category={eventLocation.category}
+            price={eventLocation.price}
+            travelerCount={travelerCount}
+            currency={graph?.clientContext?.currency || "USD"}
+            nights={nights}
+          />
+        );
+      })()}
     </div>
   );
 };

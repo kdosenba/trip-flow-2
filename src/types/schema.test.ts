@@ -452,6 +452,11 @@ export const runSchemaTests = async () => {
               startTime: "2026-07-10T12:00:00Z",
               endTime: "2026-07-10T14:00:00Z",
             },
+            {
+              LocationId: "loc-2" as LocationId,
+              startTime: "2026-07-10T15:00:00Z",
+              endTime: "2026-07-13T11:00:00Z", // 3 nights
+            },
           ],
         },
       },
@@ -490,19 +495,19 @@ export const runSchemaTests = async () => {
 
     // Expected costs:
     // loc-1: typicalCost 100 (low: 90, high: 110)
-    // loc-2: actualCost 500 (low: 500, high: 500)
+    // loc-2: actualCost 500 * (1 room) * (3 nights) = 1500 (low: 1500, high: 1500)
     // transit-1: typicalCost 1000 (low: 900, high: 1100)
-    // total low: 90 + 500 + 900 = 1490
-    // total high: 110 + 500 + 1100 = 1710
-    if (graph.budget?.estimate.low !== 1490 || graph.budget?.estimate.high !== 1710) {
-      throw new Error(`Estimate mismatch: expected low 1490 / high 1710, got low ${graph.budget?.estimate.low} / high ${graph.budget?.estimate.high}`);
+    // total low: 90 + 1500 + 900 = 2490
+    // total high: 110 + 1500 + 1100 = 2710
+    if (graph.budget?.estimate.low !== 2490 || graph.budget?.estimate.high !== 2710) {
+      throw new Error(`Estimate mismatch: expected low 2490 / high 2710, got low ${graph.budget?.estimate.low} / high ${graph.budget?.estimate.high}`);
     }
 
     // Expected actual dates:
     // Earliest start: transit segment start "2026-07-09T08:00:00Z"
     // Latest end: itinerary item end "2026-07-10T14:00:00Z"
-    if (graph.targetDateRange?.actual?.start !== "2026-07-09T08:00:00.000Z" || graph.targetDateRange?.actual?.end !== "2026-07-10T14:00:00.000Z") {
-      throw new Error(`Actual dates mismatch: expected start "2026-07-09T08:00:00.000Z" / end "2026-07-10T14:00:00.000Z", got start ${graph.targetDateRange?.actual?.start} / end ${graph.targetDateRange?.actual?.end}`);
+    if (graph.targetDateRange?.actual?.start !== "2026-07-09T08:00:00.000Z" || graph.targetDateRange?.actual?.end !== "2026-07-13T11:00:00.000Z") {
+      throw new Error(`Actual dates mismatch: expected start "2026-07-09T08:00:00.000Z" / end "2026-07-13T11:00:00.000Z", got start ${graph.targetDateRange?.actual?.start} / end ${graph.targetDateRange?.actual?.end}`);
     }
 
     console.log("✅ Auto Recalculation logic: verified successfully.");
@@ -660,9 +665,9 @@ export const runSchemaTests = async () => {
     // Number of defaults = 2 (default-1 and default-2).
     // Each default gets remainder / 2 = 4 / 2 = 2.
     // Override gets its override count = 2.
-    const resolvedOverride = graph.CityHubs["hub-split-override"].resolvedTravelerCount;
-    const resolvedDefault1 = graph.CityHubs["hub-split-default-1"].resolvedTravelerCount;
-    const resolvedDefault2 = graph.CityHubs["hub-split-default-2"].resolvedTravelerCount;
+    const resolvedOverride = graph.CityHubs?.["hub-split-override"]?.resolvedTravelerCount;
+    const resolvedDefault1 = graph.CityHubs?.["hub-split-default-1"]?.resolvedTravelerCount;
+    const resolvedDefault2 = graph.CityHubs?.["hub-split-default-2"]?.resolvedTravelerCount;
 
     if (resolvedOverride !== 2) {
       throw new Error(`Override resolved count mismatch: expected 2, got ${resolvedOverride}`);
@@ -679,7 +684,7 @@ export const runSchemaTests = async () => {
     // - t-4 from hub-split-override (carries 2 travelers)
     // - t-5 from hub-split-default-1 (carries 2 travelers)
     // Total incoming = 2 + 2 = 4.
-    const resolvedMerge = graph.CityHubs["hub-merge-dest"].resolvedTravelerCount;
+    const resolvedMerge = graph.CityHubs?.["hub-merge-dest"]?.resolvedTravelerCount;
     if (resolvedMerge !== 4) {
       throw new Error(`Merge destination resolved count mismatch: expected 4, got ${resolvedMerge}`);
     }
