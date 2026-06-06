@@ -161,8 +161,10 @@ export const TargetDateRangeDashboard: React.FC<
   const actualDays = getActualDays();
 
   return (
-    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
-      <div className="absolute top-0 left-0 h-indicator w-full bg-origin-color shadow-glow-origin" />
+    <div
+      className="relative w-full max-w-card-widget rounded-3xl border border-border-color bg-bg-card/70 p-5 backdrop-blur-xl transition-all duration-300"
+      style={{ boxShadow: "6px 6px 0px var(--color-bg-dark)" }}
+    >
 
       {/* TARGET ROW */}
       <div className="relative flex items-center gap-3">
@@ -184,11 +186,10 @@ export const TargetDateRangeDashboard: React.FC<
                 <button
                   type="button"
                   disabled={isPlanning}
-                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
-                    isRange
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${isRange
                       ? "bg-bg-card text-text-primary shadow-xs"
                       : "text-text-muted"
-                  }`}
+                    }`}
                   onClick={() => setIsRange(true)}
                 >
                   Range
@@ -196,11 +197,10 @@ export const TargetDateRangeDashboard: React.FC<
                 <button
                   type="button"
                   disabled={isPlanning}
-                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${
-                    !isRange
+                  className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${!isRange
                       ? "bg-bg-card text-text-primary shadow-xs"
                       : "text-text-muted"
-                  }`}
+                    }`}
                   onClick={() => setIsRange(false)}
                 >
                   Date
@@ -293,11 +293,14 @@ export const TargetDateRangeDashboard: React.FC<
         </div>
 
         {/* Days count tag */}
-        {actualDays !== null && (
-          <span className="ml-auto shrink-0 rounded bg-bg-dark/50 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
-            {actualDays} DAYS
-          </span>
-        )}
+        {actualDays !== null && (() => {
+          const { value, unit } = DateTimeFormatter.formatDuration(actualDays);
+          return (
+            <span className="ml-auto shrink-0 rounded bg-bg-dark/50 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
+              {value} {unit}
+            </span>
+          );
+        })()}
       </div>
 
       {/* EXPANDABLE BREAKDOWN SECTION */}
@@ -345,16 +348,16 @@ export const TargetDateRangeDashboard: React.FC<
               <strong>Date validation:</strong> actual schedule starts on{" "}
               {data.actual?.start
                 ? DateTimeFormatter.format(data.actual.start, timezone, {
-                    month: "short",
-                    day: "numeric",
-                  })
+                  month: "short",
+                  day: "numeric",
+                })
                 : "TBD"}{" "}
               and ends on{" "}
               {data.actual?.end
                 ? DateTimeFormatter.format(data.actual.end, timezone, {
-                    month: "short",
-                    day: "numeric",
-                  })
+                  month: "short",
+                  day: "numeric",
+                })
                 : "TBD"}
               .
             </div>

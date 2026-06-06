@@ -13,7 +13,6 @@ interface CityHubCardProps {
 
 export const CityHubCard: React.FC<CityHubCardProps> = ({
   cityHub,
-  isActive = false,
   onClick,
   onDelete,
 }) => {
@@ -60,7 +59,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
     const end = departureTime !== undefined ? departureTime : (maxItineraryEnd !== -Infinity ? maxItineraryEnd : undefined);
 
     if (start === undefined && end === undefined) {
-      return { rangeLabel: "FLEXIBLE", days: 1, isFlexible: true };
+      return { rangeLabel: "TBD+", days: 1, isFlexible: true };
     }
 
     const hasFlexibleEnd = departureTime === undefined;
@@ -75,16 +74,16 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
           cityHub.timezone
         );
         if (hasFlexibleEnd) {
-          rangeLabel += " (FLEXIBLE)";
+          rangeLabel += "+";
         }
       } catch {
-        rangeLabel = `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}`;
+        rangeLabel = `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}${hasFlexibleEnd ? "+" : ""}`;
       }
     } else if (start !== undefined) {
       try {
-        rangeLabel = `${DateTimeFormatter.format(new Date(start).toISOString(), cityHub.timezone, { month: "short", day: "numeric" })} - ?`;
+        rangeLabel = `${DateTimeFormatter.format(new Date(start).toISOString(), cityHub.timezone, { month: "short", day: "numeric" })}+`;
       } catch {
-        rangeLabel = `${new Date(start).toLocaleDateString()} - ?`;
+        rangeLabel = `${new Date(start).toLocaleDateString()}+`;
       }
     } else if (end !== undefined) {
       try {
@@ -106,41 +105,16 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
 
   const { rangeLabel, days, isFlexible } = getItineraryRangeAndDuration();
 
-  const getDurationDisplay = (numDays: number) => {
-    if (numDays >= 28) {
-      const val = (Math.ceil((numDays / 30) * 10) / 10).toFixed(1);
-      return {
-        value: val,
-        unit: parseFloat(val) === 1.0 ? "MONTH" : "MONTHS",
-      };
-    }
-    if (numDays > 6) {
-      const val = (Math.ceil((numDays / 7) * 10) / 10).toFixed(1);
-      return {
-        value: val,
-        unit: parseFloat(val) === 1.0 ? "WEEK" : "WEEKS",
-      };
-    }
-    return {
-      value: String(numDays),
-      unit: numDays === 1 ? "DAY" : "DAYS",
-    };
-  };
-
-  const { value: displayValue, unit: displayUnit } = getDurationDisplay(days);
+  const { value: displayValue, unit: displayUnit } = DateTimeFormatter.formatDuration(days);
   const finalDisplayValue = isFlexible ? `${displayValue}+` : displayValue;
 
   return (
     <div
-      className={`relative box-border flex w-fit max-w-card-max cursor-pointer items-center rounded-lg border-1.5 bg-bg-card p-1.5 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
-        isActive
-          ? "border-hub-color shadow-glow-hub"
-          : "border-transparent"
-      }`}
+      className="relative box-border flex w-fit max-w-card-max cursor-pointer items-center rounded-4xl border-1.5 border-transparent bg-text-primary py-1.5 pr-2.5 pl-3.5 transition-all duration-300 hover:-translate-y-0.5"
       onClick={onClick}
     >
       {/* Left duration badge */}
-      <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-md bg-white px-1 shadow-hub-badge">
+      <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg bg-white px-2">
         <span className="text-lg font-extrabold leading-none text-text-primary">{finalDisplayValue}</span>
         <span className="text-super-small font-extrabold leading-none text-text-secondary">
           {displayUnit}
@@ -149,10 +123,10 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
 
       {/* Middle city & schedule info */}
       <div className="ml-2 flex grow flex-col overflow-hidden">
-        <h4 className="m-0 break-words text-sm-dense font-bold text-text-primary" style={{ whiteSpace: "normal" }}>
+        <h4 className="m-0 break-words text-sm-dense font-bold text-white" style={{ whiteSpace: "normal" }}>
           {cityHub.cityName}
         </h4>
-        <span className="mt-0.5 text-xxs font-bold text-text-muted">
+        <span className="mt-0 text-xxs font-bold text-white/60">
           {rangeLabel}
         </span>
       </div>
@@ -161,7 +135,7 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
       {onDelete && (
         <button
           disabled={isPlanning}
-          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-text-muted transition-all duration-300 hover:bg-bg-dark hover:text-budget-danger disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-text-muted"
+          className="ml-1 flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 text-white/50 transition-all duration-300 hover:bg-white/10 hover:text-budget-danger disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-white/50"
           type="button"
           onClick={(e) => {
             e.stopPropagation();

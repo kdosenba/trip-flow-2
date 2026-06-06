@@ -57,9 +57,9 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
 
   return (
     <div
-      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border-1.5 border-dashed bg-suggest-gradient p-4 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border-1.5 border-dashed bg-suggest-gradient p-4 transition-all duration-300 hover:-translate-y-0.5 ${
         isActive
-          ? "border-suggest-color shadow-glow-suggest"
+          ? "border-suggest-color"
           : "border-suggest-color/40 hover:border-suggest-color"
       }`}
       onClick={onClick}

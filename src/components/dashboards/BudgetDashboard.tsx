@@ -120,8 +120,10 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
   };
 
   return (
-    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-4 shadow-glass backdrop-blur-xl transition-all duration-300">
-      <div className="absolute top-0 left-0 h-indicator w-full bg-suggest-color shadow-glow-suggest" />
+    <div
+      className="relative w-full max-w-card-widget rounded-3xl border border-border-color bg-bg-card/70 p-4 backdrop-blur-xl transition-all duration-300"
+      style={{ boxShadow: "6px 6px 0px var(--color-bg-dark)" }}
+    >
 
       {/* BUDGET ROW */}
       <div className="relative flex items-center gap-3">

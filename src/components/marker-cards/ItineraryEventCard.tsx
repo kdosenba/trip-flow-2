@@ -35,16 +35,16 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
   switch (eventLocation.category) {
     case "LODGING":
       cardBorderClass =
-        "border-border-color hover:border-hub-color/30 hover:shadow-glow-hub";
-      activeClass = "border-hub-color shadow-glow-hub";
+        "border-border-color hover:border-hub-color/30";
+      activeClass = "border-hub-color";
       badgeClass = "text-hub-color bg-hub-color/10 border-hub-color/25";
       badgeLabel = "Lodging";
       priceLabel = "Price / Night";
       break;
     case "ACTIVITY":
       cardBorderClass =
-        "border-border-color hover:border-budget-safe/30 hover:shadow-glow-safe";
-      activeClass = "border-budget-safe shadow-glow-safe";
+        "border-border-color hover:border-budget-safe/30";
+      activeClass = "border-budget-safe";
       badgeClass = "text-budget-safe bg-budget-safe/10 border-budget-safe/25";
       badgeLabel = "Activity";
       priceLabel = "Cost";
@@ -55,8 +55,8 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
       break;
     case "MEAL":
       cardBorderClass =
-        "border-border-color hover:border-budget-warn/30 hover:shadow-glow-warn";
-      activeClass = "border-budget-warn shadow-glow-warn";
+        "border-border-color hover:border-budget-warn/30";
+      activeClass = "border-budget-warn";
       badgeClass = "text-budget-warn bg-budget-warn/10 border-budget-warn/25";
       badgeLabel = "Meal";
       priceLabel = "Est. Cost / Person";
@@ -69,7 +69,7 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
 
   return (
     <div
-      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 ${
         isActive ? activeClass : cardBorderClass
       }`}
       onClick={onClick}

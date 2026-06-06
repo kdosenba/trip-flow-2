@@ -36,8 +36,10 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
   });
 
   return (
-    <div className="relative w-full max-w-card-widget overflow-hidden rounded-xl border border-border-color bg-bg-card/70 p-5 shadow-glass backdrop-blur-xl transition-all duration-300">
-      <div className="absolute top-0 left-0 h-indicator w-full bg-hub-color shadow-glow-hub" />
+    <div
+      className="relative w-full max-w-card-widget rounded-3xl border border-border-color bg-bg-card/70 p-5 backdrop-blur-xl transition-all duration-300"
+      style={{ boxShadow: "6px 6px 0px var(--color-bg-dark)" }}
+    >
 
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-1.5">

@@ -53,9 +53,9 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
 
   return (
     <div
-      className={`relative inline-flex w-fit max-w-card-max cursor-pointer flex-col justify-start gap-1 rounded-lg border bg-bg-card p-1.5 shadow-glass transition-all duration-300 ${
+      className={`relative inline-flex w-fit max-w-card-max cursor-pointer flex-col justify-start gap-1 rounded-lg border bg-bg-card p-1.5 transition-all duration-300 ${
         isActive
-          ? "border-origin-color shadow-glow-origin"
+          ? "border-origin-color"
           : "border-border-color hover:-translate-y-0.5 hover:border-border-hover"
       }`}
       onClick={onClick}

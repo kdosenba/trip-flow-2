@@ -88,4 +88,31 @@ export class DateTimeFormatter {
     );
     return `${startStr.toUpperCase()} - ${endStr.toUpperCase()}`;
   }
+
+  /**
+   * Formats a duration in days into a user-friendly value and unit.
+   * - <= 7 days: formatted as DAYS (e.g., "1 DAY", "7 DAYS")
+   * - 8 to 28 days: formatted as WEEKS (e.g., "1.1 WEEKS", "4 WEEKS")
+   * - >= 29 days: formatted as MONTHS (e.g., "1 MONTH", "1.5 MONTHS")
+   */
+  static formatDuration(numDays: number): { value: string; unit: string } {
+    if (numDays <= 7) {
+      return {
+        value: String(numDays),
+        unit: numDays === 1 ? "DAY" : "DAYS",
+      };
+    }
+    if (numDays <= 28) {
+      const rawVal = Math.round((numDays / 7) * 10) / 10;
+      return {
+        value: String(rawVal),
+        unit: rawVal === 1 ? "WEEK" : "WEEKS",
+      };
+    }
+    const rawVal = Math.round((numDays / 30) * 10) / 10;
+    return {
+      value: String(rawVal),
+      unit: rawVal === 1 ? "MONTH" : "MONTHS",
+    };
+  }
 }

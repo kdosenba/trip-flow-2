@@ -60,9 +60,9 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
 
   return (
     <div
-      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 shadow-glass transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`relative box-border flex w-full max-w-card-max cursor-pointer flex-col justify-between rounded-lg border bg-bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 ${
         isActive
-          ? "border-transit-color shadow-glow-transit"
+          ? "border-transit-color"
           : "border-border-color hover:border-border-hover"
       }`}
       onClick={onClick}
