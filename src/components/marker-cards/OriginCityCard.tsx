@@ -89,7 +89,7 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
           >
             <button
               disabled={isPlanning}
-              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-4 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() =>
                 updateTravelerCount(
                   originCity.id,
@@ -105,7 +105,7 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
             </span>
             <button
               disabled={isPlanning}
-              className="flex h-4 w-4 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-4 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xxs text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() =>
                 updateTravelerCount(originCity.id, travelerCount + 1)
               }

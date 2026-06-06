@@ -1,24 +1,347 @@
 import { TripFlowGraph } from "../../types/schema";
 
 /**
+ * BFS algorithm to propagate traveler counts from origins to destination city hubs.
+ */
+export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
+  if (!graph.CityHubs) return;
+
+  const hubs = graph.CityHubs;
+  const transits = graph.Transits || {};
+
+  // Build graph adjacency list
+  const outgoingTransits: Record<string, typeof transits[string][]> = {};
+  const incomingTransits: Record<string, typeof transits[string][]> = {};
+
+  // Initialize adjacency records for all hubs
+  Object.keys(hubs).forEach((id) => {
+    outgoingTransits[id] = [];
+    incomingTransits[id] = [];
+    // Reset resolved traveler counts safely
+    const hub = hubs[id];
+    if (hub) {
+      hub.resolvedTravelerCount = undefined;
+    }
+  });
+
+  // Populate incoming and outgoing structures
+  Object.values(transits).forEach((transit) => {
+    const fromHub = hubs[transit.fromCityId];
+    const toHub = hubs[transit.toCityId];
+    if (fromHub && toHub) {
+      outgoingTransits[transit.fromCityId]?.push(transit);
+      incomingTransits[transit.toCityId]?.push(transit);
+    }
+  });
+
+  // Track transit traveler counts carried along each transit edge
+  const transitTravelers: Record<string, number> = {};
+
+  // Queue for BFS
+  const queue: string[] = [];
+  const visited = new Set<string>();
+  const incomingProcessedCount: Record<string, number> = {};
+
+  // Initialize incoming processed count for all hubs
+  Object.keys(hubs).forEach((id) => {
+    incomingProcessedCount[id] = 0;
+  });
+
+  // Root hubs are origins or hubs with 0 incoming transits
+  Object.entries(hubs).forEach(([id, hub]) => {
+    const incoming = incomingTransits[id];
+    if (hub.type === "ORIGIN" || !incoming || incoming.length === 0) {
+      queue.push(id);
+    }
+  });
+
+  // Helper to resolve count for a single hub
+  const resolveHubCount = (hubId: string): number => {
+    const hub = hubs[hubId];
+    if (!hub) return 1;
+    // Rule: Override hubs (ORIGIN or travelerCount !== 1) use their own override count
+    if (hub.type === "ORIGIN" || hub.travelerCount !== 1) {
+      return hub.travelerCount;
+    }
+    // Default hubs receive the sum of traveler counts from incoming transits
+    const incoming = incomingTransits[hubId] || [];
+    if (incoming.length === 0) {
+      return 1; // Fallback to default of 1 if no incoming transits
+    }
+    let sum = 0;
+    incoming.forEach((transit) => {
+      sum += transitTravelers[transit.id] || 0;
+    });
+    return sum > 0 ? sum : 1; // Ensure traveler count is at least 1
+  };
+
+  while (queue.length > 0 || visited.size < Object.keys(hubs).length) {
+    // If queue is empty but we still have unvisited hubs (due to cycles or disconnected components),
+    // pick an unvisited hub to break the deadlock.
+    if (queue.length === 0) {
+      const unvisited = Object.keys(hubs).filter((id) => !visited.has(id));
+      if (unvisited.length === 0) break;
+      // Prioritize an unvisited hub that has some incoming processed edges, or just pick the first
+      let bestChoice = unvisited[0] || "";
+      let maxProcessed = -1;
+      unvisited.forEach((id) => {
+        const count = incomingProcessedCount[id] || 0;
+        if (count > maxProcessed) {
+          maxProcessed = count;
+          bestChoice = id;
+        }
+      });
+      if (!bestChoice) break;
+      queue.push(bestChoice);
+    }
+
+    const hubId = queue.shift()!;
+    if (visited.has(hubId)) continue;
+    visited.add(hubId);
+
+    const hub = hubs[hubId];
+    if (hub) {
+      const T = resolveHubCount(hubId);
+      hub.resolvedTravelerCount = T;
+
+      // Distribute travelers to outgoing transits
+      const outgoings = outgoingTransits[hubId] || [];
+      if (outgoings.length > 0) {
+        const overrides: typeof outgoings = [];
+        const defaults: typeof outgoings = [];
+
+        outgoings.forEach((transit) => {
+          const destHub = hubs[transit.toCityId];
+          if (destHub) {
+            if (destHub.type === "ORIGIN" || destHub.travelerCount !== 1) {
+              overrides.push(transit);
+            } else {
+              defaults.push(transit);
+            }
+          }
+        });
+
+        // Sum of override destinations
+        let sumOverrides = 0;
+        overrides.forEach((transit) => {
+          const destHub = hubs[transit.toCityId];
+          if (destHub) {
+            sumOverrides += destHub.travelerCount;
+          }
+        });
+
+        // Remainder
+        const remainder = Math.max(0, T - sumOverrides);
+
+        // Distribute to overrides
+        overrides.forEach((transit) => {
+          const destHub = hubs[transit.toCityId];
+          if (destHub) {
+            transitTravelers[transit.id] = destHub.travelerCount;
+          }
+        });
+
+        // Distribute equally to defaults
+        if (defaults.length > 0) {
+          const share = remainder / defaults.length;
+          defaults.forEach((transit) => {
+            transitTravelers[transit.id] = share;
+          });
+        }
+
+        // Propagate dependencies and push to queue if ready
+        outgoings.forEach((transit) => {
+          const destId = transit.toCityId;
+          incomingProcessedCount[destId] = (incomingProcessedCount[destId] || 0) + 1;
+          const incomingCount = incomingTransits[destId]?.length || 0;
+          // If all incoming transits to destId are processed, and it has not been visited yet, push to queue
+          if (
+            incomingProcessedCount[destId] === incomingCount &&
+            !visited.has(destId)
+          ) {
+            queue.push(destId);
+          }
+        });
+      }
+    }
+  }
+};
+
+/**
  * Automatically recalculates the budget estimate and actual trip dates based on active locations and transits.
  * Does not allow manual override. Overwrites existing estimates and actual bounds.
  */
 export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
-  // --- 1. Recalculate Budget Estimate ---
+  // --- Propagate traveler counts first ---
+  propagateTravelerCounts(graph);
+
+  // --- 1. Recalculate Location & Suggestion Totals based on traveler counts ---
+  if (graph.Locations && graph.CityHubs) {
+    Object.values(graph.Locations).forEach((loc) => {
+      if (!loc.price) return;
+
+      // Find the hub where this location is listed in the itinerary
+      const parentHub = Object.values(graph.CityHubs).find((hub) =>
+        hub.itinerary?.some((item) => item.LocationId === loc.id)
+      );
+      const travelerCount = parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount) : 1;
+
+      if (loc.category === "LODGING") {
+        const unit = loc.price.unit || "ROOM";
+        const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
+
+        if (loc.price.actualCost !== undefined) {
+          loc.price.total = loc.price.actualCost * factor;
+          loc.price.totalLow = loc.price.actualCost * factor;
+          loc.price.totalHigh = loc.price.actualCost * factor;
+        } else if (loc.price.typicalCost !== undefined) {
+          loc.price.total = loc.price.typicalCost * factor;
+          loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
+          loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+        }
+      } else if (loc.category === "ACTIVITY") {
+        const unit = loc.price.unit || "PERSON";
+        const factor = unit === "PERSON" ? travelerCount : 1;
+
+        if (loc.price.actualCost !== undefined) {
+          loc.price.total = loc.price.actualCost * factor;
+          loc.price.totalLow = loc.price.actualCost * factor;
+          loc.price.totalHigh = loc.price.actualCost * factor;
+        } else if (loc.price.typicalCost !== undefined) {
+          loc.price.total = loc.price.typicalCost * factor;
+          loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
+          loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+        }
+      } else if (loc.category === "MEAL") {
+        const expectedCost = loc.price.actualCost !== undefined ? loc.price.actualCost : (loc.price.typicalCost || 0);
+        loc.price.total = expectedCost * travelerCount;
+        loc.price.totalLow = Math.round(expectedCost * 0.9 * travelerCount);
+        loc.price.totalHigh = Math.round(expectedCost * 1.1 * travelerCount);
+      } else {
+        const expectedCost = loc.price.actualCost !== undefined ? loc.price.actualCost : (loc.price.typicalCost || 0);
+        loc.price.total = expectedCost;
+        if (loc.price.actualCost !== undefined) {
+          loc.price.totalLow = loc.price.actualCost;
+          loc.price.totalHigh = loc.price.actualCost;
+        } else if (loc.price.typicalCost !== undefined) {
+          loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9);
+          loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1);
+        }
+      }
+    });
+  }
+
+  if (graph.suggestions && graph.CityHubs) {
+    Object.values(graph.suggestions).forEach((sug) => {
+      const targetHub = sug.targetCityId ? graph.CityHubs[sug.targetCityId] : undefined;
+      const travelerCount = targetHub ? (targetHub.resolvedTravelerCount || targetHub.travelerCount) : 1;
+
+      const loc = sug.suggestedLocation;
+      if (loc && loc.price) {
+        if (loc.category === "LODGING") {
+          const unit = loc.price.unit || "ROOM";
+          const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
+
+          if (loc.price.actualCost !== undefined) {
+            loc.price.total = loc.price.actualCost * factor;
+            loc.price.totalLow = loc.price.actualCost * factor;
+            loc.price.totalHigh = loc.price.actualCost * factor;
+          } else if (loc.price.typicalCost !== undefined) {
+            loc.price.total = loc.price.typicalCost * factor;
+            loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
+            loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+          }
+        } else if (loc.category === "ACTIVITY") {
+          const unit = loc.price.unit || "PERSON";
+          const factor = unit === "PERSON" ? travelerCount : 1;
+
+          if (loc.price.actualCost !== undefined) {
+            loc.price.total = loc.price.actualCost * factor;
+            loc.price.totalLow = loc.price.actualCost * factor;
+            loc.price.totalHigh = loc.price.actualCost * factor;
+          } else if (loc.price.typicalCost !== undefined) {
+            loc.price.total = loc.price.typicalCost * factor;
+            loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9 * factor);
+            loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1 * factor);
+          }
+        } else if (loc.category === "MEAL") {
+          const expectedCost = loc.price.actualCost !== undefined ? loc.price.actualCost : (loc.price.typicalCost || 0);
+          loc.price.total = expectedCost * travelerCount;
+          loc.price.totalLow = Math.round(expectedCost * 0.9 * travelerCount);
+          loc.price.totalHigh = Math.round(expectedCost * 1.1 * travelerCount);
+        } else {
+          const expectedCost = loc.price.actualCost !== undefined ? loc.price.actualCost : (loc.price.typicalCost || 0);
+          loc.price.total = expectedCost;
+          if (loc.price.actualCost !== undefined) {
+            loc.price.totalLow = loc.price.actualCost;
+            loc.price.totalHigh = loc.price.actualCost;
+          } else if (loc.price.typicalCost !== undefined) {
+            loc.price.totalLow = Math.round(loc.price.typicalCost * 0.9);
+            loc.price.totalHigh = Math.round(loc.price.typicalCost * 1.1);
+          }
+        }
+      }
+
+      if (sug.price) {
+        const category = sug.type === "LOCATION_SUGGESTION" ? sug.suggestedLocation?.category || "ACTIVITY" : "TRANSIT";
+        if (category === "LODGING") {
+          const unit = sug.price.unit || "ROOM";
+          const factor = unit === "ROOM" ? Math.ceil(travelerCount / 2) : 1;
+
+          if (sug.price.actualCost !== undefined) {
+            sug.price.total = sug.price.actualCost * factor;
+            sug.price.totalLow = sug.price.actualCost * factor;
+            sug.price.totalHigh = sug.price.actualCost * factor;
+          } else if (sug.price.typicalCost !== undefined) {
+            sug.price.total = sug.price.typicalCost * factor;
+            sug.price.totalLow = Math.round(sug.price.typicalCost * 0.9 * factor);
+            sug.price.totalHigh = Math.round(sug.price.typicalCost * 1.1 * factor);
+          }
+        } else if (category === "ACTIVITY") {
+          const unit = sug.price.unit || "PERSON";
+          const factor = unit === "PERSON" ? travelerCount : 1;
+
+          if (sug.price.actualCost !== undefined) {
+            sug.price.total = sug.price.actualCost * factor;
+            sug.price.totalLow = sug.price.actualCost * factor;
+            sug.price.totalHigh = sug.price.actualCost * factor;
+          } else if (sug.price.typicalCost !== undefined) {
+            sug.price.total = sug.price.typicalCost * factor;
+            sug.price.totalLow = Math.round(sug.price.typicalCost * 0.9 * factor);
+            sug.price.totalHigh = Math.round(sug.price.typicalCost * 1.1 * factor);
+          }
+        } else if (category === "MEAL") {
+          const expectedCost = sug.price.actualCost !== undefined ? sug.price.actualCost : (sug.price.typicalCost || 0);
+          sug.price.total = expectedCost * travelerCount;
+          sug.price.totalLow = Math.round(expectedCost * 0.9 * travelerCount);
+          sug.price.totalHigh = Math.round(expectedCost * 1.1 * travelerCount);
+        } else {
+          const expectedCost = sug.price.actualCost !== undefined ? sug.price.actualCost : (sug.price.typicalCost || 0);
+          sug.price.total = expectedCost;
+          if (sug.price.actualCost !== undefined) {
+            sug.price.totalLow = sug.price.actualCost;
+            sug.price.totalHigh = sug.price.actualCost;
+          } else if (sug.price.typicalCost !== undefined) {
+            sug.price.totalLow = Math.round(sug.price.typicalCost * 0.9);
+            sug.price.totalHigh = Math.round(sug.price.typicalCost * 1.1);
+          }
+        }
+      }
+    });
+  }
+
+  // --- 2. Sum up overall trip budget estimate ---
   let lowSum = 0;
   let highSum = 0;
 
-  // Sum active locations
   if (graph.Locations) {
     Object.values(graph.Locations).forEach((loc) => {
       if (loc.price) {
-        if (loc.price.actualCost !== undefined) {
-          lowSum += loc.price.actualCost;
-          highSum += loc.price.actualCost;
-        } else if (loc.price.typicalCost !== undefined) {
-          lowSum += loc.price.typicalCost * 0.9;
-          highSum += loc.price.typicalCost * 1.1;
+        if (loc.price.totalLow !== undefined) {
+          lowSum += loc.price.totalLow;
+        }
+        if (loc.price.totalHigh !== undefined) {
+          highSum += loc.price.totalHigh;
         }
       }
     });

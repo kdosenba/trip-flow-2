@@ -67,8 +67,8 @@ export const TransitLocationCard: React.FC<TransitLocationCardProps> = ({
       }`}
       onClick={onClick}
     >
-      <div className="absolute top-1/2 -left-2 z-10 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-r border-border-color bg-bg-darker shadow-inset-notch" />
-      <div className="absolute top-1/2 -right-2 z-10 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-l border-border-color bg-bg-darker shadow-inset-notch" />
+      <div className="absolute top-1/2 -left-2 z-10 size-3.5 -translate-y-1/2 rounded-full border-r border-border-color bg-bg-darker shadow-inset-notch" />
+      <div className="absolute top-1/2 -right-2 z-10 size-3.5 -translate-y-1/2 rounded-full border-l border-border-color bg-bg-darker shadow-inset-notch" />
 
       <div className="mb-3 flex items-start justify-between gap-1">
         <div className="flex flex-col overflow-hidden">

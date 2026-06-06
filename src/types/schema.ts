@@ -41,6 +41,11 @@ export type DateOrDateTime = z.infer<typeof DateOrDateTimeSchema>;
 export const CostSchema = z.object({
   actualCost: z.number().nonnegative("Cost cannot be negative").optional(),
   typicalCost: z.number().nonnegative("Cost cannot be negative").optional(),
+  unit: z.enum(["ROOM", "HOUSE", "PERSON", "ACTIVITY"]).optional(),
+  mealTier: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+  total: z.number().nonnegative("Total cost cannot be negative").optional(),
+  totalLow: z.number().nonnegative("Total cost low limit cannot be negative").optional(),
+  totalHigh: z.number().nonnegative("Total cost high limit cannot be negative").optional(),
 });
 export type Cost = z.infer<typeof CostSchema>;
 
@@ -190,6 +195,7 @@ export const CityHubSchema = z.object({
   arrivalNodeId: LocationIdSchema.optional(), // Layout entry point for transit
   departureNodeId: LocationIdSchema.optional(), // Layout exit point for transit
   travelerCount: z.number().int().positive().default(1),
+  resolvedTravelerCount: z.number().positive().optional(),
   timezone: z.string().optional(),
 });
 export type CityHub = z.infer<typeof CityHubSchema>;

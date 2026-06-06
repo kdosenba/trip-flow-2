@@ -1,7 +1,9 @@
 import React from "react";
 import { Location } from "../../types/schema";
-import { AddressIcon, CalendarIcon } from "./icons";
+import { CalendarIcon, BedIcon, SparklesIcon, UtensilsIcon } from "./icons";
 import { DateTimeFormatter } from "../../lib/utils/date";
+import { useTripFlowStore } from "../../store";
+import { EventPriceSection } from "./EventPriceSection";
 
 interface ItineraryEventCardProps {
   eventLocation: Location;
@@ -20,17 +22,27 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
   isActive = false,
   onClick,
 }) => {
+  const graph = useTripFlowStore((state) => state.graph);
+
   const formattedTime = endTime
     ? `${DateTimeFormatter.format(startTime, timezone)} - ${DateTimeFormatter.format(endTime, timezone, { hour: "2-digit", minute: "2-digit", hour12: false })}`
     : DateTimeFormatter.format(startTime, timezone);
+
+  // Find travelerCount from target/parent hub in store graph
+  const travelerCount = React.useMemo(() => {
+    if (!graph || !graph.CityHubs) return 1;
+    const parentHub = Object.values(graph.CityHubs).find((hub) =>
+      hub.itinerary?.some((item) => item.LocationId === eventLocation.id)
+    );
+    return parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount) : 1;
+  }, [graph, eventLocation.id]);
 
   // Determine dynamic styling classes based on category
   let cardBorderClass = "border-border-color hover:border-border-hover";
   let activeClass = "";
   let badgeClass = "text-text-primary bg-white/5 border-border-color";
   let badgeLabel = eventLocation.category.toString();
-  let priceLabel = "Price";
-  let showSaving = false;
+  let categoryIcon = <SparklesIcon size={14} />;
 
   switch (eventLocation.category) {
     case "LODGING":
@@ -39,7 +51,7 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
       activeClass = "border-hub-color";
       badgeClass = "text-hub-color bg-hub-color/10 border-hub-color/25";
       badgeLabel = "Lodging";
-      priceLabel = "Price / Night";
+      categoryIcon = <BedIcon size={14} className="text-hub-color" />;
       break;
     case "ACTIVITY":
       cardBorderClass =
@@ -47,11 +59,7 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
       activeClass = "border-budget-safe";
       badgeClass = "text-budget-safe bg-budget-safe/10 border-budget-safe/25";
       badgeLabel = "Activity";
-      priceLabel = "Cost";
-      if (eventLocation.price?.typicalCost && eventLocation.price?.actualCost) {
-        showSaving =
-          eventLocation.price.typicalCost > eventLocation.price.actualCost;
-      }
+      categoryIcon = <SparklesIcon size={14} className="text-budget-safe" />;
       break;
     case "MEAL":
       cardBorderClass =
@@ -59,13 +67,9 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
       activeClass = "border-budget-warn";
       badgeClass = "text-budget-warn bg-budget-warn/10 border-budget-warn/25";
       badgeLabel = "Meal";
-      priceLabel = "Est. Cost / Person";
+      categoryIcon = <UtensilsIcon size={14} className="text-budget-warn" />;
       break;
   }
-
-  const savingsAmount = showSaving
-    ? eventLocation.price!.typicalCost! - eventLocation.price!.actualCost!
-    : 0;
 
   return (
     <div
@@ -74,14 +78,14 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
       }`}
       onClick={onClick}
     >
-      <div className="mb-3 flex items-start justify-between gap-1">
-        <div className="flex flex-col overflow-hidden">
-          <h3 className="m-0 truncate text-sm-dense font-bold text-text-primary">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-start gap-1.5">
+          <div className="mt-0.5 shrink-0">
+            {categoryIcon}
+          </div>
+          <h3 className="m-0 text-sm-dense leading-tight font-bold break-words text-text-primary" style={{ whiteSpace: "normal" }}>
             {eventLocation.name}
           </h3>
-          <span className="mt-0.5 truncate text-xs-dense text-text-secondary">
-            {eventLocation.category} Booking
-          </span>
         </div>
         <span
           className={`shrink-0 rounded-xs border px-1.5 py-0.5 text-super-small font-bold tracking-wider uppercase ${badgeClass}`}
@@ -92,41 +96,17 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
 
       <div className="mb-3 flex flex-col gap-1.5 text-xs-dense text-text-secondary">
         <div className="flex items-center gap-1.5">
-          <AddressIcon />
-          <span className="text-xs-dense text-text-secondary">
-            {eventLocation.address}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
           <CalendarIcon />
           <span>{formattedTime}</span>
         </div>
       </div>
 
-      <div className="mt-auto flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-xxs font-bold tracking-wider text-text-muted uppercase">
-            {priceLabel}
-          </span>
-          <span className="mt-0.5 text-sm-dense font-bold text-text-primary">
-            {eventLocation.price?.actualCost !== undefined
-              ? `$${eventLocation.price.actualCost} USD`
-              : "Free"}
-          </span>
-        </div>
-
-        {showSaving ? (
-          <span className="text-xs-dense font-bold text-budget-safe">
-            Saved ${savingsAmount}!
-          </span>
-        ) : (
-          eventLocation.price?.typicalCost !== undefined && (
-            <span className="text-xs-dense text-text-muted">
-              Typical: ${eventLocation.price.typicalCost}
-            </span>
-          )
-        )}
-      </div>
+      <EventPriceSection
+        category={eventLocation.category}
+        price={eventLocation.price}
+        travelerCount={travelerCount}
+        currency={graph?.clientContext?.currency || "USD"}
+      />
     </div>
   );
 };

@@ -80,8 +80,11 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
         <div className="flex items-center gap-1.5">
           <Users size={12} className="shrink-0 text-text-muted" />
           <span>
-            {cityHub.travelerCount} Traveler
-            {cityHub.travelerCount > 1 ? "s" : ""}
+            {(() => {
+              const displayCount = cityHub.resolvedTravelerCount !== undefined ? cityHub.resolvedTravelerCount : cityHub.travelerCount;
+              const formatted = Number.isInteger(displayCount) ? displayCount.toString() : displayCount.toFixed(1);
+              return `${formatted} Traveler${displayCount > 1 ? "s" : ""}`;
+            })()}
           </span>
         </div>
       </div>
@@ -94,7 +97,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
         <div className="inline-flex items-center gap-1.5 rounded bg-bg-dark p-1">
           <button
             disabled={isPlanning}
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(
                 cityHub.id,
@@ -109,7 +112,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
           </span>
           <button
             disabled={isPlanning}
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)
             }
@@ -133,7 +136,7 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
                 key={idx}
                 className="relative flex items-start justify-between"
               >
-                <span className="absolute top-1.5 -left-3 h-1.5 w-1.5 rounded-full border border-bg-dark bg-hub-color" />
+                <span className="absolute top-1.5 -left-3 size-1.5 rounded-full border border-bg-dark bg-hub-color" />
                 <div className="flex flex-col">
                   <span className="font-bold text-text-primary">
                     {item.label}

@@ -201,7 +201,7 @@ export default function DebugPage() {
             {sentPayload ? (
               <CollapsibleJsonViewer data={sentPayload} depth={0} />
             ) : (
-              <div className="italic text-text-muted">
+              <div className="text-text-muted italic">
                 No request payload has been sent yet. Submit a message to populate
                 this view.
               </div>
@@ -223,7 +223,7 @@ export default function DebugPage() {
             {receivedPayload ? (
               <CollapsibleJsonViewer data={receivedPayload} depth={0} />
             ) : (
-              <div className="italic text-text-muted">
+              <div className="text-text-muted italic">
                 No response payload received yet. Submit a message to populate
                 this view.
               </div>
@@ -285,7 +285,7 @@ export default function DebugPage() {
                   GEMINI
                 </span>
                 <div className="inline-flex items-center gap-2 rounded-lg border border-border-color bg-bg-card px-4 py-3 text-text-primary shadow-glass">
-                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-suggest-color" />
+                  <span className="inline-block size-2 animate-pulse rounded-full bg-suggest-color" />
                   AI is planning & validating schema delta...
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function DebugPage() {
             {graph ? (
               <CollapsibleJsonViewer data={graph} depth={0} />
             ) : (
-              <div className="italic text-text-muted">
+              <div className="text-text-muted italic">
                 No active graph state found.
               </div>
             )}

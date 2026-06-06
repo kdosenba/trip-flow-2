@@ -127,7 +127,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
 
       {/* BUDGET ROW */}
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <Wallet size={16} className="text-text-primary" />
         </div>
 
@@ -203,7 +203,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
 
       {/* ESTIMATE ROW (Non-editable) */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-dark/50">
           <TrendingUp size={16} className="text-text-primary" />
         </div>
 

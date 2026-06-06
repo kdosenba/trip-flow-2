@@ -175,6 +175,8 @@ export const AddItineraryItemSchema = z.object({
   endDate: z.string().optional().describe("ISO date"),
   endTime: z.string().optional().describe("ISO time"),
   cost: z.number().optional().describe("Cost of the item"),
+  unit: z.enum(["ROOM", "HOUSE", "PERSON", "ACTIVITY"]).optional().describe("Unit type for lodging/activities"),
+  mealTier: z.enum(["LOW", "MEDIUM", "HIGH"]).optional().describe("Meal price tier"),
   cityId: z
     .string()
     .describe("The id of the parent CityHub. CityHub must be of type HUB."),
@@ -250,6 +252,8 @@ export interface ToolArguments {
   endDate?: string;
   endTime?: string;
   cost?: number;
+  unit?: "ROOM" | "HOUSE" | "PERSON" | "ACTIVITY";
+  mealTier?: "LOW" | "MEDIUM" | "HIGH";
   fromLocationId?: string;
   toLocationId?: string;
   transportMode?: "FLIGHT" | "TRAIN" | "BUS" | "CAR" | "WALK" | "OTHER";
@@ -389,11 +393,13 @@ export const executeTool = async (
         coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
         category: args.category!,
         price:
-          args.cost !== undefined
+          args.cost !== undefined || args.unit !== undefined || args.mealTier !== undefined
             ? {
-                actualCost: args.cost,
-                typicalCost: args.cost,
-              }
+              actualCost: args.cost,
+              typicalCost: undefined,
+              unit: args.unit,
+              mealTier: args.mealTier,
+            }
             : undefined,
         iata: geo?.iata,
       };

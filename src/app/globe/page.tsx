@@ -535,14 +535,14 @@ export default function GlobePage() {
               value={rawJsonText}
               onChange={(e) => handleRawJsonChange(e.target.value)}
               spellCheck="false"
-              className="h-full w-full resize-none border-none bg-transparent font-mono text-sm leading-relaxed text-budget-safe outline-none"
+              className="size-full resize-none border-none bg-transparent font-mono text-sm leading-relaxed text-budget-safe outline-none"
             />
           )}
         </div>
 
         {/* Validation Error Banner */}
         {validationError && (
-          <div className="border-t border-budget-danger bg-budget-danger/15 p-4 text-xs text-text-primary whitespace-pre-wrap">
+          <div className="border-t border-budget-danger bg-budget-danger/15 p-4 text-xs whitespace-pre-wrap text-text-primary">
             <strong>JSON Error:</strong> {validationError}
           </div>
         )}
@@ -578,7 +578,7 @@ export default function GlobePage() {
         >
           {/* Spin Animation Toggle */}
           <div className="flex flex-col gap-1">
-            <span className="uppercase text-text-secondary" style={{ fontSize: "0.65rem" }}>
+            <span className="text-text-secondary uppercase" style={{ fontSize: "0.65rem" }}>
               Auto Orbit
             </span>
             <button
@@ -590,7 +590,7 @@ export default function GlobePage() {
               }`}
             >
               <span
-                className={`inline-block h-1.5 w-1.5 rounded-full ${
+                className={`inline-block size-1.5 rounded-full ${
                   isSpinning ? "animate-pulse bg-white" : "bg-text-secondary"
                 }`}
               />
@@ -603,7 +603,7 @@ export default function GlobePage() {
 
           {/* Terrain 3D Elevation Toggle */}
           <div className="flex flex-col gap-1">
-            <span className="uppercase text-text-secondary" style={{ fontSize: "0.65rem" }}>
+            <span className="text-text-secondary uppercase" style={{ fontSize: "0.65rem" }}>
               Terrain 3D
             </span>
             <button

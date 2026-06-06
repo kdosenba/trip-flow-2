@@ -3,6 +3,7 @@ import { Suggestion } from "../../types/schema";
 import { AddressIcon, CalendarIcon, PlaneIcon } from "./icons";
 import { useTripFlowStore } from "../../store";
 import { DateTimeFormatter } from "../../lib/utils/date";
+import { EventPriceSection } from "./EventPriceSection";
 
 interface SuggestionCardProps {
   suggestion: Suggestion;
@@ -109,17 +110,14 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
             )}
       </div>
 
-      <div className="mt-auto flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-xxs font-bold tracking-wider text-text-muted uppercase">
-            {isLocation ? "Price" : "Price Estimate"}
-          </span>
-          <span className="mt-0.5 text-sm-dense font-bold text-suggest-color">
-            {suggestion.price?.actualCost !== undefined
-              ? `$${suggestion.price.actualCost} USD`
-              : "TBD"}
-          </span>
-        </div>
+      <EventPriceSection
+        category={suggestion.suggestedLocation?.category || (suggestion.type === "LOCATION_SUGGESTION" ? "ACTIVITY" : "TRANSIT_POINT")}
+        price={suggestion.suggestedLocation?.price || suggestion.price}
+        travelerCount={targetCity ? (targetCity.resolvedTravelerCount || targetCity.travelerCount) : 1}
+        currency={graph?.clientContext?.currency || "USD"}
+      />
+
+      <div className="mt-3 flex justify-end">
         <button
           className="cursor-pointer rounded border border-suggest-color/25 bg-suggest-color/10 px-2 py-1 text-xs-dense font-semibold text-suggest-color transition-all duration-300 hover:border-transparent hover:bg-suggest-color hover:text-black active:scale-95"
           onClick={(e) => {

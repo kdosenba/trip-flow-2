@@ -511,5 +511,184 @@ export const runSchemaTests = async () => {
     throw err;
   }
 
+  // 9. BFS traveler count propagation verification
+  try {
+    const graph: TripFlowGraph = {
+      Locations: {},
+      CityHubs: {
+        "hub-origin": {
+          id: "hub-origin" as CityHubId,
+          cityName: "NYC",
+          country: "USA",
+          coordinates: { lat: 40.7, lng: -74 },
+          type: "ORIGIN",
+          travelerCount: 6,
+          itinerary: [],
+        },
+        "hub-split-override": {
+          id: "hub-split-override" as CityHubId,
+          cityName: "Paris",
+          country: "France",
+          coordinates: { lat: 48.8, lng: 2.3 },
+          type: "HUB",
+          travelerCount: 2, // User override!
+          itinerary: [],
+        },
+        "hub-split-default-1": {
+          id: "hub-split-default-1" as CityHubId,
+          cityName: "London",
+          country: "UK",
+          coordinates: { lat: 51.5, lng: -0.1 },
+          type: "HUB",
+          travelerCount: 1, // Default!
+          itinerary: [],
+        },
+        "hub-split-default-2": {
+          id: "hub-split-default-2" as CityHubId,
+          cityName: "Berlin",
+          country: "Germany",
+          coordinates: { lat: 52.5, lng: 13.4 },
+          type: "HUB",
+          travelerCount: 1, // Default!
+          itinerary: [],
+        },
+        "hub-merge-dest": {
+          id: "hub-merge-dest" as CityHubId,
+          cityName: "Rome",
+          country: "Italy",
+          coordinates: { lat: 41.9, lng: 12.5 },
+          type: "HUB",
+          travelerCount: 1, // Default!
+          itinerary: [],
+        },
+      },
+      Transits: {
+        "t-1": {
+          id: "t-1" as TransitId,
+          fromCityId: "hub-origin" as CityHubId,
+          toCityId: "hub-split-override" as CityHubId,
+          segments: [
+            {
+              fromLocationId: "loc-dummy" as LocationId,
+              toLocationId: "loc-dummy" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+        "t-2": {
+          id: "t-2" as TransitId,
+          fromCityId: "hub-origin" as CityHubId,
+          toCityId: "hub-split-default-1" as CityHubId,
+          segments: [
+            {
+              fromLocationId: "loc-dummy" as LocationId,
+              toLocationId: "loc-dummy" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+        "t-3": {
+          id: "t-3" as TransitId,
+          fromCityId: "hub-origin" as CityHubId,
+          toCityId: "hub-split-default-2" as CityHubId,
+          segments: [
+            {
+              fromLocationId: "loc-dummy" as LocationId,
+              toLocationId: "loc-dummy" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+        "t-4": {
+          id: "t-4" as TransitId,
+          fromCityId: "hub-split-override" as CityHubId,
+          toCityId: "hub-merge-dest" as CityHubId,
+          segments: [
+            {
+              fromLocationId: "loc-dummy" as LocationId,
+              toLocationId: "loc-dummy" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+        "t-5": {
+          id: "t-5" as TransitId,
+          fromCityId: "hub-split-default-1" as CityHubId,
+          toCityId: "hub-merge-dest" as CityHubId,
+          segments: [
+            {
+              fromLocationId: "loc-dummy" as LocationId,
+              toLocationId: "loc-dummy" as LocationId,
+              transportMode: "FLIGHT",
+              startTime: "2026-07-09T08:00:00Z",
+              endTime: "2026-07-09T18:00:00Z",
+            },
+          ],
+        },
+      },
+      suggestions: {},
+      clientContext: {
+        location: {
+          name: "NYC",
+          country_name: "USA",
+          country_code: "US",
+          coordinates: { lat: 40, lng: -74 },
+        },
+        language: "en",
+        currency: "USD",
+        timezone: "America/New_York",
+      },
+    };
+
+    recalculateEstimatesAndActuals(graph);
+
+    // Verify the traveler counts:
+    // Origin traveler count = 6
+    // Outgoing edges from Origin points to:
+    // - hub-split-override (override = 2)
+    // - hub-split-default-1 (default = 1)
+    // - hub-split-default-2 (default = 1)
+    // Sum of overrides = 2. Remainder = 6 - 2 = 4.
+    // Number of defaults = 2 (default-1 and default-2).
+    // Each default gets remainder / 2 = 4 / 2 = 2.
+    // Override gets its override count = 2.
+    const resolvedOverride = graph.CityHubs["hub-split-override"].resolvedTravelerCount;
+    const resolvedDefault1 = graph.CityHubs["hub-split-default-1"].resolvedTravelerCount;
+    const resolvedDefault2 = graph.CityHubs["hub-split-default-2"].resolvedTravelerCount;
+
+    if (resolvedOverride !== 2) {
+      throw new Error(`Override resolved count mismatch: expected 2, got ${resolvedOverride}`);
+    }
+    if (resolvedDefault1 !== 2) {
+      throw new Error(`Default 1 resolved count mismatch: expected 2, got ${resolvedDefault1}`);
+    }
+    if (resolvedDefault2 !== 2) {
+      throw new Error(`Default 2 resolved count mismatch: expected 2, got ${resolvedDefault2}`);
+    }
+
+    // Merge destination:
+    // Incoming to hub-merge-dest:
+    // - t-4 from hub-split-override (carries 2 travelers)
+    // - t-5 from hub-split-default-1 (carries 2 travelers)
+    // Total incoming = 2 + 2 = 4.
+    const resolvedMerge = graph.CityHubs["hub-merge-dest"].resolvedTravelerCount;
+    if (resolvedMerge !== 4) {
+      throw new Error(`Merge destination resolved count mismatch: expected 4, got ${resolvedMerge}`);
+    }
+
+    console.log("✅ BFS traveler count propagation verified successfully.");
+  } catch (err) {
+    console.error("❌ BFS traveler count propagation verification failed", err);
+    throw err;
+  }
+
   console.log("🎉 All schema tests passed successfully!");
 };

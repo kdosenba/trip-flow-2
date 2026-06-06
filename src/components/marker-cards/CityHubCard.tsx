@@ -114,16 +114,16 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
       onClick={onClick}
     >
       {/* Left duration badge */}
-      <div className="flex h-9 min-w-9 w-fit shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg bg-white px-2">
-        <span className="text-lg font-extrabold leading-none text-text-primary">{finalDisplayValue}</span>
-        <span className="text-super-small font-extrabold leading-none text-text-secondary">
+      <div className="flex h-9 w-fit min-w-9 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg bg-white px-2">
+        <span className="text-lg leading-none font-extrabold text-text-primary">{finalDisplayValue}</span>
+        <span className="text-super-small leading-none font-extrabold text-text-secondary">
           {displayUnit}
         </span>
       </div>
 
       {/* Middle city & schedule info */}
       <div className="ml-2 flex grow flex-col overflow-hidden">
-        <h4 className="m-0 break-words text-sm-dense font-bold text-white" style={{ whiteSpace: "normal" }}>
+        <h4 className="m-0 text-sm-dense font-bold break-words text-white" style={{ whiteSpace: "normal" }}>
           {cityHub.cityName}
         </h4>
         <span className="mt-0 text-xxs font-bold text-white/60">
