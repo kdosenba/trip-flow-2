@@ -61,7 +61,7 @@ _Focuses on creating a stunning, responsive, and tactile web experience to visua
 - [ ] **[TF-25]** Add feature when adding an event so that the user can select the date to add it too, or can ask gemini to organize it. Maybe that is a check box to allow gemini to organize a couple items together.
 - [x] **[TF-31]** Review and audit `OriginCityCard` styling, dynamic timezone, and inline traveler adjustments
 - [x] **[TF-32]** Review and audit `CityHubCard` date range timezone formatting
-- [ ] **[TF-33]** Review and audit `ItineraryEventCard` timeline item event formatting
+- [x] **[TF-33]** Review and audit `ItineraryEventCard` timeline item event formatting
 - [ ] **[TF-34]** Review and audit `TransitLocationCard` layover and standard flow timezone display
 - [ ] **[TF-35]** Review and audit `SuggestionCard` segment time formatting
 - [ ] **[TF-36]** Review and audit `CityHubDashboard` dynamic timeline items calculation
@@ -101,3 +101,4 @@ _Jot down raw thoughts, user feedback, and future feature expansions here before
 - [ ] **[TF-50]** We should propagate the traveler count from origin to hubs. But we also need a way to split some travelers off to a different hub. For example if I am going to Europe with my 2 children, I might want to send my son to a week long coding camp in London and my daughter to a week long ballet intensive in Paris, and then we all meet in Rome for a week. So we need to be able to support that. 
 - [ ] **[TF-51]** Remove emojis from headers, labels, and badges in the UI, replacing them with React icons (Lucide React) for a cleaner, unified, and more professional aesthetic.
 - [ ] **[TF-52]** Handle open-ended hub durations before a trip is fully planned: (1) for open-ended plans where departure is unknown, base duration on planned itinerary items with a '+' symbol showing it may grow, and (2) when a duration in days is specified, set matching arrival/departure dates assuming departure is back to origin.
+- [ ] **[TF-53]** On transits, we should hold the auto calculated traveler count. But the user could overwrite the traverl count. For example we have 5 people starting at the origin and flying to a city hub. Then they all go to another city hub. Well it should be possible to split that group and say 3 people are going to the next city hub and 2 are going back home. 
