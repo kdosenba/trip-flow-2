@@ -448,7 +448,7 @@ export default function GlobePage() {
             <h1 className="text-base font-bold text-text-primary">
               🗺️ Globe Style Studio
             </h1>
-            <span className="text-[0.7rem] text-text-muted">
+            <span className="text-xxs text-text-muted">
               Dynamic WebGL 3D Globe Sandbox
             </span>
           </div>
@@ -487,7 +487,7 @@ export default function GlobePage() {
           <div className="flex gap-1">
             <button
               onClick={() => setEditorTab("tree")}
-              className={`cursor-pointer rounded-[4px] px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`cursor-pointer rounded-sm px-3 py-1.5 text-xs font-bold transition-all ${
                 editorTab === "tree"
                   ? "bg-bg-dark text-text-primary"
                   : "bg-transparent text-text-muted hover:text-text-primary"
@@ -497,7 +497,7 @@ export default function GlobePage() {
             </button>
             <button
               onClick={() => setEditorTab("raw")}
-              className={`cursor-pointer rounded-[4px] px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`cursor-pointer rounded-sm px-3 py-1.5 text-xs font-bold transition-all ${
                 editorTab === "raw"
                   ? "bg-bg-dark text-text-primary"
                   : "bg-transparent text-text-muted hover:text-text-primary"
@@ -508,7 +508,7 @@ export default function GlobePage() {
           </div>
 
           <span
-            className={`rounded-full px-2 py-0.5 text-[0.7rem] font-bold ${
+            className={`rounded-full px-2 py-0.5 text-xxs font-bold ${
               validationError
                 ? "bg-budget-danger/15 text-budget-danger"
                 : "bg-budget-safe/15 text-budget-safe"
@@ -558,7 +558,7 @@ export default function GlobePage() {
           <span className="text-xs font-bold tracking-wider text-text-secondary shadow-xs">
             ✈️ FLY TO 3D REGIONS:
           </span>
-          <div className="flex max-w-[420px] flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5" style={{ maxWidth: "420px" }}>
             {FLIGHT_DESTINATIONS.map((dest) => (
               <button
                 key={dest.name}
@@ -572,10 +572,13 @@ export default function GlobePage() {
         </div>
 
         {/* Elegant Controller Console Panel (Bottom Overlay) */}
-        <div className="absolute bottom-6 left-1/2 z-10 flex w-[85%] max-w-[680px] -translate-x-1/2 items-center gap-6 rounded-2xl border border-border-color bg-white/90 p-4 px-6 shadow-glass-hover backdrop-blur-md">
+        <div
+          style={{ width: "85%", maxWidth: "680px" }}
+          className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-6 rounded-2xl border border-border-color bg-white/90 p-4 px-6 shadow-glass-hover backdrop-blur-md"
+        >
           {/* Spin Animation Toggle */}
           <div className="flex flex-col gap-1">
-            <span className="text-[0.65rem] uppercase text-text-secondary">
+            <span className="uppercase text-text-secondary" style={{ fontSize: "0.65rem" }}>
               Auto Orbit
             </span>
             <button
@@ -600,7 +603,7 @@ export default function GlobePage() {
 
           {/* Terrain 3D Elevation Toggle */}
           <div className="flex flex-col gap-1">
-            <span className="text-[0.65rem] uppercase text-text-secondary">
+            <span className="uppercase text-text-secondary" style={{ fontSize: "0.65rem" }}>
               Terrain 3D
             </span>
             <button
@@ -620,7 +623,7 @@ export default function GlobePage() {
 
           {/* Terrain Exaggeration Slider */}
           <div className="flex flex-1 flex-col gap-1">
-            <div className="flex justify-between text-[0.65rem] text-text-secondary">
+            <div className="flex justify-between text-text-secondary" style={{ fontSize: "0.65rem" }}>
               <span>MOUNTAIN RELIEF</span>
               <span className="font-bold text-transit-color">
                 {exaggeration.toFixed(1)}x

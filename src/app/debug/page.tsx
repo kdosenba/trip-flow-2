@@ -12,6 +12,8 @@ interface ChatMessage {
 }
 
 export default function DebugPage() {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
   const graph = useTripFlowStore((state) => state.graph);
   const isLoadingContext = useTripFlowStore((state) => state.isLoadingContext);
   const contextError = useTripFlowStore((state) => state.contextError);
@@ -43,6 +45,8 @@ export default function DebugPage() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasHydrated(true);
     if (!graph) {
       initializeClientContext();
     }
@@ -129,7 +133,7 @@ export default function DebugPage() {
     }
   };
 
-  if (isLoadingContext && !graph) {
+  if (!hasHydrated || (isLoadingContext && !graph)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg-darker font-mono text-text-primary">
         <div className="text-center">
@@ -147,8 +151,8 @@ export default function DebugPage() {
   if (contextError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg-darker p-8 font-mono text-budget-danger">
-        <div className="w-full max-w-[600px] text-center">
-          <h2 className="mb-4 text-eed text-lg font-bold">
+        <div className="w-full text-center" style={{ maxWidth: "600px" }}>
+          <h2 className="mb-4 text-lg font-bold">
             Failed to initialize critical client context
           </h2>
           <pre className="rounded-lg border border-budget-danger bg-bg-dark p-6 text-left whitespace-pre-wrap">
@@ -236,7 +240,7 @@ export default function DebugPage() {
           {/* Dialogue Feed */}
           <div className="flex-1 overflow-auto p-4">
             {chatHistory.length === 0 && (
-              <div className="mx-auto my-8 max-w-[500px] text-center leading-relaxed text-text-secondary">
+              <div className="mx-auto my-8 text-center leading-relaxed text-text-secondary" style={{ maxWidth: "500px" }}>
                 <p className="font-bold text-text-primary">
                   🤖 Welcome to the Trip Flow Gemini Playground!
                 </p>
@@ -263,7 +267,8 @@ export default function DebugPage() {
                   {msg.role === "user" ? "YOU" : "GEMINI"}
                 </span>
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-3 leading-normal whitespace-pre-wrap ${
+                  style={{ maxWidth: "80%" }}
+                  className={`rounded-lg px-4 py-3 leading-normal whitespace-pre-wrap ${
                     msg.role === "user"
                       ? "bg-transit-color text-white"
                       : "border border-border-color bg-bg-card text-text-primary shadow-glass"
@@ -304,7 +309,8 @@ export default function DebugPage() {
               onChange={(e) => setPromptInput(e.target.value)}
               placeholder="Tell Gemini what modifications to apply to your Trip..."
               disabled={isQuerying}
-              className="h-[50px] flex-1 resize-none rounded-md border border-border-color bg-bg-card p-3 font-mono text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed"
+              className="flex-1 resize-none rounded-md border border-border-color bg-bg-card p-3 font-mono text-text-primary outline-none focus:border-border-hover disabled:cursor-not-allowed"
+              style={{ height: "50px" }}
             />
             <button
               type="submit"

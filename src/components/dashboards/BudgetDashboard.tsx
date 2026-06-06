@@ -43,6 +43,7 @@ export const BudgetDashboard: React.FC<BudgetDashboardProps> = ({
   // Auto-close edit mode when planning starts
   useEffect(() => {
     if (isPlanning) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEditing(false);
     }
   }, [isPlanning]);

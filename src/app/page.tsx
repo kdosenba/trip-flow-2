@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTripFlowStore } from "../store";
 
 export default function Home() {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
   const graph = useTripFlowStore((state) => state.graph);
   const isLoadingContext = useTripFlowStore((state) => state.isLoadingContext);
   const contextError = useTripFlowStore((state) => state.contextError);
@@ -12,10 +14,14 @@ export default function Home() {
   );
 
   useEffect(() => {
-    initializeClientContext();
-  }, [initializeClientContext]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasHydrated(true);
+    if (!graph) {
+      initializeClientContext();
+    }
+  }, [graph, initializeClientContext]);
 
-  if (isLoadingContext) {
+  if (!hasHydrated || (isLoadingContext && !graph)) {
     return (
       <main
         style={{

@@ -48,6 +48,8 @@ import { DateTimeFormatter } from "../../lib/utils/date";
 import { Database, PlusCircle, Trash2, ArrowRight } from "lucide-react";
 
 export default function ComponentStylingPage() {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
   // --- ZUSTAND STORE CONNECTIONS ---
   const graph = useTripFlowStore((state) => state.graph);
   const activeCityId = useTripFlowStore((state) => state.activeCityId);
@@ -83,6 +85,8 @@ export default function ComponentStylingPage() {
 
   // Initialize client context on mount if graph is empty
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasHydrated(true);
     if (!graph) {
       initializeClientContext();
     }
@@ -343,7 +347,7 @@ export default function ComponentStylingPage() {
   };
 
   // Ensure graph is loaded
-  if (!graph) {
+  if (!hasHydrated || !graph) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg-darker bg-page-gradient p-12 font-sans leading-relaxed text-text-primary md:p-8 md:py-12">
         <div className="rounded-2xl border border-border-color bg-bg-card p-10 text-center">

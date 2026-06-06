@@ -31,6 +31,7 @@ export const TargetDateRangeDashboard: React.FC<
   // Auto-close edit mode when planning starts
   React.useEffect(() => {
     if (isPlanning) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEditing(false);
     }
   }, [isPlanning]);
