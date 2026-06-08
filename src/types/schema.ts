@@ -194,7 +194,7 @@ export const CityHubSchema = z.object({
   itinerary: z.array(ItineraryItemSchema).default([]),
   arrivalNodeId: LocationIdSchema.optional(), // Layout entry point for transit
   departureNodeId: LocationIdSchema.optional(), // Layout exit point for transit
-  travelerCount: z.number().int().positive().default(1),
+  travelerCount: z.number().int().positive().optional(),
   resolvedTravelerCount: z.number().positive().optional(),
   timezone: z.string().optional(),
 });

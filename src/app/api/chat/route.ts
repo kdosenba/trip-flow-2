@@ -33,17 +33,17 @@ You have access to specific tool functions to execute these modifications.
 
 ### 🌐 Graph Topology & Connectivity Rules
 Every travel itinerary is a directed graph where CityHub nodes represent stops, Location nodes represent activities/transit-points, and Transit edges represent connections.
-1. **Never Orphan a Stop**: Whenever a user asks to add or plan a new travel stop/destination (using \`addTripCity\`), you **MUST** also establish a transit connection from the prior active stop (or the \`ORIGIN\` stop if it's the first departure) to the new stop. 
-2. **How to Connect Two Cities**: To connect City A to City B, you must execute a multi-step chain:
-   a. Create the departure transit point (e.g. Airport/Train Station) in City A using \`addTransitPoint\` if it does not already exist in the graph.
-   b. Create the arrival transit point (e.g. Airport/Train Station) in City B using \`addTransitPoint\` if it does not already exist.
-   c. Build the transit connection edge between the two cities using \`connectTransitPoints\`, referencing the respective cities and transit point location IDs.
-3. **Parallel Tool Calling**: When the user requests a new stop (e.g. "Plan a trip to Morocco"), you should make **all relevant tool calls in parallel in a single turn** (e.g. calling \`addTripCity\` for the destination, \`addTransitPoint\` for departure, \`addTransitPoint\` for arrival, and \`connectTransitPoints\` to link them).
+1. **Never Orphan a Stop**: Whenever you add a new travel stop/destination (using \`addTripCities\`), you **MUST** also establish a transit connection from the prior active stop (or the \`ORIGIN\` stop if it's the first departure) to the new stop. 
+2. **How to Connect Two Cities**: To connect City A to City B, use \`addTransitConnections\`. In that tool call, you specify the source city, destination city, define any **new** transit locations needed (in the \`locations\` array), and list the connection \`segments\` linking them.
+3. **Transit Point Reusability & Deduplication Rules**:
+   a. **Re-use existing locations**: Before defining a new location in the \`locations\` array of \`addTransitConnections\`, scan the current graph's \`Locations\` state. If a Location with the same name (e.g., "Heathrow Airport" or "JFK Airport") or IATA code already exists, you **MUST NOT** define it again. Instead, reuse the existing \`LocationId\` directly in your segment references (\`fromLocationId\` and \`toLocationId\`).
+   b. **Single location for each physical transit point**: If a single airport or station serves as both the arrival point and departure point for a city stop (which is almost always the case for flights at the same airport), you **MUST** use only a single transit point and a single logical ID (e.g. \`loc_f92b\`). Do not create separate duplicate arrival/departure locations (like \`loc_lon_arr_f7e1\` and \`loc_lon_dep_f7e1\`) for the same physical transit point.
+4. **Batch/Array Tool Calling**: Use the plural forms of the tools (\`addTripCities\`, \`addItineraryItems\`, \`addTransitConnections\`) to add multiple stops, activities, or connections in a single tool call when planning a trip.
 
 ### 🏷️ Logical ID Chaining
 Since the graph runs on client-provided IDs, you must generate short, logical, and consistent string IDs in your tool parameters to chain parallel calls:
 * **CityHubs**: Format is \`hub_<city_name>_<4_char_random_hex>\` (e.g. \`hub_marrakech_7f2b\`).
-* **Locations**: Format is \`loc_<4_char_random_hex>\` (e.g. \`loc_f92b\`).
+* **Locations**: Format is \`loc_<4_char_random_hex>\` (e.g. \`loc_f92b\`). **NEVER** append \`_arr\` or \`_dep\` to the location ID.
 * Reference these identical self-generated IDs across your parallel tool calls in the same turn so the backend can link them instantly.
 
 ### 📅 Scheduling & Time Rules
@@ -62,7 +62,7 @@ All tool functions are write-only graph mutators that execute state updates and 
           role: "user",
           parts: [
             {
-              text: `Current TripFlowGraph:\n${JSON.stringify(graph)}\n\nRequest: ${prompt}`,
+              text: `Current Time/Date: ${new Date().toISOString()}\nCurrent TripFlowGraph:\n${JSON.stringify(graph)}\n\nRequest: ${prompt}`,
             },
           ],
         },

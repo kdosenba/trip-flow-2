@@ -40,7 +40,7 @@ interface TripFlowActions {
   initializeClientContext: () => Promise<void>;
   updateBudget: (budget: Budget) => void;
   updateTargetDateRange: (range: TargetDateRange) => void;
-  updateTravelerCount: (id: CityHubId, count: number) => void;
+  updateTravelerCount: (id: CityHubId, count: number | undefined) => void;
   deleteCityHub: (id: CityHubId) => void;
   clearGraph: () => void;
   setPlanning: (planning: boolean) => void;

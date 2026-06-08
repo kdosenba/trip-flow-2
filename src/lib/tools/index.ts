@@ -23,6 +23,7 @@ export interface StandardJsonSchema {
   properties?: Record<string, StandardJsonSchema>;
   required?: string[];
   enum?: string[];
+  items?: StandardJsonSchema;
 }
 
 export const zodToStandardJsonSchema = (
@@ -36,6 +37,7 @@ export const zodToStandardJsonSchema = (
   let properties: Record<string, StandardJsonSchema> | undefined = undefined;
   const required: string[] = [];
   let enumValues: string[] = [];
+  let items: StandardJsonSchema | undefined = undefined;
 
   let currentSchema: z.ZodTypeAny = schema;
 
@@ -118,6 +120,19 @@ export const zodToStandardJsonSchema = (
         }
       }
       break;
+    case "ZodArray":
+    case "array":
+      type = "array";
+      if (currentSchema instanceof z.ZodArray) {
+        items = zodToStandardJsonSchema(currentSchema.element as z.ZodTypeAny);
+      } else if ("element" in currentSchema) {
+        items = zodToStandardJsonSchema(
+          (currentSchema as { element: z.ZodTypeAny }).element,
+        );
+      } else if (currentDef.innerType) {
+        items = zodToStandardJsonSchema(currentDef.innerType as z.ZodTypeAny);
+      }
+      break;
     default:
       type = "string";
   }
@@ -127,6 +142,7 @@ export const zodToStandardJsonSchema = (
   if (properties) result.properties = properties;
   if (required.length > 0) result.required = required;
   if (enumValues.length > 0) result.enum = enumValues;
+  if (items) result.items = items;
 
   return result;
 };
@@ -144,6 +160,10 @@ export const AddOriginCitySchema = z.object({
     .describe("Number of travelers departing from this origin"),
 });
 
+export const AddOriginCitiesSchema = z.object({
+  cities: z.array(AddOriginCitySchema).describe("List of origin cities to add"),
+});
+
 export const AddTripCitySchema = z.object({
   cityId: z.string(),
   cityName: z.string(),
@@ -151,19 +171,8 @@ export const AddTripCitySchema = z.object({
   region: z.string().optional().describe("The region or state name"),
 });
 
-export const AddTransitPointSchema = z.object({
-  locationId: z.string(),
-  name: z.string().describe("Name of the transit point, e.g. JFK Airport"),
-  cityName: z.string(),
-  country: z.string(),
-  cityId: z
-    .string()
-    .optional()
-    .describe("City in which transit point is located. Optional"),
-  arrivalOrDeparture: z
-    .enum(["ARRIVAL", "DEPARTURE", "BOTH"])
-    .optional()
-    .describe("If cityId is specified, this field is required."),
+export const AddTripCitiesSchema = z.object({
+  cities: z.array(AddTripCitySchema).describe("List of city stops to add"),
 });
 
 export const AddItineraryItemSchema = z.object({
@@ -175,25 +184,70 @@ export const AddItineraryItemSchema = z.object({
   endDate: z.string().optional().describe("ISO date"),
   endTime: z.string().optional().describe("ISO time"),
   cost: z.number().optional().describe("Cost of the item"),
-  unit: z.enum(["ROOM", "HOUSE", "PERSON", "ACTIVITY"]).optional().describe("Unit type for lodging/activities"),
-  mealTier: z.enum(["LOW", "MEDIUM", "HIGH"]).optional().describe("Meal price tier"),
+  unit: z
+    .enum(["ROOM", "HOUSE", "PERSON", "ACTIVITY"])
+    .optional()
+    .describe("Unit type for lodging/activities"),
+  mealTier: z
+    .enum(["LOW", "MEDIUM", "HIGH"])
+    .optional()
+    .describe("Meal price tier"),
   cityId: z
     .string()
     .describe("The id of the parent CityHub. CityHub must be of type HUB."),
 });
 
-export const ConnectTransitPointsSchema = z.object({
-  fromLocationId: z
-    .string()
-    .describe("The LocationId of the origin transit point location"),
-  toLocationId: z
-    .string()
-    .describe("The LocationId of the destination transit point location"),
-  transportMode: z.enum(["FLIGHT", "TRAIN", "BUS", "CAR", "WALK", "OTHER"]),
-  departureDate: z.string().describe("ISO date"),
-  departureTime: z.string().optional().describe("ISO time"),
-  arrivalDate: z.string().describe("ISO date"),
-  arrivalTime: z.string().optional().describe("ISO time"),
+export const AddItineraryItemsSchema = z.object({
+  items: z
+    .array(AddItineraryItemSchema)
+    .describe(
+      "List of itinerary items (attractions, activities, lodging, meals) to add",
+    ),
+});
+
+export const AddTransitConnectionSchema = z.object({
+  fromCityId: z.string().describe("The source CityHub stop ID"),
+  toCityId: z.string().describe("The destination CityHub stop ID"),
+  locations: z
+    .array(
+      z.object({
+        locationId: z.string().describe("Logical ID for this transit point"),
+        name: z
+          .string()
+          .describe("Name of the transit point, e.g. JFK Airport"),
+        cityName: z.string(),
+        country: z.string(),
+      }),
+    )
+    .optional()
+    .describe(
+      "Define new transit locations to create. Omit if reusing existing ones.",
+    ),
+  segments: z
+    .array(
+      z.object({
+        fromLocationId: z
+          .string()
+          .describe("Departure location ID for this segment"),
+        toLocationId: z
+          .string()
+          .describe("Arrival location ID for this segment"),
+        transportMode: z.enum(["FLIGHT", "TRAIN", "BUS", "CAR", "BOAT"]),
+        departureDate: z.string().describe("ISO date"),
+        departureTime: z.string().optional().describe("ISO time"),
+        arrivalDate: z.string().describe("ISO date"),
+        arrivalTime: z.string().optional().describe("ISO time"),
+      }),
+    )
+    .describe(
+      "Segments connecting the departure city to the arrival city. The departure of the first segment is marked as the source city's departureNodeId. The arrival of the last segment is marked as the target city's arrivalNodeId.",
+    ),
+});
+
+export const AddTransitConnectionsSchema = z.object({
+  connections: z
+    .array(AddTransitConnectionSchema)
+    .describe("List of transit connections to add"),
 });
 
 /**
@@ -203,33 +257,28 @@ export const GEMINI_TOOLS = [
   {
     functionDeclarations: [
       {
-        name: "addOriginCity",
+        name: "addOriginCities",
         description:
-          "Adds an origin (CityHub) to the Trip from which transit to other Cities can occur. It must contain a travelerCount.",
-        parametersJsonSchema: zodToStandardJsonSchema(AddOriginCitySchema),
+          "Adds one or more origin cities (CityHubs) to the Trip from which transit can occur. Must contain a travelerCount.",
+        parametersJsonSchema: zodToStandardJsonSchema(AddOriginCitiesSchema),
       },
       {
-        name: "addTripCity",
+        name: "addTripCities",
+        description: "Adds one or more city stops (CityHubs) to the Trip.",
+        parametersJsonSchema: zodToStandardJsonSchema(AddTripCitiesSchema),
+      },
+      {
+        name: "addItineraryItems",
         description:
-          "Adds a city (CityHub) stop to the Trip. This is you will help plan an itinerary for this stop",
-        parametersJsonSchema: zodToStandardJsonSchema(AddTripCitySchema),
+          "Defines one or more itinerary items (activities, lodgings, meals) for specific city hubs.",
+        parametersJsonSchema: zodToStandardJsonSchema(AddItineraryItemsSchema),
       },
       {
-        name: "addTransitPoint",
-        description: "Defines a transit point used to connect two cities.",
-        parametersJsonSchema: zodToStandardJsonSchema(AddTransitPointSchema),
-      },
-      {
-        name: "addItineraryItem",
-        description: "Defines an itinerary item for a specific city hub.",
-        parametersJsonSchema: zodToStandardJsonSchema(AddItineraryItemSchema),
-      },
-      {
-        name: "connectTransitPoints",
+        name: "addTransitConnections",
         description:
-          "Defines a transit connection between two cities using their defined transit points.",
+          "Defines one or more transit connections between city stops, including defining any new transit point locations and segment details.",
         parametersJsonSchema: zodToStandardJsonSchema(
-          ConnectTransitPointsSchema,
+          AddTransitConnectionsSchema,
         ),
       },
     ],
@@ -237,30 +286,45 @@ export const GEMINI_TOOLS = [
 ];
 
 export interface ToolArguments {
-  cityId?: string;
-  cityName?: string;
-  country?: string;
-  region?: string;
-  travelerCount?: number;
-  locationId?: string;
-  name?: string;
-  arrivalOrDeparture?: "ARRIVAL" | "DEPARTURE" | "BOTH";
-  itemId?: string;
-  category?: "LODGING" | "MEAL" | "ACTIVITY";
-  startDate?: string;
-  startTime?: string;
-  endDate?: string;
-  endTime?: string;
-  cost?: number;
-  unit?: "ROOM" | "HOUSE" | "PERSON" | "ACTIVITY";
-  mealTier?: "LOW" | "MEDIUM" | "HIGH";
-  fromLocationId?: string;
-  toLocationId?: string;
-  transportMode?: "FLIGHT" | "TRAIN" | "BUS" | "CAR" | "WALK" | "OTHER";
-  departureDate?: string;
-  departureTime?: string;
-  arrivalDate?: string;
-  arrivalTime?: string;
+  cities?: {
+    cityId?: string;
+    cityName: string;
+    country: string;
+    region?: string;
+    travelerCount?: number;
+  }[];
+  items?: {
+    itemId?: string;
+    name: string;
+    category: "LODGING" | "MEAL" | "ACTIVITY";
+    startDate: string;
+    startTime?: string;
+    endDate?: string;
+    endTime?: string;
+    cost?: number;
+    unit?: "ROOM" | "HOUSE" | "PERSON" | "ACTIVITY";
+    mealTier?: "LOW" | "MEDIUM" | "HIGH";
+    cityId: string;
+  }[];
+  connections?: {
+    fromCityId: string;
+    toCityId: string;
+    locations?: {
+      locationId: string;
+      name: string;
+      cityName: string;
+      country: string;
+    }[];
+    segments: {
+      fromLocationId: string;
+      toLocationId: string;
+      transportMode: "FLIGHT" | "TRAIN" | "BUS" | "CAR" | "BOAT";
+      departureDate: string;
+      departureTime?: string;
+      arrivalDate: string;
+      arrivalTime?: string;
+    }[];
+  }[];
 }
 
 /**
@@ -270,227 +334,192 @@ export const executeTool = async (
   name: string,
   args: ToolArguments,
   graph: TripFlowGraph,
-): Promise<TripFlowGraph> => {
+ ): Promise<TripFlowGraph> => {
   // Deep clone to prevent side effects during dispatching loops
   const updatedGraph = JSON.parse(JSON.stringify(graph)) as TripFlowGraph;
   const language = graph.clientContext?.language;
 
   switch (name) {
-    case "addOriginCity": {
-      const hubId = args.cityId
-        ? CityHubIdSchema.parse(args.cityId)
-        : generateCityHubId(args.cityName!);
-      const query = args.region
-        ? `${args.cityName!}, ${args.region}, ${args.country!}`
-        : `${args.cityName!}, ${args.country!}`;
-      const geo = await getGeocodingService().geocode(query, language);
-      updatedGraph.CityHubs[hubId] = {
-        id: hubId,
-        cityName: args.cityName!,
-        region: geo?.region || args.region || undefined,
-        country: geo?.country || args.country!,
-        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
-        type: "ORIGIN",
-        itinerary: [],
-        travelerCount: args.travelerCount || 1,
-      };
+    case "addOriginCities": {
+      const cities = args.cities || [];
+      for (const city of cities) {
+        const hubId = city.cityId
+          ? CityHubIdSchema.parse(city.cityId)
+          : generateCityHubId(city.cityName);
+        const query = city.region
+          ? `${city.cityName}, ${city.region}, ${city.country}`
+          : `${city.cityName}, ${city.country}`;
+        const geo = await getGeocodingService().geocode(query, language);
+        updatedGraph.CityHubs[hubId] = {
+          id: hubId,
+          cityName: city.cityName,
+          region: geo?.region || city.region || undefined,
+          country: geo?.country || city.country,
+          coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
+          type: "ORIGIN",
+          itinerary: [],
+          travelerCount: city.travelerCount || 1,
+        };
+      }
       break;
     }
 
-    case "addTripCity": {
-      const hubId = args.cityId
-        ? CityHubIdSchema.parse(args.cityId)
-        : generateCityHubId(args.cityName!);
-      const query = args.region
-        ? `${args.cityName!}, ${args.region}, ${args.country!}`
-        : `${args.cityName!}, ${args.country!}`;
-      const geo = await getGeocodingService().geocode(query, language);
-      updatedGraph.CityHubs[hubId] = {
-        id: hubId,
-        cityName: args.cityName!,
-        region: geo?.region || args.region || undefined,
-        country: geo?.country || args.country!,
-        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
-        type: "HUB",
-        itinerary: [],
-        travelerCount: 1,
-      };
+    case "addTripCities": {
+      const cities = args.cities || [];
+      for (const city of cities) {
+        const hubId = city.cityId
+          ? CityHubIdSchema.parse(city.cityId)
+          : generateCityHubId(city.cityName);
+        const query = city.region
+          ? `${city.cityName}, ${city.region}, ${city.country}`
+          : `${city.cityName}, ${city.country}`;
+        const geo = await getGeocodingService().geocode(query, language);
+        updatedGraph.CityHubs[hubId] = {
+          id: hubId,
+          cityName: city.cityName,
+          region: geo?.region || city.region || undefined,
+          country: geo?.country || city.country,
+          coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
+          type: "HUB",
+          itinerary: [],
+        };
+      }
       break;
     }
 
-    case "addTransitPoint": {
-      const locId = args.locationId
-        ? LocationIdSchema.parse(args.locationId)
-        : generateLocationId(args.name!);
-      const query = args.region
-        ? `${args.name!}, ${args.cityName!}, ${args.region}, ${args.country!}`
-        : `${args.name!}, ${args.cityName!}, ${args.country!}`;
-      const geo = await getGeocodingService().geocode(query, language);
-      const resolvedAddress =
-        geo?.address || `${args.name!}, ${args.cityName!}, ${args.country!}`;
-
-      updatedGraph.Locations[locId] = {
-        id: locId,
-        name: geo?.name || args.name!,
-        address: resolvedAddress,
-        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
-        category: "TRANSIT_POINT",
-        iata: geo?.iata,
-      };
-
-      // 1. If explicit cityId is passed, link it directly
-      if (args.cityId) {
-        const cityId = CityHubIdSchema.parse(args.cityId);
+    case "addItineraryItems": {
+      const items = args.items || [];
+      for (const item of items) {
+        const cityId = CityHubIdSchema.parse(item.cityId);
         const targetHub = updatedGraph.CityHubs[cityId];
-        if (targetHub) {
-          if (
-            args.arrivalOrDeparture === "ARRIVAL" ||
-            args.arrivalOrDeparture === "BOTH"
-          ) {
-            targetHub.arrivalNodeId = locId;
-          }
-          if (
-            args.arrivalOrDeparture === "DEPARTURE" ||
-            args.arrivalOrDeparture === "BOTH"
-          ) {
-            targetHub.departureNodeId = locId;
-          }
+        if (!targetHub) {
+          throw new Error(
+            `Activity creation failed: Target stop UUID "${item.cityId}" does not exist.`,
+          );
         }
-      } else {
-        // 2. Fallback: Automatically link this transit point to the corresponding CityHub if found
-        const targetHub = Object.values(updatedGraph.CityHubs).find(
-          (hub) => hub.cityName.toLowerCase() === args.cityName!.toLowerCase(),
-        );
-        if (targetHub) {
-          if (!targetHub.arrivalNodeId) targetHub.arrivalNodeId = locId;
-          if (!targetHub.departureNodeId) targetHub.departureNodeId = locId;
-        }
+
+        const locId = item.itemId
+          ? LocationIdSchema.parse(item.itemId)
+          : generateLocationId(item.name);
+        const query = `${item.name}, ${targetHub.cityName}, ${targetHub.country}`;
+        const geo = await getGeocodingService().geocode(query, language);
+        const resolvedAddress =
+          geo?.address || `${item.name}, ${targetHub.cityName}`;
+
+        updatedGraph.Locations[locId] = {
+          id: locId,
+          name: geo?.name || item.name,
+          address: resolvedAddress,
+          coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
+          category: item.category,
+          price:
+            item.cost !== undefined || item.unit !== undefined || item.mealTier !== undefined
+              ? {
+                  actualCost: item.cost,
+                  typicalCost: undefined,
+                  unit: item.unit,
+                  mealTier: item.mealTier,
+                }
+              : undefined,
+          iata: geo?.iata,
+        };
+
+        const startTime =
+          item.startDate +
+          (item.startTime ? `T${item.startTime}` : "T00:00:00Z");
+        const endTime = item.endDate
+          ? item.endDate + (item.endTime ? `T${item.endTime}` : "T00:00:00Z")
+          : undefined;
+
+        targetHub.itinerary.push({
+          LocationId: locId,
+          startTime,
+          endTime,
+        });
       }
       break;
     }
 
-    case "addItineraryItem": {
-      const cityId = CityHubIdSchema.parse(args.cityId!);
-      const targetHub = updatedGraph.CityHubs[cityId];
-      if (!targetHub) {
-        throw new Error(
-          `Activity creation failed: Target stop UUID "${args.cityId!}" does not exist.`,
-        );
-      }
+    case "addTransitConnections": {
+      const connections = args.connections || [];
+      for (const conn of connections) {
+        const fromCityId = CityHubIdSchema.parse(conn.fromCityId);
+        const toCityId = CityHubIdSchema.parse(conn.toCityId);
 
-      const locId = args.itemId
-        ? LocationIdSchema.parse(args.itemId)
-        : generateLocationId(args.name!);
-      const query = `${args.name!}, ${targetHub.cityName}, ${targetHub.country}`;
-      const geo = await getGeocodingService().geocode(query, language);
-      const resolvedAddress =
-        geo?.address || `${args.name!}, ${targetHub.cityName}`;
+        // 1. Declare/Create new locations if provided
+        if (conn.locations && conn.locations.length > 0) {
+          for (const loc of conn.locations) {
+            const locId = LocationIdSchema.parse(loc.locationId);
+            const query = `${loc.name}, ${loc.cityName}, ${loc.country}`;
+            const geo = await getGeocodingService().geocode(query, language);
+            const resolvedAddress =
+              geo?.address || `${loc.name}, ${loc.cityName}, ${loc.country}`;
 
-      updatedGraph.Locations[locId] = {
-        id: locId,
-        name: geo?.name || args.name!,
-        address: resolvedAddress,
-        coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
-        category: args.category!,
-        price:
-          args.cost !== undefined || args.unit !== undefined || args.mealTier !== undefined
-            ? {
-              actualCost: args.cost,
-              typicalCost: undefined,
-              unit: args.unit,
-              mealTier: args.mealTier,
-            }
-            : undefined,
-        iata: geo?.iata,
-      };
-
-      const startTime =
-        args.startDate! +
-        (args.startTime ? `T${args.startTime}` : "T00:00:00Z");
-      const endTime = args.endDate
-        ? args.endDate + (args.endTime ? `T${args.endTime}` : "T00:00:00Z")
-        : undefined;
-
-      targetHub.itinerary.push({
-        LocationId: locId,
-        startTime,
-        endTime,
-      });
-      break;
-    }
-
-    case "connectTransitPoints": {
-      const fromLocationId = LocationIdSchema.parse(args.fromLocationId!);
-      const toLocationId = LocationIdSchema.parse(args.toLocationId!);
-
-      // Dynamically locate the respective CityHubIds based on arrival/departure transit nodes
-      let fromCityId = Object.values(updatedGraph.CityHubs).find(
-        (hub) =>
-          hub.departureNodeId === fromLocationId ||
-          hub.arrivalNodeId === fromLocationId,
-      )?.id;
-
-      let toCityId = Object.values(updatedGraph.CityHubs).find(
-        (hub) =>
-          hub.arrivalNodeId === toLocationId ||
-          hub.departureNodeId === toLocationId,
-      )?.id;
-
-      // Fallback: search by name matching address if not explicitly linked
-      if (!fromCityId) {
-        const fromLoc = updatedGraph.Locations[fromLocationId];
-        if (fromLoc) {
-          fromCityId = Object.values(updatedGraph.CityHubs).find((hub) =>
-            fromLoc.address.toLowerCase().includes(hub.cityName.toLowerCase()),
-          )?.id;
+            updatedGraph.Locations[locId] = {
+              id: locId,
+              name: geo?.name || loc.name,
+              address: resolvedAddress,
+              coordinates: geo ? { lat: geo.lat, lng: geo.lng } : { lat: 0, lng: 0 },
+              category: "TRANSIT_POINT",
+              iata: geo?.iata,
+            };
+          }
         }
-      }
-      if (!toCityId) {
-        const toLoc = updatedGraph.Locations[toLocationId];
-        if (toLoc) {
-          toCityId = Object.values(updatedGraph.CityHubs).find((hub) =>
-            toLoc.address.toLowerCase().includes(hub.cityName.toLowerCase()),
-          )?.id;
-        }
-      }
 
-      if (!fromCityId || !toCityId) {
-        throw new Error(
-          `Transit connection failed: Could not resolve CityHub nodes for location IDs from: "${fromLocationId}", to: "${toLocationId}".`,
-        );
-      }
+        // 2. Build segments
+        const transitId = generateTransitId(fromCityId, toCityId);
+        const segments = conn.segments.map((seg) => {
+          const fromLocationId = LocationIdSchema.parse(seg.fromLocationId);
+          const toLocationId = LocationIdSchema.parse(seg.toLocationId);
 
-      const transitId = generateTransitId(fromCityId, toCityId);
-      let transportMode: "FLIGHT" | "TRAIN" | "BUS" | "CAR" | "BOAT" = "CAR";
-      if (
-        args.transportMode === "FLIGHT" ||
-        args.transportMode === "TRAIN" ||
-        args.transportMode === "BUS" ||
-        args.transportMode === "CAR"
-      ) {
-        transportMode = args.transportMode;
-      }
-      const startTime =
-        args.departureDate! +
-        (args.departureTime ? `T${args.departureTime}` : "T00:00:00Z");
-      const endTime =
-        args.arrivalDate! +
-        (args.arrivalTime ? `T${args.arrivalTime}` : "T00:00:00Z");
+          let transportMode: "FLIGHT" | "TRAIN" | "BUS" | "CAR" | "BOAT" = "CAR";
+          if (
+            seg.transportMode === "FLIGHT" ||
+            seg.transportMode === "TRAIN" ||
+            seg.transportMode === "BUS" ||
+            seg.transportMode === "CAR"
+          ) {
+            transportMode = seg.transportMode;
+          }
 
-      updatedGraph.Transits[transitId] = {
-        id: transitId,
-        fromCityId,
-        toCityId,
-        segments: [
-          {
+          const startTime =
+            seg.departureDate +
+            (seg.departureTime ? `T${seg.departureTime}` : "T00:00:00Z");
+          const endTime =
+            seg.arrivalDate +
+            (seg.arrivalTime ? `T${seg.arrivalTime}` : "T00:00:00Z");
+
+          return {
             fromLocationId,
             toLocationId,
             transportMode,
             startTime,
             endTime,
-          },
-        ],
-      };
+          };
+        });
+
+        // 3. Update parent CityHub exit/entry points
+        const firstSegment = segments[0];
+        const lastSegment = segments[segments.length - 1];
+
+        const fromCityHub = updatedGraph.CityHubs[fromCityId];
+        if (fromCityHub && firstSegment) {
+          fromCityHub.departureNodeId = firstSegment.fromLocationId;
+        }
+
+        const toCityHub = updatedGraph.CityHubs[toCityId];
+        if (toCityHub && lastSegment) {
+          toCityHub.arrivalNodeId = lastSegment.toLocationId;
+        }
+
+        // 4. Update the Transits dictionary
+        updatedGraph.Transits[transitId] = {
+          id: transitId,
+          fromCityId,
+          toCityId,
+          segments,
+        };
+      }
       break;
     }
 

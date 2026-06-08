@@ -284,23 +284,23 @@ export const TargetDateRangeDashboard: React.FC<
         </div>
 
         <div className="flex-1">
-          <div className="text-super-small font-bold tracking-wider text-text-muted">
-            ACTUAL
+          <div className="flex items-center justify-between">
+            <span className="text-super-small font-bold tracking-wider text-text-muted">
+              ACTUAL
+            </span>
+            {actualDays !== null && (() => {
+              const { value, unit } = DateTimeFormatter.formatDuration(actualDays);
+              return (
+                <span className="rounded bg-bg-dark/50 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
+                  {value} {unit}
+                </span>
+              );
+            })()}
           </div>
           <div className="mt-0.5 text-xs-dense font-bold text-text-primary">
             {getActualDisplay()}
           </div>
         </div>
-
-        {/* Days count tag */}
-        {actualDays !== null && (() => {
-          const { value, unit } = DateTimeFormatter.formatDuration(actualDays);
-          return (
-            <span className="ml-auto shrink-0 rounded bg-bg-dark/50 px-1.5 py-0.5 text-super-small font-extrabold text-text-primary">
-              {value} {unit}
-            </span>
-          );
-        })()}
       </div>
 
       {/* EXPANDABLE BREAKDOWN SECTION */}

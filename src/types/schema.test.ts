@@ -669,8 +669,16 @@ export const runSchemaTests = async () => {
     const resolvedDefault1 = graph.CityHubs?.["hub-split-default-1"]?.resolvedTravelerCount;
     const resolvedDefault2 = graph.CityHubs?.["hub-split-default-2"]?.resolvedTravelerCount;
 
-    if (resolvedOverride !== 2) {
-      throw new Error(`Override resolved count mismatch: expected 2, got ${resolvedOverride}`);
+    if (resolvedOverride !== undefined) {
+      throw new Error(`Override resolved count should be undefined, got ${resolvedOverride}`);
+    }
+    const overrideTravelerCount = graph.CityHubs?.["hub-split-override"]?.travelerCount;
+    if (overrideTravelerCount !== 2) {
+      throw new Error(`Override traveler count mismatch: expected 2, got ${overrideTravelerCount}`);
+    }
+    const originResolvedCount = graph.CityHubs?.["hub-origin"]?.resolvedTravelerCount;
+    if (originResolvedCount !== undefined) {
+      throw new Error(`Origin resolved count should be undefined, got ${originResolvedCount}`);
     }
     if (resolvedDefault1 !== 2) {
       throw new Error(`Default 1 resolved count mismatch: expected 2, got ${resolvedDefault1}`);
@@ -694,6 +702,8 @@ export const runSchemaTests = async () => {
     console.error("❌ BFS traveler count propagation verification failed", err);
     throw err;
   }
+
+
 
   console.log("🎉 All schema tests passed successfully!");
 };

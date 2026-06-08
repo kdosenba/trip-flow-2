@@ -59,9 +59,9 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
   const resolveHubCount = (hubId: string): number => {
     const hub = hubs[hubId];
     if (!hub) return 1;
-    // Rule: Override hubs (ORIGIN or travelerCount !== 1) use their own override count
-    if (hub.type === "ORIGIN" || hub.travelerCount !== 1) {
-      return hub.travelerCount;
+    // Rule: Override hubs (ORIGIN or custom override travelerCount is defined and not 1) use their own override count
+    if (hub.type === "ORIGIN" || (hub.travelerCount !== undefined && hub.travelerCount !== 1)) {
+      return hub.travelerCount ?? 1;
     }
     // Default hubs receive the sum of traveler counts from incoming transits
     const incoming = incomingTransits[hubId] || [];
@@ -102,7 +102,14 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
     const hub = hubs[hubId];
     if (hub) {
       const T = resolveHubCount(hubId);
-      hub.resolvedTravelerCount = T;
+      if (hub.type === "ORIGIN") {
+        hub.resolvedTravelerCount = undefined;
+      } else if (hub.travelerCount !== undefined && hub.travelerCount !== 1) {
+        hub.resolvedTravelerCount = undefined;
+      } else {
+        hub.resolvedTravelerCount = T;
+        hub.travelerCount = undefined;
+      }
 
       // Distribute travelers to outgoing transits
       const outgoings = outgoingTransits[hubId] || [];
@@ -113,7 +120,7 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
         outgoings.forEach((transit) => {
           const destHub = hubs[transit.toCityId];
           if (destHub) {
-            if (destHub.type === "ORIGIN" || destHub.travelerCount !== 1) {
+            if (destHub.type === "ORIGIN" || (destHub.travelerCount !== undefined && destHub.travelerCount !== 1)) {
               overrides.push(transit);
             } else {
               defaults.push(transit);
@@ -126,7 +133,7 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
         overrides.forEach((transit) => {
           const destHub = hubs[transit.toCityId];
           if (destHub) {
-            sumOverrides += destHub.travelerCount;
+            sumOverrides += destHub.travelerCount ?? 1;
           }
         });
 
@@ -137,7 +144,7 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
         overrides.forEach((transit) => {
           const destHub = hubs[transit.toCityId];
           if (destHub) {
-            transitTravelers[transit.id] = destHub.travelerCount;
+            transitTravelers[transit.id] = destHub.travelerCount ?? 1;
           }
         });
 
@@ -504,3 +511,4 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
     };
   }
 };
+

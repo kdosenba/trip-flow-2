@@ -81,8 +81,13 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
           <Users size={12} className="shrink-0 text-text-muted" />
           <span>
             {(() => {
-              const displayCount = cityHub.resolvedTravelerCount !== undefined ? cityHub.resolvedTravelerCount : cityHub.travelerCount;
-              const formatted = Number.isInteger(displayCount) ? displayCount.toString() : displayCount.toFixed(1);
+              const displayCount =
+                cityHub.resolvedTravelerCount !== undefined
+                  ? cityHub.resolvedTravelerCount
+                  : (cityHub.travelerCount ?? 1);
+              const formatted = Number.isInteger(displayCount)
+                ? displayCount.toString()
+                : displayCount.toFixed(1);
               return `${formatted} Traveler${displayCount > 1 ? "s" : ""}`;
             })()}
           </span>
@@ -91,9 +96,21 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
 
       {/* Traveler Count Incrementor */}
       <div className="mt-3 flex items-center justify-between border-t border-border-color pt-3">
-        <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
-          Traveler count
-        </span>
+        <div className="flex flex-col">
+          <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
+            Traveler count
+          </span>
+          {cityHub.type !== "ORIGIN" &&
+            cityHub.travelerCount !== undefined && (
+              <button
+                disabled={isPlanning}
+                className="mt-0.5 border-none bg-none p-0 text-left text-super-small font-semibold text-suggest-color no-underline hover:text-suggest-color/85 active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => updateTravelerCount(cityHub.id, undefined)}
+              >
+                Reset to Auto
+              </button>
+            )}
+        </div>
         <div className="inline-flex items-center gap-1.5 rounded bg-bg-dark p-1">
           <button
             disabled={isPlanning}
@@ -101,20 +118,32 @@ export const CityHubDashboard: React.FC<CityHubDashboardProps> = ({
             onClick={() =>
               updateTravelerCount(
                 cityHub.id,
-                Math.max(1, cityHub.travelerCount - 1),
+                Math.max(
+                  1,
+                  (cityHub.travelerCount ??
+                    cityHub.resolvedTravelerCount ??
+                    1) - 1,
+                ),
               )
             }
           >
             -
           </button>
           <span className="min-w-3 text-center text-xs-dense font-bold text-text-primary">
-            {cityHub.travelerCount}
+            {cityHub.travelerCount !== undefined
+              ? cityHub.travelerCount
+              : "Auto"}
           </span>
           <button
             disabled={isPlanning}
             className="flex size-5 cursor-pointer items-center justify-center rounded border border-border-color bg-bg-darker text-xs-dense text-text-primary transition-all hover:border-border-hover hover:bg-bg-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
-              updateTravelerCount(cityHub.id, cityHub.travelerCount + 1)
+              updateTravelerCount(
+                cityHub.id,
+                (cityHub.travelerCount ??
+                  cityHub.resolvedTravelerCount ??
+                  1) + 1,
+              )
             }
           >
             +
