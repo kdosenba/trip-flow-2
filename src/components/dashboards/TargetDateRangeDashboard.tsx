@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TargetDateRange, TargetDateRangeSchema } from "../../types/schema";
+import { TargetDateRange, TargetDateRangeSchema, TransitSegment } from "../../types/schema";
 import {
   Clock,
   Calendar,
@@ -121,7 +121,7 @@ export const TargetDateRangeDashboard: React.FC<
       const originHub = Object.values(graph.CityHubs).find((h) => h.type === "ORIGIN");
       const startTimezone = originHub?.timezone || graph.clientContext.timezone || "UTC";
 
-      let latestSegment: any = null;
+      let latestSegment: TransitSegment | null = null;
       let latestTime = -Infinity;
       Object.values(graph.Transits || {}).forEach((trans) => {
         trans.segments?.forEach((seg) => {
@@ -134,8 +134,9 @@ export const TargetDateRangeDashboard: React.FC<
       });
 
       let endTimezone = startTimezone;
-      if (latestSegment) {
-        const destLocationId = latestSegment.toLocationId;
+      const finalSeg = latestSegment as TransitSegment | null;
+      if (finalSeg) {
+        const destLocationId = finalSeg.toLocationId;
         const destHub = Object.values(graph.CityHubs).find(
           (hub) => hub.arrivalNodeId === destLocationId || hub.departureNodeId === destLocationId
         );
