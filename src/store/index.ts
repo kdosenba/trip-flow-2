@@ -41,6 +41,7 @@ interface TripFlowActions {
   updateBudget: (budget: Budget) => void;
   updateTargetDateRange: (range: TargetDateRange) => void;
   updateTravelerCount: (id: CityHubId, count: number | undefined) => void;
+  updateTransitTravelerCount: (id: TransitId, count: number | undefined) => void;
   deleteCityHub: (id: CityHubId) => void;
   clearGraph: () => void;
   setPlanning: (planning: boolean) => void;
@@ -144,6 +145,15 @@ export const useTripFlowStore = create<TripFlowStore>()(
         set((state) => {
           if (state.graph && state.graph.CityHubs[id]) {
             state.graph.CityHubs[id].travelerCount = count;
+            recalculateEstimatesAndActuals(state.graph);
+          }
+        });
+      },
+
+      updateTransitTravelerCount: (id, count) => {
+        set((state) => {
+          if (state.graph && state.graph.Transits[id]) {
+            state.graph.Transits[id].travelerCount = count;
             recalculateEstimatesAndActuals(state.graph);
           }
         });

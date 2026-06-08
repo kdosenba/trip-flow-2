@@ -91,7 +91,6 @@ export const testMockGraph = (): TripFlowGraph => {
       ],
       arrivalNodeId: cdgId,
       departureNodeId: cdgId,
-      travelerCount: 2,
     },
   };
 
@@ -536,7 +535,6 @@ export const runSchemaTests = async () => {
           country: "France",
           coordinates: { lat: 48.8, lng: 2.3 },
           type: "HUB",
-          travelerCount: 2, // User override!
           itinerary: [],
         },
         "hub-split-default-1": {
@@ -545,7 +543,6 @@ export const runSchemaTests = async () => {
           country: "UK",
           coordinates: { lat: 51.5, lng: -0.1 },
           type: "HUB",
-          travelerCount: 1, // Default!
           itinerary: [],
         },
         "hub-split-default-2": {
@@ -554,7 +551,6 @@ export const runSchemaTests = async () => {
           country: "Germany",
           coordinates: { lat: 52.5, lng: 13.4 },
           type: "HUB",
-          travelerCount: 1, // Default!
           itinerary: [],
         },
         "hub-merge-dest": {
@@ -563,7 +559,6 @@ export const runSchemaTests = async () => {
           country: "Italy",
           coordinates: { lat: 41.9, lng: 12.5 },
           type: "HUB",
-          travelerCount: 1, // Default!
           itinerary: [],
         },
       },
@@ -572,6 +567,7 @@ export const runSchemaTests = async () => {
           id: "t-1" as TransitId,
           fromCityId: "hub-origin" as CityHubId,
           toCityId: "hub-split-override" as CityHubId,
+          travelerCount: 2, // User override on connection!
           segments: [
             {
               fromLocationId: "loc-dummy" as LocationId,
@@ -669,12 +665,12 @@ export const runSchemaTests = async () => {
     const resolvedDefault1 = graph.CityHubs?.["hub-split-default-1"]?.resolvedTravelerCount;
     const resolvedDefault2 = graph.CityHubs?.["hub-split-default-2"]?.resolvedTravelerCount;
 
-    if (resolvedOverride !== undefined) {
-      throw new Error(`Override resolved count should be undefined, got ${resolvedOverride}`);
+    if (resolvedOverride !== 2) {
+      throw new Error(`Override resolved count mismatch: expected 2, got ${resolvedOverride}`);
     }
     const overrideTravelerCount = graph.CityHubs?.["hub-split-override"]?.travelerCount;
-    if (overrideTravelerCount !== 2) {
-      throw new Error(`Override traveler count mismatch: expected 2, got ${overrideTravelerCount}`);
+    if (overrideTravelerCount !== undefined) {
+      throw new Error(`Override traveler count should be undefined, got ${overrideTravelerCount}`);
     }
     const originResolvedCount = graph.CityHubs?.["hub-origin"]?.resolvedTravelerCount;
     if (originResolvedCount !== undefined) {
@@ -685,6 +681,19 @@ export const runSchemaTests = async () => {
     }
     if (resolvedDefault2 !== 2) {
       throw new Error(`Default 2 resolved count mismatch: expected 2, got ${resolvedDefault2}`);
+    }
+
+    // Verify Transit connection level counts:
+    const t1Travelers = graph.Transits?.["t-1"]?.travelerCount;
+    const t1Resolved = graph.Transits?.["t-1"]?.resolvedTravelerCount;
+    const t2Travelers = graph.Transits?.["t-2"]?.travelerCount;
+    const t2Resolved = graph.Transits?.["t-2"]?.resolvedTravelerCount;
+
+    if (t1Travelers !== 2 || t1Resolved !== undefined) {
+      throw new Error(`Transit t-1 counts mismatch: travelerCount should be 2, resolvedTravelerCount undefined. Got travelerCount=${t1Travelers}, resolvedTravelerCount=${t1Resolved}`);
+    }
+    if (t2Travelers !== undefined || t2Resolved !== 2) {
+      throw new Error(`Transit t-2 counts mismatch: travelerCount should be undefined, resolvedTravelerCount 2. Got travelerCount=${t2Travelers}, resolvedTravelerCount=${t2Resolved}`);
     }
 
     // Merge destination:

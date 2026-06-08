@@ -183,21 +183,41 @@ export type ItineraryItem = z.infer<typeof ItineraryItemSchema>;
 export const CityHubTypeSchema = z.enum(["ORIGIN", "HUB"]);
 export type CityHubType = z.infer<typeof CityHubTypeSchema>;
 
-export const CityHubSchema = z.object({
-  id: CityHubIdSchema,
-  cityName: z.string().min(1, "City name is required"),
-  region: z.string().optional(),
-  country: z.string().min(1, "Country name is required"),
-  coordinates: CoordinatesSchema,
-  type: CityHubTypeSchema,
-  // Hub specific details (origin nodes may leave these empty/defaults)
-  itinerary: z.array(ItineraryItemSchema).default([]),
-  arrivalNodeId: LocationIdSchema.optional(), // Layout entry point for transit
-  departureNodeId: LocationIdSchema.optional(), // Layout exit point for transit
-  travelerCount: z.number().int().positive().optional(),
-  resolvedTravelerCount: z.number().positive().optional(),
-  timezone: z.string().optional(),
-});
+export const CityHubSchema = z
+  .object({
+    id: CityHubIdSchema,
+    cityName: z.string().min(1, "City name is required"),
+    region: z.string().optional(),
+    country: z.string().min(1, "Country name is required"),
+    coordinates: CoordinatesSchema,
+    type: CityHubTypeSchema,
+    // Hub specific details (origin nodes may leave these empty/defaults)
+    itinerary: z.array(ItineraryItemSchema).default([]),
+    arrivalNodeId: LocationIdSchema.optional(), // Layout entry point for transit
+    departureNodeId: LocationIdSchema.optional(), // Layout exit point for transit
+    travelerCount: z.number().int().positive().optional(),
+    resolvedTravelerCount: z.number().positive().optional(),
+    timezone: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === "ORIGIN") {
+      if (data.resolvedTravelerCount !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Origins must only use travelerCount, never resolvedTravelerCount",
+          path: ["resolvedTravelerCount"],
+        });
+      }
+    } else if (data.type === "HUB") {
+      if (data.travelerCount !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "CityHubs must never use travelerCount",
+          path: ["travelerCount"],
+        });
+      }
+    }
+  });
 export type CityHub = z.infer<typeof CityHubSchema>;
 
 // --- TRANSIT EDGES & SEGMENTS ---
@@ -225,15 +245,27 @@ export const TransitSegmentSchema = z
   });
 export type TransitSegment = z.infer<typeof TransitSegmentSchema>;
 
-export const TransitSchema = z.object({
-  id: TransitIdSchema,
-  fromCityId: CityHubIdSchema,
-  toCityId: CityHubIdSchema,
-  segments: z
-    .array(TransitSegmentSchema)
-    .min(1, "Transit edge must contain at least 1 segment"),
-  price: CostSchema.optional(),
-});
+export const TransitSchema = z
+  .object({
+    id: TransitIdSchema,
+    fromCityId: CityHubIdSchema,
+    toCityId: CityHubIdSchema,
+    segments: z
+      .array(TransitSegmentSchema)
+      .min(1, "Transit edge must contain at least 1 segment"),
+    price: CostSchema.optional(),
+    travelerCount: z.number().int().positive().optional(),
+    resolvedTravelerCount: z.number().positive().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.travelerCount !== undefined && data.resolvedTravelerCount !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Transit connections cannot have both travelerCount and resolvedTravelerCount",
+        path: ["resolvedTravelerCount"],
+      });
+    }
+  });
 export type Transit = z.infer<typeof TransitSchema>;
 
 // --- SUGGESTION SYSTEM ---

@@ -30,6 +30,7 @@ import { CityHubCard } from "../../components/marker-cards/CityHubCard";
 import { ItineraryEventCard } from "../../components/marker-cards/ItineraryEventCard";
 import { TransitLocationCard } from "../../components/marker-cards/TransitLocationCard";
 import { SuggestionCard } from "../../components/marker-cards/SuggestionCard";
+import { TransitCard } from "../../components/marker-cards/TransitCard";
 
 // Import modular dashboard components
 import { BudgetDashboard } from "../../components/dashboards/BudgetDashboard";
@@ -53,9 +54,11 @@ export default function ComponentStylingPage() {
   // --- ZUSTAND STORE CONNECTIONS ---
   const graph = useTripFlowStore((state) => state.graph);
   const activeCityId = useTripFlowStore((state) => state.activeCityId);
+  const activeEdgeId = useTripFlowStore((state) => state.activeEdgeId);
 
   const setGraph = useTripFlowStore((state) => state.setGraph);
   const selectCity = useTripFlowStore((state) => state.selectCity);
+  const selectEdge = useTripFlowStore((state) => state.selectEdge);
   const updateBudget = useTripFlowStore((state) => state.updateBudget);
   const updateTargetDateRange = useTripFlowStore(
     (state) => state.updateTargetDateRange,
@@ -864,6 +867,43 @@ export default function ComponentStylingPage() {
                     </div>
                   </div>
                 </>
+              )}
+            </div>
+          </section>
+
+          {/* (4b) TRANSIT CONNECTIONS */}
+          <section className="rounded-xl border border-border-color bg-bg-dark/25 p-6 shadow-glass backdrop-blur">
+            <div className="mb-6 flex items-center justify-between border-b border-border-color pb-3">
+              <div>
+                <h2 className="relative m-0 flex items-center gap-2 text-xl font-bold before:inline-block before:h-4 before:w-1.5 before:rounded-sm before:bg-transit-color before:shadow-glow-transit before:content-empty">
+                  4b. Transit Connections
+                </h2>
+                <p className="mt-1 text-xs text-text-muted">
+                  Route connections linking stop cities. Override traveler counts here to split cohorts.
+                </p>
+              </div>
+              <span className="rounded border border-border-color bg-bg-dark/50 px-1.5 py-0.5 text-xxs font-bold tracking-wider text-text-secondary uppercase">
+                Connection Edge
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-start gap-5">
+              {Object.keys(graph.Transits).length === 0 ? (
+                <div className="text-sm text-text-muted italic">
+                  No transit connection routes defined.
+                </div>
+              ) : (
+                Object.values(graph.Transits).map((transit) => (
+                  <TransitCard
+                    key={transit.id}
+                    transit={transit}
+                    isActive={activeCardId === transit.id || activeEdgeId === transit.id}
+                    onClick={() => {
+                      setActiveCardId(transit.id);
+                      selectEdge(transit.id);
+                    }}
+                  />
+                ))
               )}
             </div>
           </section>

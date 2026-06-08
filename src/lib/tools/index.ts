@@ -208,6 +208,12 @@ export const AddItineraryItemsSchema = z.object({
 export const AddTransitConnectionSchema = z.object({
   fromCityId: z.string().describe("The source CityHub stop ID"),
   toCityId: z.string().describe("The destination CityHub stop ID"),
+  travelerCount: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe("Override traveler count for this connection. If not specified, all travelers propagate by default."),
   locations: z
     .array(
       z.object({
@@ -309,6 +315,7 @@ export interface ToolArguments {
   connections?: {
     fromCityId: string;
     toCityId: string;
+    travelerCount?: number;
     locations?: {
       locationId: string;
       name: string;
@@ -518,6 +525,7 @@ export const executeTool = async (
           fromCityId,
           toCityId,
           segments,
+          travelerCount: conn.travelerCount,
         };
       }
       break;

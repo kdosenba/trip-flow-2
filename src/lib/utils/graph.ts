@@ -14,19 +14,22 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
   const outgoingTransits: Record<string, typeof transits[string][]> = {};
   const incomingTransits: Record<string, typeof transits[string][]> = {};
 
-  // Initialize adjacency records for all hubs
+  // Initialize adjacency records for all hubs, reset traveler count states
   Object.keys(hubs).forEach((id) => {
     outgoingTransits[id] = [];
     incomingTransits[id] = [];
-    // Reset resolved traveler counts safely
     const hub = hubs[id];
     if (hub) {
       hub.resolvedTravelerCount = undefined;
+      if (hub.type === "HUB") {
+        hub.travelerCount = undefined;
+      }
     }
   });
 
-  // Populate incoming and outgoing structures
+  // Populate incoming and outgoing structures, reset transit resolved counts
   Object.values(transits).forEach((transit) => {
+    transit.resolvedTravelerCount = undefined;
     const fromHub = hubs[transit.fromCityId];
     const toHub = hubs[transit.toCityId];
     if (fromHub && toHub) {
@@ -34,9 +37,6 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
       incomingTransits[transit.toCityId]?.push(transit);
     }
   });
-
-  // Track transit traveler counts carried along each transit edge
-  const transitTravelers: Record<string, number> = {};
 
   // Queue for BFS
   const queue: string[] = [];
@@ -60,8 +60,7 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
   const resolveHubCount = (hubId: string): number => {
     const hub = hubs[hubId];
     if (!hub) return 1;
-    // Rule: Override hubs (ORIGIN or custom override travelerCount is defined and not 1) use their own override count
-    if (hub.type === "ORIGIN" || (hub.travelerCount !== undefined && hub.travelerCount !== 1)) {
+    if (hub.type === "ORIGIN") {
       return hub.travelerCount ?? 1;
     }
     // Default hubs receive the sum of traveler counts from incoming transits
@@ -71,7 +70,7 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
     }
     let sum = 0;
     incoming.forEach((transit) => {
-      sum += transitTravelers[transit.id] || 0;
+      sum += transit.travelerCount !== undefined ? transit.travelerCount : (transit.resolvedTravelerCount ?? 1);
     });
     return sum > 0 ? sum : 1; // Ensure traveler count is at least 1
   };
@@ -105,8 +104,6 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
       const T = resolveHubCount(hubId);
       if (hub.type === "ORIGIN") {
         hub.resolvedTravelerCount = undefined;
-      } else if (hub.travelerCount !== undefined && hub.travelerCount !== 1) {
-        hub.resolvedTravelerCount = undefined;
       } else {
         hub.resolvedTravelerCount = T;
         hub.travelerCount = undefined;
@@ -119,41 +116,32 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
         const defaults: typeof outgoings = [];
 
         outgoings.forEach((transit) => {
-          const destHub = hubs[transit.toCityId];
-          if (destHub) {
-            if (destHub.type === "ORIGIN" || (destHub.travelerCount !== undefined && destHub.travelerCount !== 1)) {
-              overrides.push(transit);
-            } else {
-              defaults.push(transit);
-            }
+          if (transit.travelerCount !== undefined) {
+            overrides.push(transit);
+          } else {
+            defaults.push(transit);
           }
         });
 
-        // Sum of override destinations
+        // Sum of overrides
         let sumOverrides = 0;
         overrides.forEach((transit) => {
-          const destHub = hubs[transit.toCityId];
-          if (destHub) {
-            sumOverrides += destHub.travelerCount ?? 1;
-          }
+          sumOverrides += transit.travelerCount ?? 1;
         });
 
         // Remainder
         const remainder = Math.max(0, T - sumOverrides);
 
-        // Distribute to overrides
+        // Clear resolved counts for overrides
         overrides.forEach((transit) => {
-          const destHub = hubs[transit.toCityId];
-          if (destHub) {
-            transitTravelers[transit.id] = destHub.travelerCount ?? 1;
-          }
+          transit.resolvedTravelerCount = undefined;
         });
 
         // Distribute equally to defaults
         if (defaults.length > 0) {
           const share = remainder / defaults.length;
           defaults.forEach((transit) => {
-            transitTravelers[transit.id] = share;
+            transit.resolvedTravelerCount = share;
           });
         }
 
