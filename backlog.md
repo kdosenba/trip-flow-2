@@ -87,18 +87,18 @@ _Focuses on integrating external ticketing, booking, and search APIs to serve as
 
 _Jot down raw thoughts, user feedback, and future feature expansions here before triaging them into the sections above._
 
-- [ ] **[TF-23]** Enable multi-user collaborative editing of the same trip flow in real time
+- [LOW] **[TF-23]** Enable multi-user collaborative editing of the same trip flow in real time
 - [ ] **[TF-24]** Add offline support for viewing and editing saved trip flows
 - [x] **[TF-41]** Define the clear function so that we can correctly clear the data from the store. Some data should not be cleared, like the context or the budget and target date range object, just some of their values.
-- [ ] **[TF-42]** Automatic calculation of budget estimate and trip actual dates. We should not allow those to be manually set or cleared. They should just recalculate as the trip is changed.
+- [x] **[TF-42]** Automatic calculation of budget estimate and trip actual dates. We should not allow those to be manually set or cleared. They should just recalculate as the trip is changed.
 - [ ] **[TF-43]** Modify the budget breakdown to show breakdown by meal, lodging, transportation, activities.
-- [ ] **[TF-44]** Support cities with an arrival date but no departure date in the UX (e.g. dynamic day calculation and customized date ranges).
+- [x] **[TF-44]** Support cities with an arrival date but no departure date in the UX (e.g. dynamic day calculation and customized date ranges).
 - [ ] **[TF-45]** Expand target date range details section to show travel vs hub duration split, or scheduled vs free exploration time.
 - [ ] **[TF-46]** Ensure the LLM returns a brief summary of what it planned in plain English so that we can render that.
-- [ ] **[TF-47]** Refactor the chat response handler to play back the `executedTools` list directly against the Zustand store actions rather than overwriting the entire graph. This will prevent overwriting concurrent UI edits and leverage automatic store recalculations natively.
-- [ ] **[TF-48]** Weeks and month values in the hub should not show extra decimal place when the decimal value is 0, only when it is non-zero. e.g. instead of 1.0 Week we should say 1 Week
+- [DEPRECATED] **[TF-47]** Refactor the chat response handler to play back the `executedTools` list directly against the Zustand store actions rather than overwriting the entire graph. This will prevent overwriting concurrent UI edits and leverage automatic store recalculations natively.
+- [x] **[TF-48]** Weeks and month values in the hub should not show extra decimal place when the decimal value is 0, only when it is non-zero. e.g. instead of 1.0 Week we should say 1 Week
 - [ ] **[TF-49]** update the LLM experience to return progress updates. E.g. instead of a spinner waiting for the LLM response, we should break it up into a thinking phase and planning phase. Thinking is when we are waiting for the LLM response and then planning phase is when we are executing all the tool calls from the LLM. If we can have the backend update the frontend with these changes we can "peer" into the LLM's workflow and that will give the client a bit more comfort. We can add a cool animation on the thinking and planning responses, for example animating ... in a wave after the text. 
 - [ ] **[TF-50]** We should propagate the traveler count from origin to hubs. But we also need a way to split some travelers off to a different hub. For example if I am going to Europe with my 2 children, I might want to send my son to a week long coding camp in London and my daughter to a week long ballet intensive in Paris, and then we all meet in Rome for a week. So we need to be able to support that. 
-- [ ] **[TF-51]** Remove emojis from headers, labels, and badges in the UI, replacing them with React icons (Lucide React) for a cleaner, unified, and more professional aesthetic.
-- [ ] **[TF-52]** Handle open-ended hub durations before a trip is fully planned: (1) for open-ended plans where departure is unknown, base duration on planned itinerary items with a '+' symbol showing it may grow, and (2) when a duration in days is specified, set matching arrival/departure dates assuming departure is back to origin.
+- [x] **[TF-51]** Remove emojis from headers, labels, and badges in the UI, replacing them with React icons (Lucide React) for a cleaner, unified, and more professional aesthetic.
+- [x] **[TF-52]** Handle open-ended hub durations before a trip is fully planned: (1) for open-ended plans where departure is unknown, base duration on planned itinerary items with a '+' symbol showing it may grow, and (2) when a duration in days is specified, set matching arrival/departure dates assuming departure is back to origin.
 - [ ] **[TF-53]** On transits, we should hold the auto calculated traveler count. But the user could overwrite the traverl count. For example we have 5 people starting at the origin and flying to a city hub. Then they all go to another city hub. Well it should be possible to split that group and say 3 people are going to the next city hub and 2 are going back home. 
