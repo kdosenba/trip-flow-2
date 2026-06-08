@@ -42,7 +42,7 @@ export const ItineraryEventCard: React.FC<ItineraryEventCardProps> = ({
     const parentHub = Object.values(graph.CityHubs).find((hub) =>
       hub.itinerary?.some((item) => item.LocationId === eventLocation.id)
     );
-    return parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount) : 1;
+    return parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount || 1) : 1;
   }, [graph, eventLocation.id]);
 
   // Determine dynamic styling classes based on category

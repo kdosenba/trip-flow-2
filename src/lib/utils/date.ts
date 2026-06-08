@@ -115,4 +115,44 @@ export class DateTimeFormatter {
       unit: rawVal === 1 ? "MONTH" : "MONTHS",
     };
   }
+
+  /**
+   * Adjusts a date string/timestamp to local Date components in the target timezone,
+   * represented as a Date object in UTC.
+   */
+  static getLocalTime(isoString: string, timezone: string): Date {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return date;
+
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone || "UTC",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+      });
+
+      const parts = formatter.formatToParts(date);
+      const partValues: Record<string, string> = {};
+      parts.forEach((p) => {
+        partValues[p.type] = p.value;
+      });
+
+      const year = parseInt(partValues["year"] || "1970", 10);
+      const month = parseInt(partValues["month"] || "1", 10) - 1;
+      const day = parseInt(partValues["day"] || "1", 10);
+      const hour = parseInt(partValues["hour"] || "0", 10);
+      const minute = parseInt(partValues["minute"] || "0", 10);
+      const second = parseInt(partValues["second"] || "0", 10);
+
+      return new Date(Date.UTC(year, month, day, hour, minute, second));
+    } catch (err) {
+      console.warn(`getLocalTime failed for ${isoString} in timezone ${timezone}:`, err);
+      return date;
+    }
+  }
 }

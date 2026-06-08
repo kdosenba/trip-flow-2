@@ -3,6 +3,7 @@ import { CityHub } from "../../types/schema";
 import { Trash2 } from "lucide-react";
 import { DateTimeFormatter } from "../../lib/utils/date";
 import { useTripFlowStore } from "../../store";
+import { getHubStayDays } from "../../lib/utils/graph";
 
 interface CityHubCardProps {
   cityHub: CityHub;
@@ -95,9 +96,8 @@ export const CityHubCard: React.FC<CityHubCardProps> = ({
 
     // Calculate duration in days
     let days = 1;
-    if (start !== undefined && end !== undefined) {
-      const diffTime = Math.abs(end - start);
-      days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    if (graph) {
+      days = getHubStayDays(graph, cityHub.id);
     }
 
     return { rangeLabel, days, isFlexible: hasFlexibleEnd };

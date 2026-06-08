@@ -23,7 +23,7 @@ export const OriginCityCard: React.FC<OriginCityCardProps> = ({
 
   if (!graph) return null;
 
-  const travelerCount = originCity.travelerCount;
+  const travelerCount = originCity.travelerCount ?? 1;
 
   // Find departure transit edge (outgoing from origin hub)
   const departingTransit = Object.values(graph.Transits).find(

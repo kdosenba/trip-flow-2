@@ -121,7 +121,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
       <EventPriceSection
         category={suggestion.suggestedLocation?.category || (suggestion.type === "LOCATION_SUGGESTION" ? "ACTIVITY" : "TRANSIT_POINT")}
         price={suggestion.suggestedLocation?.price || suggestion.price}
-        travelerCount={targetCity ? (targetCity.resolvedTravelerCount || targetCity.travelerCount) : 1}
+        travelerCount={targetCity ? (targetCity.resolvedTravelerCount || targetCity.travelerCount || 1) : 1}
         currency={graph?.clientContext?.currency || "USD"}
         nights={nights}
       />

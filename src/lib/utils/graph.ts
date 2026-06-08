@@ -1,4 +1,5 @@
 import { TripFlowGraph } from "../../types/schema";
+import { DateTimeFormatter } from "./date";
 
 /**
  * BFS algorithm to propagate traveler counts from origins to destination city hubs.
@@ -175,13 +176,15 @@ export const propagateTravelerCounts = (graph: TripFlowGraph): void => {
 };
 
 /**
- * Helper to calculate the stay duration in nights for a city hub.
+ * Helper to calculate the stay duration in nights for a city hub, accounting for timezones.
  */
 export const getHubStayNights = (graph: TripFlowGraph, hubId: string): number => {
   const hubs = graph.CityHubs;
   if (!hubs) return 1;
   const cityHub = hubs[hubId];
   if (!cityHub) return 1;
+
+  const timezone = cityHub.timezone || graph.clientContext.timezone || "UTC";
 
   // Find arrival transit segment ending at this hub
   const arrivalTransit = graph.Transits 
@@ -220,12 +223,24 @@ export const getHubStayNights = (graph: TripFlowGraph, hubId: string): number =>
   const start = arrivalTime !== undefined ? arrivalTime : (minItineraryStart !== Infinity ? minItineraryStart : undefined);
   const end = departureTime !== undefined ? departureTime : (maxItineraryEnd !== -Infinity ? maxItineraryEnd : undefined);
 
-  if (start !== undefined && end !== undefined && end > start) {
-    const diffTime = end - start;
-    return Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+  if (start !== undefined && end !== undefined && end >= start) {
+    const startLocal = DateTimeFormatter.getLocalTime(new Date(start).toISOString(), timezone);
+    const endLocal = DateTimeFormatter.getLocalTime(new Date(end).toISOString(), timezone);
+
+    const startMidnight = Date.UTC(startLocal.getUTCFullYear(), startLocal.getUTCMonth(), startLocal.getUTCDate());
+    const endMidnight = Date.UTC(endLocal.getUTCFullYear(), endLocal.getUTCMonth(), endLocal.getUTCDate());
+
+    return Math.max(1, Math.round((endMidnight - startMidnight) / (1000 * 60 * 60 * 24)));
   }
 
   return 1; // Default fallback to 1 night
+};
+
+/**
+ * Helper to calculate the stay duration in calendar days for a city hub, accounting for timezones.
+ */
+export const getHubStayDays = (graph: TripFlowGraph, hubId: string): number => {
+  return getHubStayNights(graph, hubId) + 1;
 };
 
 /**
@@ -245,7 +260,7 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
       const parentHub = Object.values(graph.CityHubs).find((hub) =>
         hub.itinerary?.some((item) => item.LocationId === loc.id)
       );
-      const travelerCount = parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount) : 1;
+      const travelerCount = parentHub ? (parentHub.resolvedTravelerCount || parentHub.travelerCount || 1) : 1;
 
       if (loc.category === "LODGING") {
         const unit = loc.price.unit || "ROOM";
@@ -310,7 +325,7 @@ export const recalculateEstimatesAndActuals = (graph: TripFlowGraph): void => {
   if (graph.suggestions && graph.CityHubs) {
     Object.values(graph.suggestions).forEach((sug) => {
       const targetHub = sug.targetCityId ? graph.CityHubs[sug.targetCityId] : undefined;
-      const travelerCount = targetHub ? (targetHub.resolvedTravelerCount || targetHub.travelerCount) : 1;
+      const travelerCount = targetHub ? (targetHub.resolvedTravelerCount || targetHub.travelerCount || 1) : 1;
 
       const loc = sug.suggestedLocation;
       if (loc && loc.price) {

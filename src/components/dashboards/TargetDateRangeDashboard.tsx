@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { DateTimeFormatter } from "../../lib/utils/date";
 import { useTripFlowStore } from "../../store";
+import { getHubStayNights, getHubStayDays } from "../../lib/utils/graph";
 
 interface TargetDateRangeDashboardProps {
   data: TargetDateRange;
@@ -20,9 +21,8 @@ interface TargetDateRangeDashboardProps {
 export const TargetDateRangeDashboard: React.FC<
   TargetDateRangeDashboardProps
 > = ({ data, onUpdate }) => {
-  const timezone = useTripFlowStore(
-    (state) => state.graph?.clientContext.timezone,
-  );
+  const graph = useTripFlowStore((state) => state.graph);
+  const timezone = graph?.clientContext.timezone;
   const isPlanning = useTripFlowStore((state) => state.isPlanning);
 
   // Local edit states
@@ -115,15 +115,47 @@ export const TargetDateRangeDashboard: React.FC<
 
   // Calculate actual duration in days
   const getActualDays = () => {
-    if (!data.actual?.start || !data.actual?.end) return null;
+    if (!data.actual?.start || !data.actual?.end || !graph) return null;
     try {
+      // Find start and end timezone
+      const originHub = Object.values(graph.CityHubs).find((h) => h.type === "ORIGIN");
+      const startTimezone = originHub?.timezone || graph.clientContext.timezone || "UTC";
+
+      let latestSegment: any = null;
+      let latestTime = -Infinity;
+      Object.values(graph.Transits || {}).forEach((trans) => {
+        trans.segments?.forEach((seg) => {
+          const e = new Date(seg.endTime).getTime();
+          if (!isNaN(e) && e > latestTime) {
+            latestTime = e;
+            latestSegment = seg;
+          }
+        });
+      });
+
+      let endTimezone = startTimezone;
+      if (latestSegment) {
+        const destLocationId = latestSegment.toLocationId;
+        const destHub = Object.values(graph.CityHubs).find(
+          (hub) => hub.arrivalNodeId === destLocationId || hub.departureNodeId === destLocationId
+        );
+        if (destHub?.timezone) {
+          endTimezone = destHub.timezone;
+        }
+      }
+
+      const startLocal = DateTimeFormatter.getLocalTime(data.actual.start, startTimezone);
+      const endLocal = DateTimeFormatter.getLocalTime(data.actual.end, endTimezone);
+
+      const startMidnight = Date.UTC(startLocal.getUTCFullYear(), startLocal.getUTCMonth(), startLocal.getUTCDate());
+      const endMidnight = Date.UTC(endLocal.getUTCFullYear(), endLocal.getUTCMonth(), endLocal.getUTCDate());
+
+      return Math.max(1, Math.round((endMidnight - startMidnight) / (1000 * 60 * 60 * 24)) + 1);
+    } catch {
       const s = new Date(data.actual.start).getTime();
       const e = new Date(data.actual.end).getTime();
       const diffTime = Math.abs(e - s);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive
-      return diffDays;
-    } catch {
-      return null;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
   };
 
@@ -160,6 +192,83 @@ export const TargetDateRangeDashboard: React.FC<
 
   const actualDays = getActualDays();
 
+  // Helper calculations for TF-45
+  const timeline = (() => {
+    if (!graph) return { travel: 0, hubs: [] as Array<{ name: string; days: number; color: string }>, total: 0, totalHubDays: 0, plannedDays: 0, unplannedDays: 0 };
+
+    // 1. Calculate travel time in hours
+    let travelMs = 0;
+    Object.values(graph.Transits || {}).forEach((trans) => {
+      trans.segments?.forEach((seg) => {
+        const start = new Date(seg.startTime).getTime();
+        const end = new Date(seg.endTime).getTime();
+        if (!isNaN(start) && !isNaN(end) && end > start) {
+          travelMs += (end - start);
+        }
+      });
+    });
+    const travelHours = travelMs / (1000 * 60 * 60);
+    const travelDays = travelHours / 24;
+
+    // 2. Calculate hub stay times in days (calendar days)
+    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#06b6d4"];
+    const hubs = Object.values(graph.CityHubs || {})
+      .filter((h) => h.type === "HUB")
+      .map((h, index) => {
+        const days = getHubStayDays(graph, h.id);
+        return {
+          name: h.cityName,
+          days,
+          color: colors[index % colors.length] || "#94a3b8",
+        };
+      });
+
+    const totalHubDays = hubs.reduce((sum, h) => sum + h.days, 0);
+    const total = travelDays + totalHubDays;
+
+    // 3. Calculate planned vs unplanned time in hubs in hours
+    let plannedMs = 0;
+    Object.values(graph.CityHubs || {}).forEach((hub) => {
+      if (hub.type !== "HUB") return;
+      hub.itinerary.forEach((item) => {
+        const loc = graph.Locations[item.LocationId];
+        if (!loc) return;
+        if (loc.category !== "ACTIVITY" && loc.category !== "MEAL") return;
+
+        if (item.startTime && item.endTime) {
+          const s = new Date(item.startTime).getTime();
+          const e = new Date(item.endTime).getTime();
+          if (!isNaN(s) && !isNaN(e) && e > s) {
+            plannedMs += (e - s);
+          }
+        } else if (item.startTime) {
+          plannedMs += 2 * 60 * 60 * 1000; // default 2 hours
+        }
+      });
+    });
+
+    const plannedHours = plannedMs / (1000 * 60 * 60);
+    const netHubHours = totalHubDays * 16; // 16 hours awake per hub day (excludes 8 hours sleep)
+    const cappedPlannedHours = Math.min(netHubHours, plannedHours);
+    const unplannedHours = Math.max(0, netHubHours - cappedPlannedHours);
+
+    return {
+      travel: travelDays,
+      hubs,
+      total,
+      totalHubDays,
+      plannedDays: cappedPlannedHours / 24,
+      unplannedDays: unplannedHours / 24,
+    };
+  })();
+
+  const formatDaysOrHours = (days: number) => {
+    if (days === 0) return "0h";
+    if (days >= 1) return `${Math.round(days * 10) / 10}d`;
+    const hours = Math.round(days * 24);
+    return `${hours}h`;
+  };
+
   return (
     <div
       className="relative w-full max-w-card-widget rounded-3xl border border-border-color bg-bg-card/70 p-5 backdrop-blur-xl transition-all duration-300"
@@ -187,8 +296,8 @@ export const TargetDateRangeDashboard: React.FC<
                   type="button"
                   disabled={isPlanning}
                   className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${isRange
-                      ? "bg-bg-card text-text-primary shadow-xs"
-                      : "text-text-muted"
+                    ? "bg-bg-card text-text-primary shadow-xs"
+                    : "text-text-muted"
                     }`}
                   onClick={() => setIsRange(true)}
                 >
@@ -198,8 +307,8 @@ export const TargetDateRangeDashboard: React.FC<
                   type="button"
                   disabled={isPlanning}
                   className={`flex-1 cursor-pointer rounded-sm border-none bg-transparent px-1 py-0.5 text-xxs font-semibold transition-all duration-300 disabled:cursor-not-allowed ${!isRange
-                      ? "bg-bg-card text-text-primary shadow-xs"
-                      : "text-text-muted"
+                    ? "bg-bg-card text-text-primary shadow-xs"
+                    : "text-text-muted"
                     }`}
                   onClick={() => setIsRange(false)}
                 >
@@ -322,7 +431,7 @@ export const TargetDateRangeDashboard: React.FC<
         </button>
 
         {showBreakdown && (
-          <div className="mt-3 flex flex-col gap-2 rounded-md bg-bg-dark/50 p-2.5 text-xxs text-text-secondary">
+          <div className="mt-3 flex flex-col gap-4 rounded-2xl bg-bg-dark/40 p-4 border border-border-color/30 text-xxs text-text-secondary">
             {isEditing ? (
               <div className="flex flex-col gap-1">
                 <span className="text-super-small font-bold tracking-wider text-text-muted uppercase">
@@ -337,30 +446,83 @@ export const TargetDateRangeDashboard: React.FC<
                 />
               </div>
             ) : (
-              data.context && (
-                <div className="leading-normal">
-                  <strong>Context:</strong> {data.context}
-                </div>
-              )
-            )}
+              <>
+                {data.context && (
+                  <div className="leading-normal mb-1">
+                    <strong>Context:</strong> {data.context}
+                  </div>
+                )}
 
-            <div className="border-t border-dashed border-border-color pt-2">
-              <strong>Date validation:</strong> actual schedule starts on{" "}
-              {data.actual?.start
-                ? DateTimeFormatter.format(data.actual.start, timezone, {
-                  month: "short",
-                  day: "numeric",
-                })
-                : "TBD"}{" "}
-              and ends on{" "}
-              {data.actual?.end
-                ? DateTimeFormatter.format(data.actual.end, timezone, {
-                  month: "short",
-                  day: "numeric",
-                })
-                : "TBD"}
-              .
-            </div>
+
+
+                {/* Planned vs Unplanned Time (VAS) */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-super-small font-bold tracking-wider text-text-muted uppercase">
+                    <span>Planned vs Free Time*</span>
+                  </div>
+                  <div className="mt-1 flex flex-col gap-2">
+                    <div className="flex justify-between text-[10px] font-bold text-text-secondary leading-tight">
+                      <div className="text-left">
+                        Planned<br />Time
+                      </div>
+                      <div className="text-right">
+                        Free<br />Exploration
+                      </div>
+                    </div>
+                    {/* Visual Analogue Scale Bar */}
+                    <div className="h-3 w-full rounded-full bg-bg-dark/65 overflow-hidden flex">
+                      {(() => {
+                        const awakeDays = timeline.plannedDays + timeline.unplannedDays;
+                        if (awakeDays > 0) {
+                          const plannedPct = (timeline.plannedDays / awakeDays) * 100;
+                          const unplannedPct = (timeline.unplannedDays / awakeDays) * 100;
+                          return (
+                            <>
+                              {plannedPct > 0 && (
+                                <div
+                                  className="h-full bg-indigo-500 transition-all duration-500 border-r border-bg-dark"
+                                  style={{ width: `${plannedPct}%`, backgroundColor: "#6366f1" }}
+                                />
+                              )}
+                              {unplannedPct > 0 && (
+                                <div
+                                  className="h-full transition-all duration-500"
+                                  style={{ width: `${unplannedPct}%`, backgroundColor: "#10b981" }}
+                                />
+                              )}
+                            </>
+                          );
+                        }
+                        return <div className="h-full w-full bg-bg-dark/65" />;
+                      })()}
+                    </div>
+                    {/* Value Labels */}
+                    <div className="flex items-center justify-between text-xxs font-semibold">
+                      {(() => {
+                        const awakeDays = timeline.plannedDays + timeline.unplannedDays;
+                        const plannedPct = awakeDays > 0 ? Math.round((timeline.plannedDays / awakeDays) * 100) : 0;
+                        const unplannedPct = awakeDays > 0 ? Math.round((timeline.unplannedDays / awakeDays) * 100) : 0;
+                        return (
+                          <>
+                            <span className="text-indigo-400">
+                              {formatDaysOrHours(timeline.plannedDays)} ({plannedPct}%)
+                            </span>
+                            <span className="text-emerald-400">
+                              {formatDaysOrHours(timeline.unplannedDays)} ({unplannedPct}%)
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Footnote explanation */}
+                    <div className="text-[9px] text-text-muted italic mt-1 leading-normal">
+                      *Excludes sleeping (8h/day) and travel times.
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
